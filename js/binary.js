@@ -79836,7 +79836,7 @@ function Trim(str){
 function changeLanguage(lang) {
   str = window.location.search;
   str = page.url.replaceQueryParam('l', lang, str);
-  window.location = window.location.pathname + str;
+  // window.location = window.location.pathname + str;
 }
 
 function limitLanguage(lang) {
