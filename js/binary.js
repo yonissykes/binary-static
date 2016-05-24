@@ -68436,12 +68436,12 @@ texts_json['ZH_TW'] = {"QBE_INSURANCE_GROUP_LIMITED":"昆士蘭聯保保險有�
  */
 
 function getAppId() {
-  return localStorage.getItem('app_id') ? localStorage.getItem('app_id') :
+  return localStorage.getItem('config.app_id') ? localStorage.getItem('config.app_id') :
                /staging\.binary\.com/i.test(window.location.hostname) ? '1098' : '1';
 }
 
 function getSocketURL() {
-  return localStorage.getItem('server_url') ? 'wss://' + localStorage.getItem('server_url') + '/websockets/v3' : 'wss://ws.binaryws.com/websockets/v3';
+  return localStorage.getItem('config.server_url') ? 'wss://' + localStorage.getItem('config.server_url') + '/websockets/v3' : 'wss://ws.binaryws.com/websockets/v3';
 }
 ;/**
  * Synopsis
@@ -71277,16 +71277,18 @@ if (typeof trackJs !== 'undefined') trackJs.configure(window._trackJs);
 ;pjax_config_page("endpoint", function(){
     return {
         onLoad: function() {
+          $('#server_url').val(getSocketURL().split('/')[2]);
+          $('#app_id').val(getAppId());
           $('#new_endpoint').on('click', function () {
             var server_url = $('#server_url').val(),
                 app_id = $('#app_id').val();
-            if (Trim(server_url) !== '') localStorage.setItem('server_url', server_url);
-            if (Trim(app_id) !== '') localStorage.setItem('app_id', app_id);
+            if (Trim(server_url) !== '') localStorage.setItem('config.server_url', server_url);
+            if (Trim(app_id) !== '') localStorage.setItem('config.app_id', app_id);
             window.location.reload();
           });
           $('#reset_endpoint').on('click', function () {
-            localStorage.removeItem('server_url');
-            localStorage.removeItem('app_id');
+            localStorage.removeItem('config.server_url');
+            localStorage.removeItem('config.app_id');
             window.location.reload();
           });
         }
@@ -89370,7 +89372,8 @@ pjax_config_page_require_auth("user/assessmentws", function() {
     };
 
     var login_url = function() {
-        return 'https://oauth.binary.com/oauth2/authorize?app_id=' + getAppId() + '&l=' + page.language();
+        return localStorage.getItem('config.server_url') && /qa/.test(localStorage.getItem('config.server_url')) ? 'https://www.' + localStorage.getItem('config.server_url').split('.')[1] + '.com/oauth2/authorize?app_id=' + getAppId() + '&l=' + page.language() :
+                                                           'https://oauth.binary.com/oauth2/authorize?app_id=' + getAppId() + '&l=' + page.language();
     };
 
     var is_login_pages = function() {
