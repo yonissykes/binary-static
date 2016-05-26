@@ -68441,7 +68441,9 @@ function getAppId() {
 }
 
 function getSocketURL() {
-  return localStorage.getItem('config.server_url') ? 'wss://' + localStorage.getItem('config.server_url') + '/websockets/v3' : 'wss://ws.binaryws.com/websockets/v3';
+    var server_url = localStorage.getItem('config.server_url');
+    if(!server_url) server_url = (/staging\.binary\.com/i.test(window.location.hostname) ? 'www2' : 'ws') + '.binaryws.com';
+    return 'wss://' + server_url + '/websockets/v3';
 }
 ;/**
  * Synopsis
@@ -69295,7 +69297,7 @@ Client.prototype = {
         // set local storage
         GTM.set_newaccount_flag();
         localStorage.setItem('active_loginid', loginid);
-        window.location.href = page.url.url_for('trading');
+        window.location.href = page.url.default_redirect_url();
     }
 };
 
@@ -69432,7 +69434,7 @@ URL.prototype = {
         return params;
     },
     default_redirect_url: function() {
-        return this.url_for('trading');
+        return this.url_for(page.language() === 'JA' ? 'jptrading' : 'trading');
     },
 };
 
@@ -79163,7 +79165,7 @@ pjax_config_page_require_auth("settingsws", function() {
     };
 
     var redirectBack = function() {
-        window.location.href = redirectUrl || page.url.url_for('trading');
+        window.location.href = redirectUrl || page.url.default_redirect_url();
     };
 
     var apiResponse = function(response) {
@@ -85884,6 +85886,10 @@ WSTickDisplay.updateChart = function(data, contract) {
 	var trading_page = 0;
 
 	var onLoad = function(){
+        if(page.language() === 'JA' && /\/trading\.html/i.test(window.location.pathname)) {
+            window.location.href = page.url.url_for('jptrading');
+            return;
+        }
 		trading_page = 1;
 		if(sessionStorage.getItem('currencies')){
 			displayCurrencies();
