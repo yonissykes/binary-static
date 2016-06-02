@@ -69830,7 +69830,7 @@ ToolTip.prototype = {
             title   = false;
 
         targets.on('mouseenter', function(e) {
-            tip = $(this).attr( 'title' );
+            tip = $(this).attr( 'title' ) || $(this).attr('data-title');
 
             if( !tip || tip === '' )
                 return false;
@@ -69838,7 +69838,8 @@ ToolTip.prototype = {
             that.showing.target = $(this);
             that.showing.tip = tip;
 
-            that.showing.target.removeAttr( 'title' );
+            that.showing.target.removeAttr( 'title' )
+                               .removeAttr( 'data-title' );
 
             that.tooltip.html(tip);
             that.resize_tooltip();
@@ -69847,14 +69848,14 @@ ToolTip.prototype = {
         });
 
         targets.on('mouseleave', function() {
-            if(that.showing.target) {
-                that.showing.target.attr( 'title', that.showing.tip );
+            if(that.showing.target && !that.showing.target.attr('data-title')) {
+                that.showing.target.attr( 'data-title', that.showing.tip );
             }
             that.hide_tooltip();
         });
 
         targets.on('click', function() {
-            if(that.showing.target) {
+            if(that.showing.target && !that.showing.target.attr('data-title')) {
                 that.showing.target.attr( 'title', that.showing.tip );
             }
             that.hide_tooltip();
@@ -71295,10 +71296,13 @@ if (typeof trackJs !== 'undefined') trackJs.configure(window._trackJs);
           $('#server_url').val(getSocketURL().split('/')[2]);
           $('#app_id').val(getAppId());
           $('#new_endpoint').on('click', function () {
-            var server_url = $('#server_url').val(),
-                app_id = $('#app_id').val();
-            if (Trim(server_url) !== '') localStorage.setItem('config.server_url', server_url);
-            if (Trim(app_id) !== '') localStorage.setItem('config.app_id', app_id);
+            var server_url = ($('#server_url').val() || '').trim().toLowerCase(),
+                app_id = ($('#app_id').val() || '').trim();
+            if (server_url) {
+              if(!/^(ws|www2|www)\..*$/i.test(server_url)) server_url = 'www.' + server_url;
+              localStorage.setItem('config.server_url', server_url);
+            }
+            if (app_id && !isNaN(app_id)) localStorage.setItem('config.app_id', parseInt(app_id));
             window.location.reload();
           });
           $('#reset_endpoint').on('click', function () {
@@ -80606,6 +80610,7 @@ $(function() {
     };
 
     var updateIndicative = function(data) {
+        if(data.hasOwnProperty('error')) return;
         var proposal = data.proposal_open_contract;
         var $td = $("tr[data-contract_id='" + proposal.contract_id + "'] td.indicative");
         var old_indicative = $td.find('strong').text();
@@ -81183,7 +81188,7 @@ var TradingAnalysis = (function() {
 
     var requestTradeAnalysis = function() {
         var contentId = document.getElementById('trading_bottom_content');
-        var formName = $('#contract_form_name_nav').find('.a-active').attr('id');
+        var formName = isJapanTrading() ? $('input[type="radio"][name="market_menu"]:checked').val() : $('#contract_form_name_nav').find('.a-active').attr('id');
         if (formName === 'matchdiff') {
           formName = 'digits';
         }
@@ -84258,6 +84263,7 @@ var TradingEvents = (function () {
 
             predictionElement.addEventListener('change', debounce( function (e) {
                 Defaults.set('prediction', e.target.value);
+                page.contents.tooltip.hide_tooltip();
                 processPriceRequest();
                 submitForm(document.getElementById('websocket_form'));
             }));
@@ -84722,9 +84728,10 @@ var Price = (function() {
                   extraInfo['longcode'] = extraInfo['longcode'].replace(/[\d\,]+\.\d\d/, function(x) {
                       return '<b>' + x + '</b>';
                   });
-                  description.setAttribute('title', extraInfo['longcode']);
+                  description.setAttribute('data-title', extraInfo['longcode']);
+                  page.contents.tooltip.attach();
                 } else {
-                  description.removeAttribute('title');
+                  description.removeAttribute('data-title');
                 }
             }
 
@@ -84754,9 +84761,10 @@ var Price = (function() {
                 proposal['longcode'] = proposal['longcode'].replace(/[\d\,]+\.\d\d/, function(x) {
                     return '<b>' + x + '</b>';
                 });
-                description.setAttribute('title', proposal['longcode']);
+                description.setAttribute('data-title', proposal['longcode']);
+                page.contents.tooltip.attach();
             } else {
-              description.removeAttribute('title');
+              description.removeAttribute('data-title');
             }
 
             purchase.show();
@@ -94160,6 +94168,7 @@ function showLocalTimeOnHover(s) {
         date_start: form.date_start,
         symbol: form.symbol,
         type: 'japan',
+        payout: state.units * 1000
       });
     }
   }
