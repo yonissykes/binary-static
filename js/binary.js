@@ -89939,9 +89939,7 @@ pjax_config_page_require_auth("user/assessmentws", function() {
         }
     };
 });
-;
-
-pjax_config_page_require_auth("user/profit_table", function(){
+;pjax_config_page_require_auth("user/profit_table", function(){
     return {
         onLoad: function() {
             BinarySocket.init({
@@ -90099,12 +90097,13 @@ var ProfitTableUI = (function(){
     "use strict";
 
     var profitTableID = "profit-table";
-    var cols = ["buy-date", "ref", "contract", "buy-price", "sell-date", "sell-price", "pl", "details"];
+    var cols = ["buy-date", "ref", "payout", "contract", "buy-price", "sell-date", "sell-price", "pl", "details"];
 
     function createEmptyTable(){
         var header = [
             Content.localize().textDate,
             Content.localize().textRef,
+            text.localize('Potential Payout'),
             Content.localize().textContract,
             Content.localize().textPurchasePrice,
             Content.localize().textSaleDate,
@@ -90113,9 +90112,9 @@ var ProfitTableUI = (function(){
             Content.localize().textDetails
         ];
 
-        header[6] = header[6] + (TUser.get().currency ? " (" + TUser.get().currency + ")" : "");
+        header[7] = header[7] + (TUser.get().currency ? " (" + TUser.get().currency + ")" : "");
 
-        var footer = [Content.localize().textTotalProfitLoss, "", "", "", "", "", "", ""];
+        var footer = [Content.localize().textTotalProfitLoss, "", "", "", "", "", "", "", ""];
 
         var data = [];
         var metadata = {
@@ -90169,6 +90168,7 @@ var ProfitTableUI = (function(){
         var sellDate = sellMoment.format("YYYY-MM-DD") + "\n" + sellMoment.format("HH:mm:ss") + ' GMT';
 
         var ref = transaction["transaction_id"];
+        var payout = Number(parseFloat(transaction["payout"])).toFixed(2);
         var buyPrice = Number(parseFloat(transaction["buy_price"])).toFixed(2);
         var sellPrice = Number(parseFloat(transaction["sell_price"])).toFixed(2);
 
@@ -90176,7 +90176,7 @@ var ProfitTableUI = (function(){
 
         var plType = (pl >= 0) ? "profit" : "loss";
 
-        var data = [buyDate, ref, '', buyPrice, sellDate, sellPrice, pl, ''];
+        var data = [buyDate, ref, payout, '', buyPrice, sellDate, sellPrice, pl, ''];
         var $row = Table.createFlexTableRow(data, cols, "data");
 
         $row.children(".buy-date").addClass("pre");
@@ -91236,12 +91236,13 @@ var ProfitTableUI = (function(){
 ;var StatementUI = (function(){
     "use strict";
     var tableID = "statement-table";
-    var columns = ["date", "ref", "act", "desc", "credit", "bal", "details"];
+    var columns = ["date", "ref", "payout", "act", "desc", "credit", "bal", "details"];
 
     function createEmptyStatementTable(){
         var header = [
             Content.localize().textDate,
             Content.localize().textRef,
+            text.localize('Potential Payout'),
             Content.localize().textAction,
             Content.localize().textDescription,
             Content.localize().textCreditDebit,
@@ -91249,7 +91250,7 @@ var ProfitTableUI = (function(){
             Content.localize().textDetails
         ];
 
-        header[5] = header[5] + (TUser.get().currency ? " (" + TUser.get().currency + ")" : "");
+        header[6] = header[6] + (TUser.get().currency ? " (" + TUser.get().currency + ")" : "");
 
         var metadata = {
             id: tableID,
@@ -91280,13 +91281,14 @@ var ProfitTableUI = (function(){
 
         var date = dateStr + "\n" + timeStr;
         var ref = transaction["transaction_id"];
+        var payout = Number(parseFloat(transaction["payout"])).toFixed(2);
         var desc = transaction["longcode"].replace(/\n/g, '<br />');
         var amount = addComma(Number(parseFloat(transaction["amount"])));
         var balance = addComma(Number(parseFloat(transaction["balance_after"])));
 
         var creditDebitType = (parseFloat(amount) >= 0) ? "profit" : "loss";
 
-        var $statementRow = Table.createFlexTableRow([date, ref, action, '', amount, balance, ''], columns, "data");
+        var $statementRow = Table.createFlexTableRow([date, ref, payout, action, '', amount, balance, ''], columns, "data");
         $statementRow.children(".credit").addClass(creditDebitType);
         $statementRow.children(".date").addClass("pre");
         $statementRow.children(".desc").html(desc + "<br>");
