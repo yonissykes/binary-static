@@ -118,6 +118,7 @@
     "src/javascript/binary/static/authorised_apps/authorised_apps.data.js",
     "src/javascript/binary/static/authorised_apps/authorised_apps.init.js",
     "src/javascript/binary/static/authorised_apps/authorised_apps.js",
+    "src/javascript/binary/static/cashier.js",
     "src/javascript/binary/static/cashier/account_transferws.js",
     "src/javascript/binary/static/cashier/my_accountws.js",
     "src/javascript/binary/static/cashier/payment_agent_listws.js",
