@@ -71542,6 +71542,7 @@ if (typeof trackJs !== 'undefined') trackJs.configure(window._trackJs);
       if (type === 'contracts_for' && (!error || (error && error.code && error.code === 'InvalidSymbol'))) {
           if (response.contracts_for && response.contracts_for.feed_license) {
             handle_delay(response.contracts_for.feed_license);
+            save_feed_license(response.echo_req.contracts_for, response.contracts_for.feed_license);
           }
           show_entry_error();
       } else if ((type === 'history' || type === 'candles' || type === 'tick' || type === 'ohlc') && !error){
@@ -71700,7 +71701,11 @@ if (typeof trackJs !== 'undefined') trackJs.configure(window._trackJs);
     if (contracts_response && contracts_response.echo_req.contracts_for === underlying) {
       if (contracts_response.contracts_for.feed_license) {
         handle_delay(contracts_response.contracts_for.feed_license);
+        save_feed_license(contracts_response.echo_req.contracts_for, contracts_response.contracts_for.feed_license);
       }
+      show_entry_error();
+    } else if (sessionStorage.getItem('license.' + underlying)) {
+      handle_delay(sessionStorage.getItem('license.' + underlying));
       show_entry_error();
     } else if(!contracts_for_send && update === '') {
       socketSend({'contracts_for': underlying});
@@ -71928,6 +71933,23 @@ if (typeof trackJs !== 'undefined') trackJs.configure(window._trackJs);
       }
     }
     return;
+  }
+
+  function save_feed_license(contract, license) {
+    var regex = new RegExp('license.' + contract),
+        match_found = false;
+
+    for(i = 0; i < sessionStorage.length; i++) {
+      if(regex.test(sessionStorage.key(i))) {
+        match_found = true;
+        break;
+      }
+    }
+
+    if (!match_found) {
+      sessionStorage.setItem('license.' + contract, license);
+    }
+
   }
 
   return {
@@ -91488,7 +91510,6 @@ var ProfitTableUI = (function(){
         chartStarted,
         tickForgotten,
         candleForgotten,
-        candleForgottenSent,
         corporateActionEvent,
         corporateActionSent,
         chartUpdated;
@@ -91512,7 +91533,6 @@ var ProfitTableUI = (function(){
         chartStarted         = false;
         tickForgotten        = false;
         candleForgotten      = false;
-        candleForgottenSent  = false;
         chartUpdated         = false;
         corporateActionEvent = false;
         corporateActionSent  = false;
@@ -91741,7 +91761,13 @@ var ProfitTableUI = (function(){
             if (!tickForgotten) {
               tickForgotten = true;
               socketSend({"forget_all":"ticks"});
-            } else if (candleForgotten) {
+            }
+            if (!candleForgotten) {
+              candleForgotten = true;
+              socketSend({"forget_all":"candles"});
+              Highchart.show_chart(contract);
+            }
+            if (candleForgotten && tickForgotten) {
               Highchart.show_chart(contract, 'update');
               if (contract.entry_tick_time) {
                 chartStarted = true;
@@ -92199,18 +92225,6 @@ var ProfitTableUI = (function(){
                     break;
                 case 'sell_expired':
                     responseSellExpired(response);
-                    break;
-                case 'forget_all':
-                    if (response.echo_req.forget_all === 'ticks' && !candleForgottenSent) {
-                      candleForgottenSent = true;
-                      socketSend({"forget_all":"candles"});
-                    } else if (response.echo_req.forget_all === 'candles') {
-                      candleForgotten = true;
-                      Highchart.show_chart(contract);
-                      if (contract.entry_tick_time) {
-                        chartStarted = true;
-                      }
-                    }
                     break;
                 case 'get_corporate_actions':
                     if (Object.keys(response.get_corporate_actions).length > 0) {
