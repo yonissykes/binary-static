@@ -70942,155 +70942,6 @@ for (var key in texts_json) {
 
 // make markets object
 var markets = new Markets(markets_list, markets_json);
-;var ActiveSymbols = (function () {
-    'use strict';
-
-    var groupBy = function(xs, key) {
-      return xs.reduce(function(rv, x) {
-        (rv[x[key]] = rv[x[key]] || []).push(x);
-        return rv;
-      }, {});
-    };
-
-    var extend = function extend(a, b) {
-        a = (a) ? a : {};
-        if ( b ) {
-            Object.keys(b).forEach(function(key){
-                a[key] = b[key];
-            });
-        }
-    };
-
-    var objectNotEmpty = function objectNotEmpty(obj){
-        return obj && obj instanceof Object && Object.keys(obj).length;
-    };
-
-    var activeSymbols = {
-        markets: {},
-        submarkets: {},
-        symbols: {},
-        getMarkets: function getMarkets(activeSymbols) {
-            if ( objectNotEmpty(this.markets) ) {
-                return this.markets;
-            } else {
-                var that = this;
-                var markets = groupBy(activeSymbols, 'market');
-                var parsedMarkets = [];
-                Object.keys(markets).forEach(function(key){
-                    var marketName = key;
-                    var marketSymbols = markets[key];
-                    var symbol = marketSymbols[0];
-                    that.markets[marketName] = {
-                        name: symbol.market_display_name,
-                        is_active: !symbol.is_trading_suspended && symbol.exchange_is_open,
-                    };
-                    that.getSubmarketsForMarket(marketSymbols, that.markets[marketName]);
-                });
-                return this.markets;
-            }
-        },
-        getSubmarketsForMarket: function getSubmarketsForMarket(activeSymbols, market) {
-            if ( objectNotEmpty(market.submarkets) ) {
-                return market.submarkets;
-            } else {
-                market.submarkets = {};
-                var that = this;
-                var submarkets = groupBy(activeSymbols, 'submarket');
-                var parsedSubmarkets = [];
-                Object.keys(submarkets).forEach(function(key){
-                    var submarketName = key;
-                    var submarketSymbols = submarkets[key];
-                    var symbol = submarketSymbols[0];
-                    market.submarkets[submarketName] = {
-                        name: symbol.submarket_display_name,
-                        is_active: !symbol.is_trading_suspended && symbol.exchange_is_open,
-                    };
-                    that.getSymbolsForSubmarket(submarketSymbols, market.submarkets[submarketName]);
-                });
-                return market.submarkets;
-            }
-        },
-        getSymbolsForSubmarket: function getSymbolsForSubmarket(activeSymbols, submarket) {
-            if ( objectNotEmpty(submarket.symbols) ) {
-                return submarket.symbols;
-            } else {
-                submarket.symbols = {};
-                activeSymbols.forEach(function(symbol){
-                    submarket.symbols[symbol.symbol] = {
-                        display: symbol.display_name,
-                        symbol_type: symbol.symbol_type,
-                        is_active: !symbol.is_trading_suspended && symbol.exchange_is_open,
-                        pip: symbol.pip,
-                        market: symbol.market,
-                        submarket: symbol.submarket
-                    };
-                });
-                return submarket.symbols;
-            }
-        },
-        getSubmarkets: function getSubmarkets(active_symbols) {
-            if ( objectNotEmpty(this.submarkets) ) {
-                return this.submarkets;
-            } else {
-                var markets = this.getMarkets(active_symbols);
-                var that = this;
-                Object.keys(markets).forEach(function(key){
-                    var market = markets[key];
-                    var submarkets = that.getSubmarketsForMarket(active_symbols, market);
-                    extend(that.submarkets, submarkets);
-                });
-                return this.submarkets;
-            }
-        },
-        getSymbols: function getSymbols(active_symbols) {
-            if ( objectNotEmpty(this.symbols) ) {
-                return this.symbols;
-            } else {
-                var submarkets = this.getSubmarkets(active_symbols);
-                var that = this;
-                Object.keys(submarkets).forEach(function(key){
-                    var submarket = submarkets[key];
-                    var symbols = that.getSymbolsForSubmarket(active_symbols, submarket);
-                    extend(that.symbols, symbols);
-                });
-                return this.symbols;
-            }
-        },
-        getMarketsList: function getMarketsList(active_symbols) {
-            var tradeMarketsList = {};
-            extend(tradeMarketsList, this.getMarkets(active_symbols));
-            extend(tradeMarketsList, this.getSubmarkets(active_symbols));
-            return tradeMarketsList;
-        },
-        getTradeUnderlyings: function getTradeUnderlyings(active_symbols) {
-            var tradeUnderlyings = {};
-            var symbols = this.getSymbols(active_symbols);
-            Object.keys(symbols).forEach(function(key){
-                var symbol = symbols[key];
-                if ( !tradeUnderlyings[symbol.market] ) {
-                    tradeUnderlyings[symbol.market] = {};
-                }
-                if ( !tradeUnderlyings[symbol.submarket] ) {
-                    tradeUnderlyings[symbol.submarket] = {};
-                }
-                tradeUnderlyings[symbol.market][key] = symbol;
-                tradeUnderlyings[symbol.submarket][key] = symbol;
-            });
-            return tradeUnderlyings;
-        },
-        getSymbolNames: function getSymbolNames(active_symbols){
-            var symbols = this.getSymbols(active_symbols);
-            Object.keys(symbols).map(function(key){
-                symbols[key] = symbols[key].display;
-            });
-            return symbols;
-        },
-    };
-    if (typeof module !== 'undefined') {
-        module.exports = activeSymbols;
-    }
-    return activeSymbols;
-})();
 ;var Button = (function(){
     "use strict";
     function createBinaryStyledButton(){
@@ -78952,7 +78803,7 @@ var Message = (function () {
             } else if (type === 'contracts_for') {
                 processContract(response);
                 window.contracts_for = response;
-            } else if (type === 'payout_currencies') {
+            } else if (type === 'payout_currencies' && (!response.echo_req.hasOwnProperty('passthrough') || !response.echo_req.passthrough.hasOwnProperty('handler'))) {
                 page.client.set_storage_value('currencies', response.payout_currencies);
                 displayCurrencies();
                 Symbols.getSymbols(1);
@@ -79023,18 +78874,10 @@ var Price = (function() {
         form_id = 0;
 
     var createProposal = function(typeOfContract) {
-        var proposal;
-        if (page.client.is_virtual()) {
-          proposal = {
+        var proposal = {
             price_stream: 1,
             subscribe: 1
-          };
-        } else {
-          proposal = {
-            proposal: 1,
-            subscribe: 1
-          };
-        }
+        };
         var underlying = document.getElementById('underlying'),
             submarket = document.getElementById('submarket'),
             contractType = typeOfContract,
@@ -80081,14 +79924,61 @@ var StartDates = (function(){
 var Symbols = (function () {
     'use strict';
 
-    var tradeMarkets = {}, tradeMarketsList = {}, tradeUnderlyings = {}, need_page_update = 1, names = {};
+    var tradeMarkets = {}, tradeMarketsList = {}, tradeUnderlyings = {}, current = '', need_page_update = 1, names = {};
 
     var details = function (data) {
         var allSymbols = data['active_symbols'];
-        tradeMarkets = ActiveSymbols.getMarkets(allSymbols);
-        tradeMarketsList = ActiveSymbols.getMarketsList(allSymbols);
-        tradeUnderlyings = ActiveSymbols.getTradeUnderlyings(allSymbols);
-        names = ActiveSymbols.getSymbolNames(allSymbols);
+
+        allSymbols.forEach(function (element) {
+            var currentMarket = element['market'],
+                currentSubMarket = element['submarket'],
+                currentUnderlying = element['symbol'];
+
+            var is_active = !element['is_trading_suspended'] && element['exchange_is_open'];
+
+            if(!tradeMarkets[currentMarket]){
+                tradeMarkets[currentMarket] = {name:element['market_display_name'],is_active:0,submarkets:{}};
+            }
+            if(!tradeMarkets[currentMarket]['submarkets'][currentSubMarket]){
+                tradeMarkets[currentMarket]['submarkets'][currentSubMarket] = {name: element['submarket_display_name'],is_active:0};
+            }
+
+            if(is_active){
+                tradeMarkets[currentMarket]['is_active'] = 1;
+                tradeMarkets[currentMarket]['submarkets'][currentSubMarket]['is_active'] = 1;
+            }
+
+            tradeMarketsList[currentMarket] = tradeMarkets[currentMarket];
+            tradeMarketsList[currentSubMarket] = tradeMarkets[currentMarket]['submarkets'][currentSubMarket];
+
+            if (!tradeUnderlyings.hasOwnProperty(currentMarket)) {
+                tradeUnderlyings[currentMarket] = {};
+            }
+
+            if (!tradeUnderlyings.hasOwnProperty(currentSubMarket)) {
+                tradeUnderlyings[currentSubMarket] = {};
+            }
+
+            if (!tradeUnderlyings[currentMarket].hasOwnProperty(currentUnderlying)) {
+                tradeUnderlyings[currentMarket][currentUnderlying] = {
+                    is_active: is_active,
+                    display: element['display_name'],
+                    market: currentMarket,
+                    submarket: currentSubMarket
+                };
+            }
+
+            if (!tradeUnderlyings[currentSubMarket].hasOwnProperty(currentUnderlying)) {
+                tradeUnderlyings[currentSubMarket][currentUnderlying] = {
+                    is_active: is_active,
+                    display: element['display_name'],
+                    market: currentMarket,
+                    submarket: currentSubMarket
+                };
+            }
+
+            names[currentUnderlying]=element['display_name'];
+        });
     };
 
     var getSymbols = function (update) {
