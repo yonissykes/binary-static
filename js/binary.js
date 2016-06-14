@@ -70967,6 +70967,161 @@ for (var key in texts_json) {
 
 // make markets object
 var markets = new Markets(markets_list, markets_json);
+;var ActiveSymbols = (function () {
+    'use strict';
+
+    var groupBy = function(xs, key) {
+      return xs.reduce(function(rv, x) {
+        (rv[x[key]] = rv[x[key]] || []).push(x);
+        return rv;
+      }, {});
+    };
+
+    var extend = function extend(a, b) {
+        a = (a) ? a : {};
+        if ( b ) {
+            Object.keys(b).forEach(function(key){
+                a[key] = b[key];
+            });
+        }
+    };
+
+    var objectNotEmpty = function objectNotEmpty(obj){
+        return obj && obj instanceof Object && Object.keys(obj).length;
+    };
+
+    var clone = function clone(obj){
+        var newObj = {};
+        extend(newObj, obj);
+        return newObj;
+    };
+
+    var activeSymbols = {
+        markets: {},
+        submarkets: {},
+        symbols: {},
+        getMarkets: function getMarkets(activeSymbols) {
+            if ( objectNotEmpty(this.markets) ) {
+                return clone(this.markets);
+            } else {
+                var that = this;
+                var markets = groupBy(activeSymbols, 'market');
+                var parsedMarkets = [];
+                Object.keys(markets).forEach(function(key){
+                    var marketName = key;
+                    var marketSymbols = markets[key];
+                    var symbol = marketSymbols[0];
+                    that.markets[marketName] = {
+                        name: symbol.market_display_name,
+                        is_active: !symbol.is_trading_suspended && symbol.exchange_is_open,
+                    };
+                    that.getSubmarketsForMarket(marketSymbols, that.markets[marketName]);
+                });
+                return clone(this.markets);
+            }
+        },
+        getSubmarketsForMarket: function getSubmarketsForMarket(activeSymbols, market) {
+            if ( objectNotEmpty(market.submarkets) ) {
+                return clone(market.submarkets);
+            } else {
+                market.submarkets = {};
+                var that = this;
+                var submarkets = groupBy(activeSymbols, 'submarket');
+                var parsedSubmarkets = [];
+                Object.keys(submarkets).forEach(function(key){
+                    var submarketName = key;
+                    var submarketSymbols = submarkets[key];
+                    var symbol = submarketSymbols[0];
+                    market.submarkets[submarketName] = {
+                        name: symbol.submarket_display_name,
+                        is_active: !symbol.is_trading_suspended && symbol.exchange_is_open,
+                    };
+                    that.getSymbolsForSubmarket(submarketSymbols, market.submarkets[submarketName]);
+                });
+                return clone(market.submarkets);
+            }
+        },
+        getSymbolsForSubmarket: function getSymbolsForSubmarket(activeSymbols, submarket) {
+            if ( objectNotEmpty(submarket.symbols) ) {
+                return clone(submarket.symbols);
+            } else {
+                submarket.symbols = {};
+                activeSymbols.forEach(function(symbol){
+                    submarket.symbols[symbol.symbol] = {
+                        display: symbol.display_name,
+                        symbol_type: symbol.symbol_type,
+                        is_active: !symbol.is_trading_suspended && symbol.exchange_is_open,
+                        pip: symbol.pip,
+                        market: symbol.market,
+                        submarket: symbol.submarket
+                    };
+                });
+                return clone(submarket.symbols);
+            }
+        },
+        getSubmarkets: function getSubmarkets(active_symbols) {
+            if ( objectNotEmpty(this.submarkets) ) {
+                return clone(this.submarkets);
+            } else {
+                var markets = this.getMarkets(active_symbols);
+                var that = this;
+                Object.keys(markets).forEach(function(key){
+                    var market = markets[key];
+                    var submarkets = that.getSubmarketsForMarket(active_symbols, market);
+                    extend(that.submarkets, submarkets);
+                });
+                return clone(this.submarkets);
+            }
+        },
+        getSymbols: function getSymbols(active_symbols) {
+            if ( objectNotEmpty(this.symbols) ) {
+                return clone(this.symbols);
+            } else {
+                var submarkets = this.getSubmarkets(active_symbols);
+                var that = this;
+                Object.keys(submarkets).forEach(function(key){
+                    var submarket = submarkets[key];
+                    var symbols = that.getSymbolsForSubmarket(active_symbols, submarket);
+                    extend(that.symbols, symbols);
+                });
+                return clone(this.symbols);
+            }
+        },
+        getMarketsList: function getMarketsList(active_symbols) {
+            var tradeMarketsList = {};
+            extend(tradeMarketsList, this.getMarkets(active_symbols));
+            extend(tradeMarketsList, this.getSubmarkets(active_symbols));
+            return tradeMarketsList;
+        },
+        getTradeUnderlyings: function getTradeUnderlyings(active_symbols) {
+            var tradeUnderlyings = {};
+            var symbols = this.getSymbols(active_symbols);
+            Object.keys(symbols).forEach(function(key){
+                var symbol = symbols[key];
+                if ( !tradeUnderlyings[symbol.market] ) {
+                    tradeUnderlyings[symbol.market] = {};
+                }
+                if ( !tradeUnderlyings[symbol.submarket] ) {
+                    tradeUnderlyings[symbol.submarket] = {};
+                }
+                tradeUnderlyings[symbol.market][key] = symbol;
+                tradeUnderlyings[symbol.submarket][key] = symbol;
+            });
+            return tradeUnderlyings;
+        },
+        getSymbolNames: function getSymbolNames(active_symbols){
+            var symbols = clone(this.getSymbols(active_symbols));
+            Object.keys(symbols).map(function(key){
+                symbols[key] = symbols[key].display;
+            });
+            return symbols;
+        },
+    };
+    if (typeof module !== 'undefined') {
+        module.exports = activeSymbols;
+    }
+    return activeSymbols;
+})();
 ;var Button = (function(){
     "use strict";
     function createBinaryStyledButton(){
@@ -74763,7 +74918,10 @@ function BinarySocketClass() {
                 } else if (type === 'payout_currencies' && response.echo_req.hasOwnProperty('passthrough') && response.echo_req.passthrough.handler === 'page.client') {
                     page.client.response_payout_currencies(response);
                 } else if (type === 'get_settings') {
-                    if(!$.cookie('residence') && response.get_settings.country_code) page.client.set_cookie('residence', response.get_settings.country_code);
+                    if(!$.cookie('residence') && response.get_settings.country_code) {
+                      page.client.set_cookie('residence', response.get_settings.country_code);
+                      page.client.residence = response.get_settings.country_code;
+                    }
                     GTM.event_handler(response.get_settings);
                     page.client.set_storage_value('tnc_status', response.get_settings.client_tnc_status || '-');
                     if (!localStorage.getItem('risk_classification')) page.client.check_tnc();
@@ -79952,61 +80110,14 @@ var StartDates = (function(){
 var Symbols = (function () {
     'use strict';
 
-    var tradeMarkets = {}, tradeMarketsList = {}, tradeUnderlyings = {}, current = '', need_page_update = 1, names = {};
+    var tradeMarkets = {}, tradeMarketsList = {}, tradeUnderlyings = {}, need_page_update = 1, names = {};
 
     var details = function (data) {
         var allSymbols = data['active_symbols'];
-
-        allSymbols.forEach(function (element) {
-            var currentMarket = element['market'],
-                currentSubMarket = element['submarket'],
-                currentUnderlying = element['symbol'];
-
-            var is_active = !element['is_trading_suspended'] && element['exchange_is_open'];
-
-            if(!tradeMarkets[currentMarket]){
-                tradeMarkets[currentMarket] = {name:element['market_display_name'],is_active:0,submarkets:{}};
-            }
-            if(!tradeMarkets[currentMarket]['submarkets'][currentSubMarket]){
-                tradeMarkets[currentMarket]['submarkets'][currentSubMarket] = {name: element['submarket_display_name'],is_active:0};
-            }
-
-            if(is_active){
-                tradeMarkets[currentMarket]['is_active'] = 1;
-                tradeMarkets[currentMarket]['submarkets'][currentSubMarket]['is_active'] = 1;
-            }
-
-            tradeMarketsList[currentMarket] = tradeMarkets[currentMarket];
-            tradeMarketsList[currentSubMarket] = tradeMarkets[currentMarket]['submarkets'][currentSubMarket];
-
-            if (!tradeUnderlyings.hasOwnProperty(currentMarket)) {
-                tradeUnderlyings[currentMarket] = {};
-            }
-
-            if (!tradeUnderlyings.hasOwnProperty(currentSubMarket)) {
-                tradeUnderlyings[currentSubMarket] = {};
-            }
-
-            if (!tradeUnderlyings[currentMarket].hasOwnProperty(currentUnderlying)) {
-                tradeUnderlyings[currentMarket][currentUnderlying] = {
-                    is_active: is_active,
-                    display: element['display_name'],
-                    market: currentMarket,
-                    submarket: currentSubMarket
-                };
-            }
-
-            if (!tradeUnderlyings[currentSubMarket].hasOwnProperty(currentUnderlying)) {
-                tradeUnderlyings[currentSubMarket][currentUnderlying] = {
-                    is_active: is_active,
-                    display: element['display_name'],
-                    market: currentMarket,
-                    submarket: currentSubMarket
-                };
-            }
-
-            names[currentUnderlying]=element['display_name'];
-        });
+        tradeMarkets = ActiveSymbols.getMarkets(allSymbols);
+        tradeMarketsList = ActiveSymbols.getMarketsList(allSymbols);
+        tradeUnderlyings = ActiveSymbols.getTradeUnderlyings(allSymbols);
+        names = ActiveSymbols.getSymbolNames(allSymbols);
     };
 
     var getSymbols = function (update) {
@@ -85747,8 +85858,9 @@ var ProfitTableUI = (function(){
         $('#tnc_image').attr('src', page.url.url_for_static('images/pages/cashier/protection-icon.svg'));
         $('#tnc_approval').removeClass(hiddenClass);
         var tnc_message = $('#tnc-message').html()
-            .replace('[_1]', page.client.get_storage_value('landing_company_name'))
-            .replace(/\[_2\]/g, page.url.url_for('terms-and-conditions'));
+            .replace('[_1]', page.client.get_storage_value('landing_company_name'));
+        tnc_message = page.client.residence === 'jp' ? tnc_message.replace(/\[_2\]/g, page.url.url_for('terms-and-conditions-jp')) :
+                      tnc_message.replace(/\[_2\]/g, page.url.url_for('terms-and-conditions'));
         $('#tnc-message').html(tnc_message).removeClass(hiddenClass);
         $('#btn-accept').text(text.localize('OK'));
     };
@@ -87339,10 +87451,10 @@ pjax_config_page("profit_tablews|statementws|portfoliows|trading", function() {
         }
         var answeredQid = Object.keys(submitted).map(function(k) {return +k;});
         if (answeredQid.length !== 20) {
+            $('#knowledge-test-instructions').addClass('invisible');
             $('#knowledge-test-msg')
                 .addClass('notice-msg')
                 .text(text.localize('You need to finish all 20 questions.'));
-
             // $("html, body").animate({ scrollTop: 0 }, "slow");
 
             var allQid = [].concat.apply([], randomPicks).map(function(q) {
@@ -87375,9 +87487,11 @@ pjax_config_page("profit_tablews|statementws|portfoliows|trading", function() {
         $('#knowledge-test-submit').click(submitHandler);
         $('#knowledge-test-questions').removeClass(hiddenClass);
         $('#knowledge-test-msg').text(text.localize('{JAPAN ONLY}Please complete the following questions.'));
+        $('#knowledge-test-instructions').removeClass('invisible');
     }
 
     function showResult(score, time) {
+        $('#knowledge-test-instructions').addClass('invisible');
         $('#knowledge-test-header').text(text.localize('{JAPAN ONLY}Knowledge Test Result'));
         if (score >= 14) {
             $('#knowledge-test-msg').text(text.localize(passMsg));
@@ -87394,6 +87508,7 @@ pjax_config_page("profit_tablews|statementws|portfoliows|trading", function() {
     function showMsgOnly(msg) {
         $('#knowledge-test-questions').addClass(hiddenClass);
         $('#knowledge-test-msg').text(text.localize(msg));
+        $('#knowledge-test-instructions').addClass('invisible');
     }
 
     function showDisallowedMsg(jpStatus) {
