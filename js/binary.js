@@ -73130,6 +73130,7 @@ pjax_config_page('/get-started', function() {
 pjax_config_page('/contact', function() {
     return {
         onLoad: function() {
+            $('#faq_url').attr('href', 'https://binary.desk.com/customer/' + page.language() + "/portal/articles");
             display_cs_contacts();
             show_live_chat_icon();
         },
@@ -73470,23 +73471,28 @@ pjax_config_page_require_auth("account/account_transferws", function() {
 ;var Cashier = (function() {
     "use strict";
 
-    var show_error = function(error) {
-      $('.withdraw').parent().addClass('button-disabled')
-                             .removeAttr('href');
-      $('.notice-msg').html(error)
-                      .parent().removeClass('invisible');
-    };
-
     var lock_withdrawal = function(withdrawal_locked) {
       if (withdrawal_locked === 'locked') {
-        show_error(text.localize('Withdrawal is locked, please [_1] for more information.')
-                       .replace('[_1]', '<a href="' + page.url.url_for('/contact') + '">' +
-                                        text.localize('contact us') + '</a>'));
+        $.each($('.withdraw'), function(){
+          $a = $(this).parent();
+          // use replaceWith, to disable previously catched pjax event
+          $a.replaceWith($('<a/>', {class: $a.attr('class').replace('pjaxload') + ' button-disabled', html: $a.html()}));
+        });
+        $('.notice-msg').removeClass('invisible').parent().removeClass('invisible');
+      }
+    };
+
+    var check_withdrawal_locked = function() {
+      if (sessionStorage.getItem('withdrawal_locked') === 'locked') {
+        Cashier.lock_withdrawal('locked');
+      } else if (!sessionStorage.getItem('withdrawal_locked')) {
+        BinarySocket.send({"get_account_status": "1", "passthrough":{"dispatch_to":"Cashier"}});
       }
     };
 
     return {
-        lock_withdrawal: lock_withdrawal
+        lock_withdrawal: lock_withdrawal,
+        check_withdrawal_locked: check_withdrawal_locked
     };
 }());
 
@@ -73495,10 +73501,8 @@ pjax_config_page("/cashier", function(){
         onLoad: function() {
           if (!/\/cashier\.html/.test(window.location.pathname) || !page.client.is_logged_in) {
             return;
-          } else if (sessionStorage.getItem('withdrawal_locked') === 'locked') {
-            Cashier.lock_withdrawal('locked');
-          } else if (!sessionStorage.getItem('withdrawal_locked')) {
-            BinarySocket.send({"get_account_status": "1", "passthrough":{"dispatch_to":"Cashier"}});
+          } else {
+            Cashier.check_withdrawal_locked();
           }
         }
     };
@@ -73509,10 +73513,8 @@ pjax_config_page("/cashier/payment_methods", function(){
         onLoad: function() {
           if (!page.client.is_logged_in || page.client.is_virtual()) {
             return;
-          } else if (sessionStorage.getItem('withdrawal_locked') === 'locked') {
-            Cashier.lock_withdrawal('locked');
-          } else if (!sessionStorage.getItem('withdrawal_locked')) {
-            BinarySocket.send({"get_account_status": "1", "passthrough":{"dispatch_to":"Cashier"}});
+          } else {
+            Cashier.check_withdrawal_locked();
           }
         }
     };
@@ -73541,10 +73543,10 @@ pjax_config_page("/cashier/payment_methods", function(){
     var cashier_type;
     if (/withdraw/.test(window.location.hash)) {
       cashier_type = 'withdraw';
-      document.getElementById('deposit-withdraw-heading').innerHTML = 'Withdraw';
+      document.getElementById('deposit-withdraw-heading').innerHTML = text.localize('Withdraw');
     } else if (/deposit/.test(window.location.hash)) {
       cashier_type = 'deposit';
-      document.getElementById('deposit-withdraw-heading').innerHTML = 'Deposit';
+      document.getElementById('deposit-withdraw-heading').innerHTML = text.localize('Deposit');
     }
     return cashier_type;
   }
@@ -73559,16 +73561,24 @@ pjax_config_page("/cashier/payment_methods", function(){
     $('#ukgc-funds-protection').hide();
     $('#deposit-withdraw-error').hide();
   }
-  function showError(error) {
+  function showError(error, id) {
     hideAll();
-    document.getElementById('deposit-withdraw-error').innerHTML = error || text.localize('Sorry, an error occurred while processing your request.');
+    $('#deposit-withdraw-error .error_messages').hide();
+    if (id) {
+      $('#deposit-withdraw-error #' + id).show();
+    } else {
+      $('#custom-error').html(error || text.localize('Sorry, an error occurred while processing your request.')).show();
+    }
     $('#deposit-withdraw-error').show();
+  }
+  function showMessage(id) {
+    $('#deposit-withdraw-message .messages').hide();
+    $('#deposit-withdraw-message #' + id).show();
+    $('#deposit-withdraw-message').show();
   }
   function lock_withdrawal(withdrawal_locked) {
     if (withdrawal_locked === 'locked') {
-      showError(text.localize('Withdrawal is locked, please [_1] for more information.')
-                    .replace('[_1]', '<a href="' + page.url.url_for('/contact') + '">' +
-                                     text.localize('contact us') + '</a>'));
+      showError('', 'withdrawal-locked-error');
     } else {
       BinarySocket.send({"cashier_password": "1"});
     }
@@ -73579,6 +73589,7 @@ pjax_config_page("/cashier/payment_methods", function(){
     getCashierURL: getCashierURL,
     hideAll: hideAll,
     showError: showError,
+    showMessage: showMessage,
     lock_withdrawal: lock_withdrawal
   };
 })();
@@ -73602,19 +73613,18 @@ pjax_config_page_require_auth("cashier/forwardws", function() {
                   if (type === 'cashier_password' && !error){
                     ForwardWS.init();
                     if (response.cashier_password === 1) {
-                      document.getElementById('deposit-withdraw-message').innerHTML = text.localize('Your cashier is locked as per your request - to unlock it, please click [_1]here')
-                                                                                          .replace('[_1]', '<a href="' + page.url.url_for('user/settings/securityws') + '">') + '.</a>';
+                      ForwardWS.showMessage('cashier-locked-message');
                     } else {
                       var cashier_type = ForwardWS.getCashierType();
                       if (cashier_type === 'withdraw') {
                         BinarySocket.send({'verify_email': TUser.get().email, 'type': 'payment_withdraw'});
-                        document.getElementById('deposit-withdraw-message').innerHTML = text.localize('For added security, please check your email to retrieve the verification token.');
+                        ForwardWS.showMessage('check-email-message');
                         $('#withdraw-form').show();
                       } else if (cashier_type === 'deposit') {
                         if (TUser.get().currency !== "") {
                           ForwardWS.getCashierURL();
                         } else {
-                          document.getElementById('deposit-withdraw-message').innerHTML = text.localize('Please choose which currency you would like to transact in.');
+                          ForwardWS.showMessage('choose-currency-message');
                           $('#currency-form').show();
                         }
                       }
@@ -73623,24 +73633,20 @@ pjax_config_page_require_auth("cashier/forwardws", function() {
                     ForwardWS.showError(error.message);
                   } else if (type === 'cashier' && !error) {
                     ForwardWS.hideAll();
-                    document.getElementById('deposit-withdraw-message').innerHTML = '';
+                    $('#deposit-withdraw-message').hide();
                     $('#deposit-withdraw-iframe-container iframe').attr('src', response.cashier);
                     $('#deposit-withdraw-iframe-container').show();
                   } else if (type === 'cashier' && error) {
                     ForwardWS.hideAll();
-                    document.getElementById('deposit-withdraw-message').innerHTML = '';
+                    $('#deposit-withdraw-message').hide();
                     if (error.code && error.code === 'ASK_TNC_APPROVAL') {
                       window.location.href = page.url.url_for('user/tnc_approvalws');
                     } else if (error.code && error.code === 'ASK_FIX_ADDRESS') {
-                      document.getElementById('deposit-withdraw-message').innerHTML = text.localize('There was a problem validating your personal details. Please fix the fields [_1]here')
-                                                                                          .replace('[_1]', '<a href="' + page.url.url_for('user/settings/detailsws') + '">') + '.</a> ' +
-                                                                                          text.localize('If you need assistance feel free to contact our [_1]Customer Support')
-                                                                                          .replace('[_1]', '<a href="' + page.url.url_for('contact') + '">') + '.</a>';
+                      ForwardWS.showMessage('personal-details-message');
                     } else if (error.code && error.code === 'ASK_UK_FUNDS_PROTECTION') {
                       $('#ukgc-funds-protection').show();
                     } else if (error.code && error.code === 'ASK_AUTHENTICATE') {
-                      document.getElementById('deposit-withdraw-message').innerHTML = text.localize('Your account is not fully authenticated. Please visit the <a href="[_1]">authentication</a> page for more information.')
-                                                                                          .replace('[_1]', page.url.url_for('user/authenticatews'));
+                      ForwardWS.showMessage('not-authenticated-message');
                     } else {
                         ForwardWS.showError(error.message);
                     }
@@ -73836,6 +73842,7 @@ pjax_config_page("payment_agent_listws", function() {
         viewIDs,
         fieldIDs,
         errorClass,
+        hiddenClass,
         $views;
 
     var formData,
@@ -73849,6 +73856,7 @@ pjax_config_page("payment_agent_listws", function() {
         containerID = '#paymentagent_withdrawal';
         $views      = $(containerID + ' .viewItem');
         errorClass  = 'errorfield';
+        hiddenClass = 'hidden';
         viewIDs = {
             error   : '#viewError',
             success : '#viewSuccess',
@@ -73865,7 +73873,7 @@ pjax_config_page("payment_agent_listws", function() {
         minAmount = 10;
         maxAmount = 2000;
 
-        $views.addClass('hidden');
+        $views.addClass(hiddenClass);
 
         if(page.client.is_virtual()) { // Virtual Account
             showPageError(text.localize('You are not authorized for withdrawal via payment agent.'));
@@ -74067,12 +74075,14 @@ pjax_config_page("payment_agent_listws", function() {
     // -----------------------------
     // ----- Message Functions -----
     // -----------------------------
-    var showPageError = function(errMsg, noticeMsg) {
-        setActiveView(viewIDs.error);
-        $(viewIDs.error + ' > p').html(errMsg);
-        if (noticeMsg) {
-          $(viewIDs.error).append($('<p/>', {html: noticeMsg}));
+    var showPageError = function(errMsg, id) {
+        $(viewIDs.error + ' > p').addClass(hiddenClass);
+        if(id) {
+            $(viewIDs.error + ' #' + id).removeClass(hiddenClass);
+        } else {
+            $(viewIDs.error + ' #custom-error').html(errMsg).removeClass(hiddenClass);
         }
+        setActiveView(viewIDs.error);
     };
 
     var showError = function(fieldID, errMsg) {
@@ -74086,15 +74096,13 @@ pjax_config_page("payment_agent_listws", function() {
 
     // ----- View Control -----
     var setActiveView = function(viewID) {
-        $views.addClass('hidden');
-        $(viewID).removeClass('hidden');
+        $views.addClass(hiddenClass);
+        $(viewID).removeClass(hiddenClass);
     };
 
     var lock_withdrawal = function(withdrawal_locked) {
       if (withdrawal_locked === 'locked') {
-        showPageError(text.localize('Withdrawal is locked, please [_1] for more information.')
-                          .replace('[_1]', '<a href="' + page.url.url_for('/contact') + '">' +
-                                            text.localize('contact us') + '</a>'));
+        showPageError('', 'withdrawal-locked-error');
       } else if (!page.client.is_virtual()) {
         BinarySocket.send({"paymentagent_list": $.cookie('residence')});
       }
@@ -78388,6 +78396,7 @@ var TradingEvents = (function () {
             }));
             $('#duration_amount').on('change', debounce(function (e) {
                 // using Defaults, to update the value by datepicker if it was emptied by keyboard (delete)
+                page.contents.tooltip.hide_tooltip();
                 Durations.validateMinDurationAmount();
                 if(inputEventTriggered === false || !Defaults.get('duration_amount'))
                     triggerOnDurationChange(e);
@@ -78429,6 +78438,7 @@ var TradingEvents = (function () {
             // need to use jquery as datepicker is used, if we switch to some other
             // datepicker we can move back to javascript
             $('#expiry_date').on('change input', function () {
+                page.contents.tooltip.hide_tooltip();
                 Durations.selectEndDate(this.value);
             });
         }
@@ -78436,6 +78446,7 @@ var TradingEvents = (function () {
         var endTimeElement = document.getElementById('expiry_time');
         if (endTimeElement) {
             $('#expiry_time').on('change input', function () {
+                page.contents.tooltip.hide_tooltip();
                 Durations.setTime(endTimeElement.value);
                 processPriceRequest();
             });
@@ -78622,7 +78633,6 @@ var TradingEvents = (function () {
 
             predictionElement.addEventListener('change', debounce( function (e) {
                 Defaults.set('prediction', e.target.value);
-                page.contents.tooltip.hide_tooltip();
                 processPriceRequest();
                 submitForm(document.getElementById('websocket_form'));
             }));
@@ -79459,6 +79469,7 @@ function processForgetPriceStream() {
 function processPriceRequest() {
     'use strict';
 
+    page.contents.tooltip.hide_tooltip();
     Price.incrFormId();
     processForgetProposals();
     processForgetPriceStream();
@@ -79608,7 +79619,7 @@ var Purchase = (function () {
             container.style.display = 'block';
             message_container.hide();
             confirmation_error.show();
-            confirmation_error.innerHTML = (/ClientUnwelcome/.test(error.code) ? error['message'] + '<a href="' + page.url.url_for('user/authenticatews') + '"> ' + text.localize('Authorise your account.' + '</a>') : error['message']);
+            confirmation_error.innerHTML = (/ClientUnwelcome/.test(error.code) ? error['message'] + '<a class="pjaxload" href="' + page.url.url_for('user/authenticatews') + '"> ' + text.localize('Authorise your account.' + '</a>') : error['message']);
         } else {
             var guideBtn = document.getElementById('guideBtn');
             if(guideBtn) {
@@ -80608,15 +80619,7 @@ WSTickDisplay.updateChart = function(data, contract) {
     onLoad: function() {
       Content.populate();
       function show_error(error) {
-        message.innerHTML = '<div class="errorbox rbox" id="client_message" style="display:block">' +
-                              '<div class="rbox-wrap">' +
-                                '<div class="grd-grid-12 rbox-content" id="client_message_content">' +
-                                  '<p class="center notice-msg">' +
-                                    error +
-                                  '</p>' +
-                                '</div>' +
-                              '</div>' +
-                            '</div>';
+        $('#error_message').removeClass('invisible').text(error);
       }
       function check_virtual() {
         if (page.client.is_virtual()) {
@@ -80633,22 +80636,9 @@ WSTickDisplay.updateChart = function(data, contract) {
               var error = response.error;
               if (response.msg_type === 'get_account_status' && !check_virtual() && !error){
                 if ($.inArray('authenticated', response.get_account_status.status) > -1) {
-                  message.innerHTML = '<p>' +
-                                        text.localize('Your account is fully authenticated. You can view your [_1]trading limits here').replace('[_1]', '<a class="pjaxload" href="' + page.url.url_for('user/settings/limitsws') + '">') + '</a>.' +
-                                      '</p>';
+                  $('#fully-authenticated').removeClass('invisible');
                 } else {
-                  message.innerHTML = '<p>' +
-                                        text.localize('To authenticate your account, kindly email the following to [_1]').replace('[_1]', '<a href="mailto:support@binary.com">support@binary.com</a>') +
-                                      '</p>' +
-                                      '<p>' +
-                                        text.localize('- A scanned copy of your passport, driving licence (provisional or full) or identity card, showing your name and date of birth.') +
-                                      '</p>' +
-                                      '<p>' +
-                                        text.localize('and') +
-                                      '</p>' +
-                                      '<p>' +
-                                        text.localize('- A scanned copy of a utility bill or bank statement (no more than 3 months old).') +
-                                      '</p>';
+                  $('#not-authenticated').removeClass('invisible');
                 }
               } else if (error) {
                 show_error(error.message);
@@ -85756,11 +85746,10 @@ var ProfitTableUI = (function(){
         $('#tnc-loading').addClass(hiddenClass);
         $('#tnc_image').attr('src', page.url.url_for_static('images/pages/cashier/protection-icon.svg'));
         $('#tnc_approval').removeClass(hiddenClass);
-        $('#tnc-message').html(
-            text.localize('[_1] has updated its [_2]. By clicking OK, you confirm that you have read and accepted the updated [_2].')
-                .replace('[_1]', page.client.get_storage_value('landing_company_name'))
-                .replace(/\[_2\]/g, $('<a/>', {class: 'pjaxload', href: page.url.url_for('terms-and-conditions'), text: text.localize('Terms & Conditions')}).prop('outerHTML'))
-        );
+        var tnc_message = $('#tnc-message').html()
+            .replace('[_1]', page.client.get_storage_value('landing_company_name'))
+            .replace(/\[_2\]/g, page.url.url_for('terms-and-conditions'));
+        $('#tnc-message').html(tnc_message).removeClass(hiddenClass);
         $('#btn-accept').text(text.localize('OK'));
     };
 
