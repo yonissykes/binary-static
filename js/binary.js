@@ -83526,7 +83526,7 @@ pjax_config_page_require_auth("user/settings/securityws", function() {
     //receive means receive from ws service
     //consume means consume by UI and displayed to page
 
-    var batchSize = 100;
+    var batchSize = 200;
     var chunkSize = batchSize/2;
 
     var noMoreData = false;
