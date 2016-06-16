@@ -73149,7 +73149,79 @@ if (typeof trackJs !== 'undefined') trackJs.configure(window._trackJs);
         }
     };
 });
-;pjax_config_page('/open-positions', function() {
+;var JobDetails = (function() {
+    var dept, depts, sections;
+
+    function showSelectedDiv() {
+        if ($('.job-details').find('#title').text() === '') {
+            init();
+        } else {
+            $('.sections div').hide();
+            $('.sections div[id=' + dept + '-' + page.url.location.hash.substring(1) + ']').show();
+            $('.title-sections').html($('.sidebar li[class="selected"]').text());
+            if (dept === 'Information_Technology' && page.url.location.hash.substring(1) === 'section-three') {
+              $('.senior_perl_message').removeClass('invisible');
+            } else if (!$('.senior_perl_message').hasClass('invisible')) {
+              $('.senior_perl_message').addClass('invisible');
+            }
+        }
+    }
+
+    function check_url() {
+        var replace_dept, replace_section;
+        if (!dept || $.inArray(dept, depts) === -1) {
+            replace_dept = '?dept=Information_Technology';
+        }
+        if (!page.url.location.hash || $.inArray(page.url.location.hash.substring(1), sections) === -1) {
+            replace_section = '#section-one';
+        }
+        if (replace_dept || replace_section) {
+            window.location = replace_dept && replace_section ? page.url.url_for('open-positions/job-details') + replace_dept + replace_section :
+                              replace_dept ? page.url.url_for('open-positions/job-details') + replace_dept + page.url.location.hash :
+                              page.url.url_for('open-positions/job-details') + '?dept=' + dept + replace_section;
+            return false;
+        }
+        return true;
+    }
+
+    function init() {
+        dept = page.url.params_hash().dept;
+        depts = ['Information_Technology', 'Quality_Assurance', 'Quantitative_Analysis', 'Marketing', 'Accounting', 'Compliance', 'Customer_Support', 'Human_Resources', 'Administrator', 'Internal_Audit'];
+        sections = ['section-one', 'section-two', 'section-three', 'section-four', 'section-five', 'section-six', 'section-seven', 'section-eight'];
+        if (check_url()) {
+            $('.job-details').find('#title').html(text.localize(dept.replace(/_/g, ' ')));
+            var deptImage = $('.dept-image'),
+                sourceImage = deptImage.attr('src').replace('Information_Technology', dept);
+            deptImage.attr('src', sourceImage)
+                     .show();
+            var deptContent = $('#content-' + dept + ' div'),
+                section;
+            $('#sidebar-nav li').slice(deptContent.length).hide();
+            for (i = 0; i < deptContent.length; i++) {
+                section = $('#' + dept + '-' + sections[i]);
+                section.insertAfter('.sections div:last-child');
+                if (section.attr('class')) {
+                    $('#sidebar-nav a[href="#' + sections[i] + '"]').html(text.localize(section.attr('class').replace(/_/g, ' ')));
+                }
+            }
+            $('.sidebar').show();
+            if ($('.sidebar li:visible').length === 1) {
+                $('.sidebar').hide();
+            }
+            $('#' + page.url.location.hash.substring(9)).addClass('selected');
+            showSelectedDiv();
+            $('#back-button').attr('href', page.url.url_for('open-positions') + '#' + dept);
+        }
+    }
+
+    return {
+        showSelectedDiv: showSelectedDiv,
+        check_url: check_url,
+        init: init
+    };
+})();
+
+pjax_config_page('/open-positions', function() {
   return {
       onLoad: function() {
         if (document.getElementById('Information_Technology')) {
@@ -73163,48 +73235,20 @@ if (typeof trackJs !== 'undefined') trackJs.configure(window._trackJs);
 pjax_config_page('/open-positions/job-details', function() {
     return {
         onLoad: function() {
-          var dept = page.url.params_hash().dept,
-              sidebarListItem = $('#sidebar-nav li');
-          function showSelectedDiv() {
-            $('.sections div').hide();
-            $('.sections div[id=' + dept + '-' + page.url.location.hash.substring(1) + ']').show();
-            $('.title-sections').html($('.sidebar li[class="selected"]').text());
-            if (dept === 'Information_Technology' && page.url.location.hash.substring(1) === 'section-three') {
-              $('.senior_perl_message').removeClass('invisible');
-            } else if (!$('.senior_perl_message').hasClass('invisible')) {
-              $('.senior_perl_message').addClass('invisible');
-            }
-          }
-          $(window).on('hashchange', function(){
-            showSelectedDiv();
-          });
-          $('.job-details').find('#title').html(text.localize(dept.replace(/_/g, ' ')));
-          var deptImage = $('.dept-image'),
-              sourceImage = deptImage.attr('src').replace('Information_Technology', dept);
-          deptImage.attr('src', sourceImage)
-                   .show();
-          var deptContent = $('#content-' + dept + ' div');
-          var section,
-              sections = ['section-one', 'section-two', 'section-three', 'section-four', 'section-five', 'section-six', 'section-seven', 'section-eight'];
-          sidebarListItem.slice(deptContent.length).hide();
-          for (i = 0; i < deptContent.length; i++) {
-              section = $('#' + dept + '-' + sections[i]);
-              section.insertAfter('.sections div:last-child');
-              if (section.attr('class')) {
-                $('#sidebar-nav a[href="#' + sections[i] + '"]').html(text.localize(section.attr('class').replace(/_/g, ' ')));
-              }
-          }
-          $('.sidebar').show();
-          if ($('.sidebar li:visible').length === 1) {
-            $('.sidebar').hide();
-          }
-          $('#' + page.url.location.hash.substring(9)).addClass('selected');
-          showSelectedDiv();
-          $('#back-button').attr('href', page.url.url_for('open-positions') + '#' + dept);
-          sidebarListItem.click(function(e) {
-            sidebarListItem.removeClass('selected');
-            $(this).addClass('selected');
-          });
+            var sidebarListItem = $('#sidebar-nav li');
+
+            JobDetails.init();
+
+            sidebarListItem.click(function(e) {
+                sidebarListItem.removeClass('selected');
+                $(this).addClass('selected');
+            });
+
+            $(window).on('hashchange', function(){
+                if (JobDetails.check_url()) {
+                    JobDetails.showSelectedDiv();
+                }
+            });
         }
     };
 });
@@ -73629,7 +73673,7 @@ pjax_config_page_require_auth("account/account_transferws", function() {
     var lock_withdrawal = function(withdrawal_locked) {
       if (withdrawal_locked === 'locked') {
         $.each($('.withdraw'), function(){
-          $a = $(this).parent();
+          var $a = $(this).parent();
           // use replaceWith, to disable previously catched pjax event
           $a.replaceWith($('<a/>', {class: $a.attr('class').replace('pjaxload') + ' button-disabled', html: $a.html()}));
         });
@@ -74761,6 +74805,7 @@ function BinarySocketClass() {
         authorized = false,
         timeouts = {},
         req_number = 0,
+        wrongAppId = 0,
         socketUrl = getSocketURL() + '?app_id=' + getAppId() + (page.language() ? '&l=' + page.language() : '');
 
     var clearTimeouts = function(){
@@ -74819,6 +74864,9 @@ function BinarySocketClass() {
     };
 
     var init = function (es) {
+        if(wrongAppId === getAppId()) {
+            return;
+        }
         if(!es){
             events = {};
         }
@@ -74885,8 +74933,9 @@ function BinarySocketClass() {
                         }
                         LocalStore.set('reality_check.ack', 0);
                         page.client.send_logout_request(isActiveTab);
-                    }
-                    else {
+                    } else if (response.authorize.loginid !== page.client.loginid) {
+                        page.client.send_logout_request(true);
+                    } else {
                         authorized = true;
                         if(typeof events.onauth === 'function'){
                             events.onauth();
@@ -75014,6 +75063,9 @@ function BinarySocketClass() {
                           type !== 'paymentagent_withdraw' &&
                           type !== 'cashier') {
                             page.client.send_logout_request();
+                      } else if (response.error.code === 'InvalidAppID') {
+                          wrongAppId = getAppId();
+                          alert(response.error.message);
                       }
                     }
                 }
@@ -75027,7 +75079,7 @@ function BinarySocketClass() {
             authorized = false;
             clearTimeouts();
 
-            if(!manualClosed){
+            if(!manualClosed && wrongAppId !== getAppId()) {
                 init(1);
             }
             if(typeof events.onclose === 'function'){

@@ -1327,12 +1327,6 @@ abbr {
   background: url("../images/pages/home/banner-background_1.png") no-repeat;
   background-size: 100% 108%;
 }
-.home-content .xtopseparator {
-  border: 0;
-  height: 2px;
-  background-image: linear-gradient(to right, transparent, rgba(68, 72, 76, 0.5), transparent);
-  display: block !important;
-}
 .home-content #verify-email-form #open-account {
   background: #e98024;
 }
@@ -1343,7 +1337,7 @@ abbr {
   padding: 8px !important;
   font-size: 14px;
 }
-.home-content #verify-email-form input#emailc {
+.home-content #verify-email-form input#email {
   height: 3em;
   width: 55%;
 }
@@ -1396,7 +1390,7 @@ abbr {
 }
 .home-content #xsection1 {
   padding: 0;
-  display: inline-block;
+  display: block;
 }
 .home-content #xsection1 ul li {
   padding-left: 10px;
@@ -2846,7 +2840,7 @@ table .loss, table .lower {
   background-color: #f2f2f2;
 }
 .api_token table tr.new {
-  background-color: #dedede;
+  background-color: rgba(46, 136, 54, 0.2);
 }
 .api_token fieldset {
   border-bottom: 1px solid #dedede;

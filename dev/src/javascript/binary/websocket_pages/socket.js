@@ -20,6 +20,7 @@ function BinarySocketClass() {
         authorized = false,
         timeouts = {},
         req_number = 0,
+        wrongAppId = 0,
         socketUrl = getSocketURL() + '?app_id=' + getAppId() + (page.language() ? '&l=' + page.language() : '');
 
     var clearTimeouts = function(){
@@ -78,6 +79,9 @@ function BinarySocketClass() {
     };
 
     var init = function (es) {
+        if(wrongAppId === getAppId()) {
+            return;
+        }
         if(!es){
             events = {};
         }
@@ -144,8 +148,9 @@ function BinarySocketClass() {
                         }
                         LocalStore.set('reality_check.ack', 0);
                         page.client.send_logout_request(isActiveTab);
-                    }
-                    else {
+                    } else if (response.authorize.loginid !== page.client.loginid) {
+                        page.client.send_logout_request(true);
+                    } else {
                         authorized = true;
                         if(typeof events.onauth === 'function'){
                             events.onauth();
@@ -273,6 +278,9 @@ function BinarySocketClass() {
                           type !== 'paymentagent_withdraw' &&
                           type !== 'cashier') {
                             page.client.send_logout_request();
+                      } else if (response.error.code === 'InvalidAppID') {
+                          wrongAppId = getAppId();
+                          alert(response.error.message);
                       }
                     }
                 }
@@ -286,7 +294,7 @@ function BinarySocketClass() {
             authorized = false;
             clearTimeouts();
 
-            if(!manualClosed){
+            if(!manualClosed && wrongAppId !== getAppId()) {
                 init(1);
             }
             if(typeof events.onclose === 'function'){
