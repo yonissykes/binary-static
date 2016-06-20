@@ -69696,115 +69696,9 @@ Header.prototype = {
     },
 };
 
-var ToolTip = function() {
-    this.tooltip = $('#tooltip');
-
-    if (this.tooltip.length === 0) {
-        this.tooltip = $('<div id="tooltip"></div>');
-        this.tooltip.css('display', 'none')
-            .appendTo('body');
-    }
-
-    this.showing = {};
-    var that = this;
-    $(window).resize(function() { that.resize_tooltip(); });
-};
-
-ToolTip.prototype = {
-    attach: function() {
-        var that = this;
-        this.detach();
-
-        var targets = $( '[rel~=tooltip]' ),
-            target  = false,
-            tip     = false,
-            title   = false;
-
-        targets.on('mouseenter', function(e) {
-            tip = $(this).attr( 'title' ) || $(this).attr('data-title');
-
-            if( !tip || tip === '' )
-                return false;
-
-            that.showing.target = $(this);
-            that.showing.tip = tip;
-
-            that.showing.target.removeAttr( 'title' )
-                               .removeAttr( 'data-title' );
-
-            that.tooltip.html(tip);
-            that.resize_tooltip();
-            that.reposition_tooltip_for(that.showing.target);
-            that.show_tooltip($(this));
-        });
-
-        targets.on('mouseleave', function() {
-            if(that.showing.target && !that.showing.target.attr('data-title')) {
-                that.showing.target.attr( 'data-title', that.showing.tip );
-            }
-            that.hide_tooltip();
-        });
-
-        targets.on('click', function() {
-            if(that.showing.target && !that.showing.target.attr('data-title')) {
-                that.showing.target.attr( 'title', that.showing.tip );
-            }
-            that.hide_tooltip();
-        });
-    },
-    detach: function() {
-        $( '[rel~=tooltip]' ).off('mouseenter');
-        $( '[rel~=tooltip]' ).off('mouseleave');
-        this.tooltip.off('click');
-    },
-    show_tooltip: function(target) {
-        this.tooltip.css({ display: ''});
-        this.tooltip.zIndex(target.zIndex() + 100);
-    },
-    hide_tooltip: function(tooltip) {
-        this.tooltip.html("");
-        this.tooltip.css({ top: 0, left: 0, display: 'none'});
-        this.tooltip.addClass('invisible');
-    },
-    resize_tooltip: function() {
-        if( $( window ).width() < this.tooltip.outerWidth() * 1.5 )
-            this.tooltip.css( 'max-width', $( window ).width() / 2 );
-        else
-            this.tooltip.css( 'max-width', 340 );
-    },
-    reposition_tooltip_for: function(target) {
-        this.tooltip.removeClass('invisible');
-
-        var pos_left = target.offset().left + ( target.outerWidth() / 2 ) - ( this.tooltip.outerWidth() / 2 ),
-            pos_top = target.offset().top - (this.tooltip.outerHeight() + 10);
-
-        this.tooltip.removeClass( 'left' );
-        this.tooltip.removeClass( 'right' );
-        this.tooltip.removeClass( 'top' );
-
-        if( pos_left < 0 ) {
-            pos_left = target.offset().left + target.outerWidth() / 2 - 20;
-            this.tooltip.addClass( 'left' );
-        }
-
-        if( pos_left + this.tooltip.outerWidth() > $( window ).width() ) {
-            pos_left = target.offset().left - this.tooltip.outerWidth() + target.outerWidth() / 2 + 20;
-            this.tooltip.addClass( 'right' );
-        }
-
-        if( pos_top < 0 ) {
-            pos_top  = target.offset().top + target.outerHeight() + 20;
-            this.tooltip.addClass( 'top' );
-        }
-
-        this.tooltip.css( { left: pos_left, top: pos_top} );
-    },
-};
-
 var Contents = function(client, user) {
     this.client = client;
     this.user = user;
-    this.tooltip = new ToolTip();
 };
 
 Contents.prototype = {
@@ -69812,11 +69706,9 @@ Contents.prototype = {
         this.activate_by_client_type();
         this.topbar_message_visibility();
         this.update_content_class();
-        this.tooltip.attach();
         this.init_draggable();
     },
     on_unload: function() {
-        this.tooltip.detach();
         if ($('.unbind_later').length > 0) {
             $('.unbind_later').off();
         }
@@ -70631,12 +70523,7 @@ function showLocalTimeOnHover(s) {
 
         var localTimeStr = localTime.format('YYYY-MM-DD HH:mm:ss ZZ');
 
-        var timeToShow = localTimeStr.replace(' ', '\n');
-        var tooltip = $('<span></span>', { class: 'tooltip-content', text: timeToShow });
-        $(ele)
-            .children('.tooltip-content')
-            .remove();
-        $(ele).append(tooltip);
+        $(ele).attr('data-balloon', localTimeStr);
     });
 }
 
@@ -71888,7 +71775,7 @@ $(function() {
 });
 
 var $buoop = {
-  vs: {i:10, f:39, o:30, s:5, c:39},
+  vs: {i:11, f:39, o:30, s:5, c:39},
   l: page.language().toLowerCase(),
   url: 'https://whatbrowser.org/'
 };
@@ -72653,8 +72540,6 @@ function testPassword(passwd)
   }
 
   function passwordStrong(password, error){
-    var tooltipPassword = document.getElementById('tooltip-password');
-    tooltipPassword.setAttribute('style', 'display:none');
     if (testPassword(password)[0] < 20) {
       displayErrorMessage(error);
       return errorCounter++;
@@ -77528,7 +77413,7 @@ function isJapanTrading(){
         var minDurationTooltip = document.getElementById('duration_tooltip');
         if (minDurationTooltip) {
             minDurationTooltip.textContent = localize.textMinDuration;
-            minDurationTooltip.setAttribute('title', localize.textMinDurationTooltip);
+            minDurationTooltip.setAttribute('data-balloon', localize.textMinDurationTooltip);
         }
 
         var spotLabel = document.getElementById('spot_label');
@@ -77539,7 +77424,7 @@ function isJapanTrading(){
         var barrierTooltip = document.getElementById('barrier_tooltip');
         if (barrierTooltip) {
             barrierTooltip.textContent = localize.textBarrierOffset;
-            barrierTooltip.setAttribute('title', localize.textBarrierOffsetTooltip);
+            barrierTooltip.setAttribute('data-balloon', localize.textBarrierOffsetTooltip);
         }
 
         var barrierSpan = document.getElementById('barrier_span');
@@ -77550,7 +77435,7 @@ function isJapanTrading(){
         var barrierHighTooltip = document.getElementById('barrier_high_tooltip');
         if (barrierHighTooltip) {
             barrierHighTooltip.textContent = localize.textHighBarrierOffset;
-            barrierHighTooltip.setAttribute('title', localize.textBarrierOffsetTooltip);
+            barrierHighTooltip.setAttribute('data-balloon', localize.textBarrierOffsetTooltip);
         }
         var barrierHighSpan = document.getElementById('barrier_high_span');
         if (barrierHighSpan) {
@@ -77560,7 +77445,7 @@ function isJapanTrading(){
         var barrierLowTooltip = document.getElementById('barrier_low_tooltip');
         if (barrierLowTooltip) {
             barrierLowTooltip.textContent = localize.textLowBarrierOffset;
-            barrierLowTooltip.setAttribute('title', localize.textBarrierOffsetTooltip);
+            barrierLowTooltip.setAttribute('data-balloon', localize.textBarrierOffsetTooltip);
         }
         var barrierLowSpan = document.getElementById('barrier_low_span');
         if (barrierLowSpan) {
@@ -77634,17 +77519,17 @@ function isJapanTrading(){
 
         var indicative_barrier_tooltip = document.getElementById('indicative_barrier_tooltip');
         if (indicative_barrier_tooltip) {
-            indicative_barrier_tooltip.setAttribute('title', localize.textIndicativeBarrierTooltip);
+            indicative_barrier_tooltip.setAttribute('data-balloon', localize.textIndicativeBarrierTooltip);
         }
 
         var indicative_high_barrier_tooltip = document.getElementById('indicative_high_barrier_tooltip');
         if (indicative_high_barrier_tooltip) {
-            indicative_high_barrier_tooltip.setAttribute('title', localize.textIndicativeBarrierTooltip);
+            indicative_high_barrier_tooltip.setAttribute('data-balloon', localize.textIndicativeBarrierTooltip);
         }
 
         var indicative_low_barrier_tooltip = document.getElementById('indicative_low_barrier_tooltip');
         if (indicative_low_barrier_tooltip) {
-            indicative_low_barrier_tooltip.setAttribute('title', localize.textIndicativeBarrierTooltip);
+            indicative_low_barrier_tooltip.setAttribute('data-balloon', localize.textIndicativeBarrierTooltip);
         }
 
         var jpbarrier_label = document.getElementById('jbarrier_label');
@@ -78620,7 +78505,6 @@ var TradingEvents = (function () {
             }));
             $('#duration_amount').on('change', debounce(function (e) {
                 // using Defaults, to update the value by datepicker if it was emptied by keyboard (delete)
-                page.contents.tooltip.hide_tooltip();
                 Durations.validateMinDurationAmount();
                 if(inputEventTriggered === false || !Defaults.get('duration_amount'))
                     triggerOnDurationChange(e);
@@ -78662,7 +78546,6 @@ var TradingEvents = (function () {
             // need to use jquery as datepicker is used, if we switch to some other
             // datepicker we can move back to javascript
             $('#expiry_date').on('change input', function () {
-                page.contents.tooltip.hide_tooltip();
                 Durations.selectEndDate(this.value);
             });
         }
@@ -78670,7 +78553,6 @@ var TradingEvents = (function () {
         var endTimeElement = document.getElementById('expiry_time');
         if (endTimeElement) {
             $('#expiry_time').on('change input', function () {
-                page.contents.tooltip.hide_tooltip();
                 Durations.setTime(endTimeElement.value);
                 processPriceRequest();
             });
@@ -79316,13 +79198,9 @@ var Price = (function() {
                 }
 
                 if (extraInfo['longcode'] && window.innerWidth > 500) {
-                  extraInfo['longcode'] = extraInfo['longcode'].replace(/[\d\,]+\.\d\d/, function(x) {
-                      return '<b>' + x + '</b>';
-                  });
-                  description.setAttribute('data-title', extraInfo['longcode']);
-                  page.contents.tooltip.attach();
+                  description.setAttribute('data-balloon', extraInfo['longcode']);
                 } else {
-                  description.removeAttribute('data-title');
+                  description.removeAttribute('data-balloon');
                 }
             }
 
@@ -79349,13 +79227,9 @@ var Price = (function() {
             }
 
             if (proposal && proposal['longcode'] && window.innerWidth > 500) {
-                proposal['longcode'] = proposal['longcode'].replace(/[\d\,]+\.\d\d/, function(x) {
-                    return '<b>' + x + '</b>';
-                });
-                description.setAttribute('data-title', proposal['longcode']);
-                page.contents.tooltip.attach();
+                description.setAttribute('data-balloon', proposal['longcode']);
             } else {
-              description.removeAttribute('data-title');
+              description.removeAttribute('data-balloon');
             }
 
             purchase.show();
@@ -79675,7 +79549,6 @@ function processForgetProposals() {
 function processPriceRequest() {
     'use strict';
 
-    page.contents.tooltip.hide_tooltip();
     Price.incrFormId();
     processForgetProposals();
     showPriceOverlay();
@@ -83064,18 +82937,18 @@ pjax_config_page_require_auth("user/settings/assessmentws", function() {
             limit[1].textContent = Content.localize().textLimit + " (" + currency + ")";
         }
         $('#max-open-position').prepend(Content.localize().textMaxOpenPosition);
-        document.getElementById('max-open-position-tooltip').setAttribute('title', Content.localize().textMaxOpenPositionTooltip);
+        document.getElementById('max-open-position-tooltip').setAttribute('data-balloon', Content.localize().textMaxOpenPositionTooltip);
         document.getElementById('open-positions').textContent = open_positions;
 
         $('#max-acc-balance').prepend(Content.localize().textMaxAccBalance);
-        document.getElementById('max-acc-balance-tooltip').setAttribute('title', Content.localize().textMaxAccBalanceTooltip);
+        document.getElementById('max-acc-balance-tooltip').setAttribute('data-balloon', Content.localize().textMaxAccBalanceTooltip);
         document.getElementById('account-balance').textContent = account_balance;
 
         $('#max-daily-turnover').prepend(Content.localize().textMaxDailyTurnover);
-        document.getElementById('max-daily-turnover-tooltip').setAttribute('title', Content.localize().textMaxDailyTurnoverTooltip);
+        document.getElementById('max-daily-turnover-tooltip').setAttribute('data-balloon', Content.localize().textMaxDailyTurnoverTooltip);
 
         $('#max-aggregate').prepend(Content.localize().textMaxAggregate);
-        document.getElementById('max-aggregate-tooltip').setAttribute('title', Content.localize().textMaxAggregateTooltip);
+        document.getElementById('max-aggregate-tooltip').setAttribute('data-balloon', Content.localize().textMaxAggregateTooltip);
         document.getElementById('payout').textContent = payout;
 
         if (marketSpecific && Object.keys(marketSpecific).length > 0) {
