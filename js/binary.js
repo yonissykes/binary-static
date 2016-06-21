@@ -70521,7 +70521,7 @@ function showLocalTimeOnHover(s) {
             return;
         }
 
-        var localTimeStr = localTime.format('YYYY-MM-DD HH:mm:ss ZZ');
+        var localTimeStr = localTime.format('YYYY-MM-DD HH:mm:ss Z');
 
         $(ele).attr('data-balloon', localTimeStr);
     });
@@ -70549,9 +70549,9 @@ function toJapanTimeIfNeeded(gmtTimeStr, showTimeZone, longcode){
     }
 
     if(curr === 'JPY'){
-        timeStr = time.zone("+09:00").format('YYYY-MM-DD HH:mm:ss' + (showTimeZone && showTimeZone !== '' ? ' ZZ' : ''));
+        timeStr = time.zone("+09:00").format('YYYY-MM-DD HH:mm:ss' + (showTimeZone && showTimeZone !== '' ? ' Z' : ''));
     } else {
-        timeStr = time.zone("+00:00").format('YYYY-MM-DD HH:mm:ss' + (showTimeZone && showTimeZone !== '' ? ' ZZ' : ''));
+        timeStr = time.zone("+00:00").format('YYYY-MM-DD HH:mm:ss' + (showTimeZone && showTimeZone !== '' ? ' Z' : ''));
     }
 
     return (longcode ? longcode.replace(match[0], timeStr) : timeStr);
@@ -71775,7 +71775,7 @@ $(function() {
 });
 
 var $buoop = {
-  vs: {i:11, f:39, o:30, s:5, c:39},
+  vs: {i:10, f:39, o:30, s:5, c:39},
   l: page.language().toLowerCase(),
   url: 'https://whatbrowser.org/'
 };
@@ -82390,8 +82390,12 @@ pjax_config_page_require_auth("api_tokenws", function() {
         var $viewButton = $viewButtonSpan.children(".button").first();
         $viewButton.text(text.localize("Revoke access"));
         $viewButton.on("click",function(){
-            ApplicationsData.revokeApplication(data.app_id);
-            $row.css({ opacity: 0.5 });
+            if(window.confirm(
+                text.localize('Are you sure that you want to permanently revoke access to application') +
+                ': "' + $(this).parents('tr').find('td.name').text() + '"?')) {
+                    ApplicationsData.revokeApplication(data.app_id);
+                    $row.css({ opacity: 0.5 });
+            }
         });
         $row.children(".action").first().append($viewButtonSpan);
         return $row[0];
@@ -85332,15 +85336,15 @@ var ProfitTableUI = (function(){
 
         if (!(Math.floor(intervalMinute) == intervalMinute && $.isNumeric(intervalMinute))) {
             var shouldBeInteger = text.localize('Interval should be integer.');
-            $('p.error-msg').text(shouldBeInteger);
-            $('p.error-msg').removeClass(hiddenClass);
+            $('#rc-err').text(shouldBeInteger);
+            $('#rc-err').removeClass(hiddenClass);
             return;
         }
 
         if (intervalMinute < 10 || intervalMinute > 120) {
             var minimumValueMsg = Content.errorMessage('number_should_between', '10 to 120');
-            $('p.error-msg').text(minimumValueMsg);
-            $('p.error-msg').removeClass(hiddenClass);
+            $('#rc-err').text(minimumValueMsg);
+            $('#rc-err').removeClass(hiddenClass);
             return;
         }
 
