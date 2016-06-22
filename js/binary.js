@@ -77092,7 +77092,7 @@ function marketOrder(market){
             random_index:    19,
             random_daily:    20,
             random_nightly:  21
-    }; 
+    };
     return order[market];
 }
 
@@ -77111,6 +77111,7 @@ function marketSort(a,b){
 function displayTooltip(market, symbol){
     'use strict';
     var tip = document.getElementById('symbol_tip'),
+        notice = document.getElementById('notice-message-forex'),
         guide = document.getElementById('guideBtn'),
         app = document.getElementById('androidApp'),
         appstore = document.getElementById('appstore');
@@ -77139,6 +77140,11 @@ function displayTooltip(market, symbol){
     if (market.match(/^smart_fx/) || symbol.match(/^WLD/)){
         tip.show();
         tip.setAttribute('target', page.url.url_for('/get-started/smart-indices', '#world-fx-indices'));
+    }
+    if (market.match(/^forex/) || market.match(/^major_pairs/) || market.match(/^minor_pairs/) || market.match(/^smart_fx/)) {
+        notice.show();
+    } else {
+        notice.hide();
     }
 }
 
