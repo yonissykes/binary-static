@@ -81340,9 +81340,7 @@ pjax_config_page_require_auth("user/portfoliows", function() {
         onUnload: PortfolioWS.onUnload,
     };
 });
-;
-
-pjax_config_page_require_auth("user/profit_table", function(){
+;pjax_config_page_require_auth("user/profit_table", function(){
     return {
         onLoad: function() {
             BinarySocket.init({
@@ -81366,8 +81364,7 @@ pjax_config_page_require_auth("user/profit_table", function(){
         }
     };
 });
-;
-var ProfitTableData = (function(){
+;var ProfitTableData = (function(){
     function getProfitTable(opts){
         var req = {profit_table: 1, description: 1};
         if(opts){
@@ -81380,10 +81377,10 @@ var ProfitTableData = (function(){
     return {
         getProfitTable: getProfitTable
     };
-}());;
-var ProfitTableWS = (function () {
-    var batchSize = 100;
-    var chunkSize = batchSize/2;
+}());
+;var ProfitTableWS = (function () {
+    var batchSize = 100,
+        chunkSize = batchSize/2;
 
     var transactionsReceived = 0;
     var transactionsConsumed = 0;
@@ -81485,6 +81482,13 @@ var ProfitTableWS = (function () {
 
 
     function init(){
+        batchSize = 100;
+        chunkSize = batchSize/2;
+        transactionsReceived = 0;
+        transactionsConsumed = 0;
+        noMoreData = false;
+        pending = false;
+        currentBatch = [];
         getNextBatchTransactions();
         onScrollLoad();
     }
@@ -81495,17 +81499,17 @@ var ProfitTableWS = (function () {
         clean: initTable
     };
 }());
-;
-var ProfitTableUI = (function(){
+;var ProfitTableUI = (function(){
     "use strict";
 
     var profitTableID = "profit-table";
-    var cols = ["buy-date", "ref", "contract", "buy-price", "sell-date", "sell-price", "pl", "details"];
+    var cols = ["buy-date", "ref", "payout", "contract", "buy-price", "sell-date", "sell-price", "pl", "details"];
 
     function createEmptyTable(){
         var header = [
             Content.localize().textDate,
             Content.localize().textRef,
+            text.localize('Potential Payout'),
             Content.localize().textContract,
             Content.localize().textPurchasePrice,
             Content.localize().textSaleDate,
@@ -81514,9 +81518,9 @@ var ProfitTableUI = (function(){
             Content.localize().textDetails
         ];
 
-        header[6] = header[6] + (TUser.get().currency ? " (" + TUser.get().currency + ")" : "");
+        header[7] = header[7] + (TUser.get().currency ? " (" + TUser.get().currency + ")" : "");
 
-        var footer = [Content.localize().textTotalProfitLoss, "", "", "", "", "", "", ""];
+        var footer = [Content.localize().textTotalProfitLoss, "", "", "", "", "", "", "", ""];
 
         var data = [];
         var metadata = {
@@ -81570,6 +81574,7 @@ var ProfitTableUI = (function(){
         var sellDate = sellMoment.format("YYYY-MM-DD") + "\n" + sellMoment.format("HH:mm:ss") + ' GMT';
 
         var ref = transaction["transaction_id"];
+        var payout = Number(parseFloat(transaction["payout"])).toFixed(2);
         var buyPrice = Number(parseFloat(transaction["buy_price"])).toFixed(2);
         var sellPrice = Number(parseFloat(transaction["sell_price"])).toFixed(2);
 
@@ -81577,7 +81582,7 @@ var ProfitTableUI = (function(){
 
         var plType = (pl >= 0) ? "profit" : "loss";
 
-        var data = [buyDate, ref, '', buyPrice, sellDate, sellPrice, pl, ''];
+        var data = [buyDate, ref, payout, '', buyPrice, sellDate, sellPrice, pl, ''];
         var $row = Table.createFlexTableRow(data, cols, "data");
 
         $row.children(".buy-date").addClass("pre");
@@ -84957,279 +84962,6 @@ pjax_config_page_require_auth("user/my_accountws", function() {
 
     return {
         getDetails: getDetails
-    };
-}());
-;pjax_config_page_require_auth("user/profit_table", function(){
-    return {
-        onLoad: function() {
-            BinarySocket.init({
-                onmessage: function(msg){
-                    var response = JSON.parse(msg.data);
-
-                    if (response) {
-                        var type = response.msg_type;
-                        if (type === 'profit_table'){
-                            ProfitTableWS.profitTableHandler(response);
-                            showLocalTimeOnHover('td.buy-date,td.sell-date');
-                        }
-                    }
-                }
-            });
-            Content.populate();
-            ProfitTableWS.init();
-        },
-        onUnload: function(){
-            ProfitTableWS.clean();
-        }
-    };
-});
-;
-var ProfitTableData = (function(){
-    function getProfitTable(opts){
-        var req = {profit_table: 1, description: 1};
-        if(opts){
-            $.extend(true, req, opts);
-        }
-
-        BinarySocket.send(req);
-    }
-
-    return {
-        getProfitTable: getProfitTable
-    };
-}());;
-var ProfitTableWS = (function () {
-    var batchSize = 100;
-    var chunkSize = batchSize/2;
-
-    var transactionsReceived = 0;
-    var transactionsConsumed = 0;
-    var noMoreData = false;
-    var pending = false;
-
-    var currentBatch = [];
-
-    var tableExist = function(){
-        return document.getElementById("profit-table");
-    };
-
-    var finishedConsumed = function(){
-        return transactionsConsumed === transactionsReceived;
-    };
-
-    function initTable(){
-        currentBatch = [];
-        transactionsConsumed = 0;
-        transactionsReceived = 0;
-        pending = false;
-
-        $(".error-msg").text("");
-
-        if (tableExist()) {
-            ProfitTableUI.cleanTableContent();
-        }
-    }
-
-    function profitTableHandler(response){
-
-        pending = false;
-        var profitTable = response.profit_table;
-        currentBatch = profitTable.transactions;
-        transactionsReceived += currentBatch.length;
-
-        if (currentBatch.length < batchSize) {
-            noMoreData = true;
-        }
-
-        if (!tableExist()) {
-            ProfitTableUI.createEmptyTable().appendTo("#profit-table-ws-container");
-            ProfitTableUI.updateProfitTable(getNextChunk());
-
-            // Show a message when the table is empty
-            if((transactionsReceived === 0) && (currentBatch.length === 0)) {
-                $('#profit-table tbody')
-                    .append($('<tr/>', {class: "flex-tr"})
-                        .append($('<td/>', {colspan: 8})
-                            .append($('<p/>', {class: "notice-msg center-text", text: text.localize("Your account has no trading activity.")})
-                            )
-                        )
-                    );
-            }
-
-            Content.profitTableTranslation();
-        }
-    }
-
-    function getNextBatchTransactions(){
-        ProfitTableData.getProfitTable({offset: transactionsReceived, limit: batchSize});
-        pending = true;
-    }
-
-    function getNextChunk(){
-        var chunk = currentBatch.splice(0, chunkSize);
-        transactionsConsumed += chunk.length;
-        return chunk;
-    }
-
-    function onScrollLoad(){
-        $(document).scroll(function(){
-            function hidableHeight(percentage){
-                var totalHidable = $(document).height() - $(window).height();
-                return Math.floor(totalHidable * percentage / 100);
-            }
-
-            var pFromTop = $(document).scrollTop();
-
-            if (!tableExist()){
-                return;
-            }
-
-            if (pFromTop < hidableHeight(50)) {
-                return;
-            }
-
-            if (finishedConsumed() && !noMoreData && !pending) {
-                getNextBatchTransactions();
-                return;
-            }
-
-            if (!finishedConsumed()) {
-                ProfitTableUI.updateProfitTable(getNextChunk());
-            }
-        });
-    }
-
-
-
-    function init(){
-        getNextBatchTransactions();
-        onScrollLoad();
-    }
-
-    return {
-        profitTableHandler: profitTableHandler,
-        init: init,
-        clean: initTable
-    };
-}());
-;
-var ProfitTableUI = (function(){
-    "use strict";
-
-    var profitTableID = "profit-table";
-    var cols = ["buy-date", "ref", "payout", "contract", "buy-price", "sell-date", "sell-price", "pl", "details"];
-
-    function createEmptyTable(){
-        var header = [
-            Content.localize().textDate,
-            Content.localize().textRef,
-            text.localize('Potential Payout'),
-            Content.localize().textContract,
-            Content.localize().textPurchasePrice,
-            Content.localize().textSaleDate,
-            Content.localize().textSalePrice,
-            Content.localize().textProfitLoss,
-            Content.localize().textDetails
-        ];
-
-        header[7] = header[7] + (TUser.get().currency ? " (" + TUser.get().currency + ")" : "");
-
-        var footer = [Content.localize().textTotalProfitLoss, "", "", "", "", "", "", "", ""];
-
-        var data = [];
-        var metadata = {
-            cols: cols,
-            id: profitTableID
-        };
-        var $tableContainer = Table.createFlexTable(data, metadata, header, footer);
-
-        var $pltotal = $tableContainer.
-            children("table").
-            children("tfoot").
-            children("tr").
-            attr("id", "pl-day-total");
-
-        return $tableContainer;
-    }
-
-    function updateProfitTable(transactions){
-        Table.appendTableBody(profitTableID, transactions, createProfitTableRow);
-        updateFooter(transactions);
-    }
-
-    function updateFooter(transactions){
-        var accTotal = document.querySelector("#pl-day-total > .pl").textContent;
-        accTotal = parseFloat(accTotal.replace(/,/g, ''));
-        if (isNaN(accTotal)) {
-            accTotal = 0;
-        }
-
-        var currentTotal = transactions.reduce(function(previous, current){
-            var buyPrice = Number(parseFloat(current["buy_price"]));
-            var sellPrice = Number(parseFloat(current["sell_price"]));
-            var pl = sellPrice - buyPrice;
-            return previous + pl;
-        }, 0);
-
-        var total = accTotal + currentTotal;
-
-        $("#pl-day-total > .pl").text(addComma(Number(total).toFixed(2)));
-
-        var subTotalType = (total >= 0 ) ? "profit" : "loss";
-        $("#pl-day-total > .pl").removeClass("profit").removeClass("loss");
-        $("#pl-day-total > .pl").addClass(subTotalType);
-    }
-
-    function createProfitTableRow(transaction){
-        var buyMoment = moment.utc(transaction["purchase_time"] * 1000);
-        var sellMoment = moment.utc(transaction["sell_time"] * 1000);
-
-        var buyDate = buyMoment.format("YYYY-MM-DD") + "\n" + buyMoment.format("HH:mm:ss") + ' GMT';
-        var sellDate = sellMoment.format("YYYY-MM-DD") + "\n" + sellMoment.format("HH:mm:ss") + ' GMT';
-
-        var ref = transaction["transaction_id"];
-        var payout = Number(parseFloat(transaction["payout"])).toFixed(2);
-        var buyPrice = Number(parseFloat(transaction["buy_price"])).toFixed(2);
-        var sellPrice = Number(parseFloat(transaction["sell_price"])).toFixed(2);
-
-        var pl = Number(sellPrice - buyPrice).toFixed(2);
-
-        var plType = (pl >= 0) ? "profit" : "loss";
-
-        var data = [buyDate, ref, payout, '', buyPrice, sellDate, sellPrice, pl, ''];
-        var $row = Table.createFlexTableRow(data, cols, "data");
-
-        $row.children(".buy-date").addClass("pre");
-        $row.children(".pl").addClass(plType);
-        $row.children(".sell-date").addClass("pre");
-        $row.children(".contract").html(transaction["longcode"] + "<br>");
-
-        //create view button and append
-        var $viewButtonSpan = Button.createBinaryStyledButton();
-        var $viewButton = $viewButtonSpan.children(".button").first();
-        $viewButton.text(text.localize("View"));
-        $viewButton.addClass("open_contract_detailsws");
-        $viewButton.attr("contract_id", transaction["contract_id"]);
-
-        $row.children(".contract,.details").append($viewButtonSpan);
-
-        return $row[0];
-    }
-
-    function initDatepicker(){
-        DatepickerUtil.initDatepicker("profit-table-date", moment.utc(), null, 0);
-    }
-
-    function clearTableContent(){
-        Table.clearTableBody(profitTableID);
-        $("#" + profitTableID + ">tfoot").hide();
-    }
-
-    return {
-        createEmptyTable: createEmptyTable,
-        updateProfitTable: updateProfitTable,
-        initDatepicker: initDatepicker,
-        cleanTableContent: clearTableContent
     };
 }());
 ;var RealityCheckData = (function () {
