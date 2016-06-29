@@ -71258,7 +71258,8 @@ var markets = new Markets(markets_list, markets_json);
             sticky_navigation();
 
             for (var i = 0; i < length; i++) {
-                if ($(window).scrollTop() === 0 || $(this).scrollTop() >= $('.section:eq(' + i + ')').offset().top - 5) {
+                var sectionOffset = $('.section:eq(' + i + ')').offset();
+                if ($(window).scrollTop() === 0 || (sectionOffset && $(this).scrollTop() >= sectionOffset.top - 5)) {
                     sidebar_nav.find('li').removeClass('selected');
 
                     if ($(window).scrollTop() === 0) {
@@ -73143,8 +73144,7 @@ pjax_config_page('/open-positions/job-details', function() {
 pjax_config_page('/why-us', function() {
     return {
         onLoad: function() {
-            var whyus = $('.why-us');
-            sidebar_scroll(whyus);
+            sidebar_scroll($('.why-us'));
             hide_if_logged_in();
         },
         onUnload: function() {
@@ -74859,7 +74859,7 @@ function BinarySocketClass() {
                     SessionDurationLimit.exclusionResponseHandler(response);
                 } else if (type === 'payout_currencies' && response.echo_req.hasOwnProperty('passthrough') && response.echo_req.passthrough.handler === 'page.client') {
                     page.client.response_payout_currencies(response);
-                } else if (type === 'get_settings') {
+                } else if (type === 'get_settings' && response.get_settings) {
                     if(!$.cookie('residence') && response.get_settings.country_code) {
                       page.client.set_cookie('residence', response.get_settings.country_code);
                       page.client.residence = response.get_settings.country_code;
@@ -74906,7 +74906,7 @@ function BinarySocketClass() {
                     } else {
                         RealityCheck.realityCheckWSHandler(response);
                     }
-                } else if (type === 'get_account_status') {
+                } else if (type === 'get_account_status' && response.get_account_status) {
                   if (response.get_account_status.risk_classification === 'high' && page.header.qualify_for_risk_classification()) {
                     send({get_financial_assessment: 1});
                   } else {
@@ -79405,7 +79405,7 @@ function processContract(contracts) {
 
     var contract_categories = Contract.contractForms();
     var formname;
-    if (Defaults.get('formname') && contract_categories[Defaults.get('formname')]) {
+    if (Defaults.get('formname') && contract_categories && contract_categories[Defaults.get('formname')]) {
         formname = Defaults.get('formname');
     } else {
         var tree = getContractCategoryTree(contract_categories);
@@ -79622,7 +79622,7 @@ function processTick(tick) {
 function processProposal(response) {
     'use strict';
     var form_id = Price.getFormId();
-    if(response.echo_req.passthrough.form_id===form_id){
+    if(response.echo_req && response.echo_req.passthrough.form_id===form_id){
         hideOverlayContainer();
         Price.display(response, Contract.contractType()[Contract.form()]);
         hidePriceOverlay();
@@ -79798,7 +79798,7 @@ var Purchase = (function () {
             return;
         }
 
-        var duration = purchase_data.echo_req.passthrough['duration'];
+        var duration = purchase_data.echo_req && purchase_data.echo_req.passthrough ? purchase_data.echo_req.passthrough['duration'] : null;
 
         if(!duration){
             return;
