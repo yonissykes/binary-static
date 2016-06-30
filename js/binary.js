@@ -68941,6 +68941,58 @@ var GTM = (function() {
         GTM.push_data_layer(data);
     };
 
+    var push_purchase_data = function(response) {
+        if (!gtm_applicable() || page.client.is_virtual()) return;
+        var req = response.echo_req,
+            buy = response.buy;
+        var data = {
+            'event'              : 'buy_contract',
+            'visitorId'          : page.client.loginid,
+            'bom_symbol'         : req.symbol,
+            'bom_market'         : markets && markets.by_symbol(req.symbol) ?
+                markets.by_symbol(req.symbol).market.name :
+                document.getElementById('contract_markets').value,
+            'bom_currency'       : req.currency,
+            'bom_contract_type'  : req.contract_type,
+            'bom_contract_id'    : buy.contract_id,
+            'bom_transaction_id' : buy.transaction_id,
+            'bom_buy_price'      : buy.buy_price,
+            'bom_payout'         : buy.payout,
+        };
+        // Spread contracts
+        if (/spread/i.test(req.contract_type)) {
+            $.extend(data, {
+                'bom_stop_type'         : req.stop_type,
+                'bom_amount_per_point'  : buy.amount_per_point,
+                'bom_stop_loss_level'   : buy.stop_loss_level,
+                'bom_stop_profit_level' : buy.stop_profit_level,
+            });
+        } else {
+            $.extend(data, {
+                'bom_amount'      : req.amount,
+                'bom_basis'       : req.basis,
+                'bom_expiry_type' : document.getElementById('expiry_type').value,
+            });
+            if(data.bom_expiry_type === 'duration') {
+                $.extend(data, {
+                    'bom_duration'      : req.duration,
+                    'bom_duration_unit' : req.duration_unit,
+                });
+            }
+            if(isVisible(document.getElementById('barrier'))) {
+                data['bom_barrier'] = req.barrier;
+            } else if(isVisible(document.getElementById('barrier_high'))) {
+                data['bom_barrier_high'] = req.barrier;
+                data['bom_barrier_low']  = req.barrier2;
+            }
+            if(isVisible(document.getElementById('prediction'))) {
+                data['bom_prediction']  = req.barrier;
+            }
+        }
+
+        GTM.push_data_layer(data);
+    };
+
     var set_login_flag = function() {
         if (!gtm_applicable()) return;
         localStorage.setItem('GTM_login', '1');
@@ -68954,6 +69006,7 @@ var GTM = (function() {
     return {
         push_data_layer     : push_data_layer,
         event_handler       : event_handler,
+        push_purchase_data  : push_purchase_data,
         set_login_flag      : set_login_flag,
         set_newaccount_flag : set_newaccount_flag,
     };
@@ -75933,11 +75986,11 @@ TradingAnalysis.tab_last_digitws = new TradingAnalysis.DigitInfoWS();
                   for (i = 0; i < response.history.times.length; i++) {
                       if (entry_tick_time && parseInt(response.history.times[i]) === parseInt(entry_tick_time)) {
                           // set the chart to display from the tick before entry_tick_time
-                          min_point = parseInt(response.history.times[i-1]);
+                          min_point = parseInt(response.history.times[(i === 0 ? i : i-1)]);
                           break;
-                      } else if (purchase_time && start_time > parseInt(purchase_time) && parseInt(response.history.times[i]) === parseInt(purchase_time) || (parseInt(response.history.times[i]) < parseInt(purchase_time) && parseInt(response.history.times[i+1]) > parseInt(purchase_time))) {
+                      } else if (purchase_time && start_time > parseInt(purchase_time) && parseInt(response.history.times[i]) === parseInt(purchase_time) || (parseInt(response.history.times[i]) < parseInt(purchase_time) && parseInt(response.history.times[(i === response.history.times.length - 1 ? i : i+1)]) > parseInt(purchase_time))) {
                           // set the chart to display from the tick before purchase_time
-                          min_point = parseInt(response.history.times[i-1]);
+                          min_point = parseInt(response.history.times[(i === 0 ? i : i-1)]);
                           break;
                       }
                   }
@@ -75951,11 +76004,11 @@ TradingAnalysis.tab_last_digitws = new TradingAnalysis.DigitInfoWS();
                   return;
                 }
                 for (i = 1; i < response.candles.length; i++) {
-                    if (entry_tick_time && response.candles[i] && parseInt(response.candles[i].epoch) <= parseInt(entry_tick_time) && response.candles[i+1].epoch > parseInt(entry_tick_time)) {
+                    if (entry_tick_time && response.candles[i] && parseInt(response.candles[i].epoch) <= parseInt(entry_tick_time) && response.candles[(i === response.candles.length - 1 ? i : i+1)].epoch > parseInt(entry_tick_time)) {
                         // set the chart to display from the candle before entry_tick_time
                         min_point = parseInt(response.candles[i-1].epoch);
                         break;
-                    } else if (purchase_time && response.candles[i] && parseInt(response.candles[i].epoch) <= parseInt(purchase_time) && response.candles[i+1].epoch > parseInt(purchase_time)) {
+                    } else if (purchase_time && response.candles[i] && parseInt(response.candles[i].epoch) <= parseInt(purchase_time) && response.candles[(i === response.candles.length - 1 ? i : i+1)].epoch > parseInt(purchase_time)) {
                         // set the chart to display from the candle before purchase_time
                         min_point = parseInt(response.candles[i-1].epoch);
                         break;
@@ -78657,7 +78710,8 @@ var TradingEvents = (function () {
 
             var params = {buy: id, price: askPrice, passthrough:{}};
             for(var attr in this.attributes){
-                if(attr && this.attributes[attr] && this.attributes[attr].name){
+                if(attr && this.attributes[attr] && this.attributes[attr].name &&
+                    !/data\-balloon/.test(this.attributes[attr].name)){ // do not send tooltip data
                     var m = this.attributes[attr].name.match(/data\-(.+)/);
 
                     if(m && m[1] && m[1]!=="purchase-id" && m[1]!=="passthrough"){
@@ -78946,6 +79000,7 @@ var Message = (function () {
                     PricingTable.processBuy(response);
                 }
                 Purchase.display(response);
+                GTM.push_purchase_data(response);
             } else if (type === 'tick') {
                 processTick(response);
             } else if (type === 'history') {
@@ -81148,8 +81203,9 @@ pjax_config_page_require_auth("user/change_password", function() {
         /**
          * Check for error
         **/
-        if("error" in data) {
-            throw new Error("Trying to get portfolio data, we got this error", data.error);
+        if(data.hasOwnProperty('error')) {
+            errorMessage(data.error.message);
+            return;
         }
 
         /**
@@ -81205,6 +81261,7 @@ pjax_config_page_require_auth("user/change_password", function() {
 
     var transactionResponseHandler = function(response) {
         if(response.hasOwnProperty('error')) {
+            errorMessage(response.error.message);
             return;
         }
 
@@ -81221,7 +81278,11 @@ pjax_config_page_require_auth("user/change_password", function() {
     };
 
     var updateIndicative = function(data) {
-        if(data.hasOwnProperty('error')) return;
+        if(data.hasOwnProperty('error')) {
+            errorMessage(data.error.message);
+            return;
+        }
+
         var proposal = data.proposal_open_contract;
         var $td = $("tr[data-contract_id='" + proposal.contract_id + "'] td.indicative");
         var old_indicative = $td.find('strong').text();
@@ -81287,6 +81348,15 @@ pjax_config_page_require_auth("user/change_password", function() {
             str = str.split(placeholder).join(text.localize(dTexts[i]));
         }
         return str;
+    };
+
+    var errorMessage = function(msg) {
+        var $err = $('#portfolio #err-msg');
+        if(msg) {
+            $err.removeClass('invisible').text(msg);
+        } else {
+            $err.addClass('invisible').text('');
+        }
     };
 
     var onLoad = function() {
@@ -81410,7 +81480,7 @@ pjax_config_page_require_auth("user/portfoliows", function() {
         transactionsReceived = 0;
         pending = false;
 
-        $(".error-msg").text("");
+        ProfitTableUI.errorMessage(null);
 
         if (tableExist()) {
             ProfitTableUI.cleanTableContent();
@@ -81418,6 +81488,10 @@ pjax_config_page_require_auth("user/portfoliows", function() {
     }
 
     function profitTableHandler(response){
+        if(response.hasOwnProperty('error')) {
+            ProfitTableUI.errorMessage(response.error.message);
+            return;
+        }
 
         pending = false;
         var profitTable = response.profit_table;
@@ -81618,11 +81692,21 @@ pjax_config_page_require_auth("user/portfoliows", function() {
         $("#" + profitTableID + ">tfoot").hide();
     }
 
+    function errorMessage(msg) {
+        var $err = $('#profit-table-ws-container #err-msg');
+        if(msg) {
+            $err.removeClass('invisible').text(msg);
+        } else {
+            $err.addClass('invisible').text('');
+        }
+    }
+
     return {
         createEmptyTable: createEmptyTable,
         updateProfitTable: updateProfitTable,
         initDatepicker: initDatepicker,
-        cleanTableContent: clearTableContent
+        cleanTableContent: clearTableContent,
+        errorMessage: errorMessage
     };
 }());
 ;var SelfExlusionWS = (function() {
@@ -83645,6 +83729,11 @@ pjax_config_page_require_auth("user/settings/securityws", function() {
     };
 
     function statementHandler(response){
+        if(response.hasOwnProperty('error')) {
+            StatementUI.errorMessage(response.error.message);
+            return;
+        }
+
         pending = false;
 
         var statement = response.statement;
@@ -83725,7 +83814,7 @@ pjax_config_page_require_auth("user/settings/securityws", function() {
         transactionsReceived = 0;
         transactionsConsumed = 0;
 
-        $(".error-msg").text("");
+        StatementUI.errorMessage(null);
 
         StatementUI.clearTableContent();
     }
@@ -83819,10 +83908,20 @@ pjax_config_page_require_auth("user/settings/securityws", function() {
         return $statementRow[0];        //return DOM instead of jquery object
     }
 
+    function errorMessage(msg) {
+        var $err = $('#statement-ws-container #err-msg');
+        if(msg) {
+            $err.removeClass('invisible').text(msg);
+        } else {
+            $err.addClass('invisible').text('');
+        }
+    }
+
     return {
         clearTableContent: clearTableContent,
         createEmptyStatementTable: createEmptyStatementTable,
-        updateStatementTable: updateStatementTable
+        updateStatementTable: updateStatementTable,
+        errorMessage: errorMessage
     };
 }());
 ;var TopUpVirtualWS = (function() {
@@ -86078,10 +86177,10 @@ pjax_config_page_require_auth("tnc_approvalws", function() {
               Highchart.show_chart(contract);
             }
             if (candleForgotten && tickForgotten) {
-              Highchart.show_chart(contract, 'update');
-              if (contract.entry_tick_time) {
-                chartStarted = true;
-              }
+                Highchart.show_chart(contract, 'update');
+                if (contract.entry_tick_time) {
+                    chartStarted = true;
+                }
             }
         } else if (contract.tick_count && !chartUpdated) {
             WSTickDisplay.updateChart('', contract);
