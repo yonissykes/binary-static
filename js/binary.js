@@ -68945,6 +68945,7 @@ var GTM = (function() {
         if (!gtm_applicable() || page.client.is_virtual()) return;
         var req = response.echo_req.passthrough,
             buy = response.buy;
+        if (!buy) return;
         var data = {
             'event'              : 'buy_contract',
             'visitorId'          : page.client.loginid,
@@ -76428,6 +76429,7 @@ TradingAnalysis.tab_last_digitws = new TradingAnalysis.DigitInfoWS();
  */
  function displayContractForms(id, elements, selected) {
      'use strict';
+     if (!id || !elements || !selected) return;
      var target = document.getElementById(id),
          fragment = document.createDocumentFragment(),
          len = elements.length;
@@ -77844,6 +77846,8 @@ var Contract = (function() {
                 }
             }
         });
+
+        if (Object.keys(tradeContractForms).length === 0) return;
 
         if (tradeContractForms.risefall || tradeContractForms.higherlower) {
             tradeContractForms['updown'] = Content.localize().textFormUpDown;
@@ -79712,7 +79716,7 @@ function processTick(tick) {
 function processProposal(response) {
     'use strict';
     var form_id = Price.getFormId();
-    if(response.echo_req && response.echo_req.passthrough.form_id===form_id){
+    if(response.echo_req && response.echo_req !== null && response.echo_req.passthrough.form_id===form_id){
         hideOverlayContainer();
         Price.display(response, Contract.contractType()[Contract.form()]);
         hidePriceOverlay();
@@ -87733,6 +87737,8 @@ pjax_config_page_require_auth("user/statement", function(){
                     }
                 }
             });
+
+            if (Object.keys(tradeContractForms).length === 0) return;
 
             if (tradeContractForms.risefall || tradeContractForms.higherlower) {
                 tradeContractForms['updown'] = Content.localize().textFormUpDown;
