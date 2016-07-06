@@ -4112,11 +4112,6 @@ div.kineticjs-content {
   overflow: initial;
 }
 
-@media (max-width: 600px) {
-  #profit-table-ws-container .flex-table-container, #statement-ws-container .flex-table-container {
-    overflow: auto;
-  }
-}
 .time_amount {
   width: 80%;
 }
@@ -4398,6 +4393,10 @@ body.PT h1, body.PT h2, body.PT h3, body.PT h4, body.PT h5, body.PT h6, body.RU 
 
   #header #menu-top li a.smaller-font, #header ul#menu-top.smaller-font {
     font-size: 80%;
+  }
+
+  .flex-table-container {
+    overflow-x: auto;
   }
 }
 @media screen and (max-width: 640px) {

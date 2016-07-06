@@ -69839,13 +69839,16 @@ Contents.prototype = {
             };
             var show_upgrade = function(url, msg) {
                 $upgrade_msg.removeClass(hiddenClass)
-                    .find('a').attr('href', page.url.url_for(url)).html($('<span/>', {text: text.localize(msg)}));
+                    .find('a').removeClass(hiddenClass)
+                        .attr('href', page.url.url_for(url)).html($('<span/>', {text: text.localize(msg)}));
             };
 
             if (page.client.is_virtual()) {
                 var show_upgrade_msg = true;
-                if (localStorage.getItem('jp_test_allowed')) {
+                var show_virtual_msg = true;
+                if (localStorage.getItem('jp_test_allowed') === "1") {
                     hide_upgrade();
+                    show_virtual_msg = false;
                     show_upgrade_msg = false; // do not show upgrade for user that filled up form
                 }
                 for (var i = 0; i < loginid_array.length; i++) {
@@ -69864,6 +69867,8 @@ Contents.prototype = {
                     } else {
                         show_upgrade('new_account/realws', 'Upgrade to a Real Account');
                     }
+                } else if (show_virtual_msg) {
+                    $upgrade_msg.removeClass(hiddenClass).find('> span').removeClass(hiddenClass);
                 }
             } else {
                 var show_financial = false;
@@ -69881,6 +69886,7 @@ Contents.prototype = {
                     }
                 }
                 if (show_financial) {
+                    $('#virtual-text').parent().addClass('invisible');
                     show_upgrade('new_account/maltainvestws', 'Open a Financial Account');
                 } else {
                     hide_upgrade();
@@ -71785,6 +71791,7 @@ function handle_residence_state_ws(){
 
 function generateState() {
     var state = document.getElementById('address-state');
+    if (state.length !== 0) return;
     appendTextValueChild(state, Content.localize().textSelect, '');
     if (page.client.residence !== "") {
       BinarySocket.send({ states_list: page.client.residence });
@@ -74329,37 +74336,22 @@ pjax_config_page_require_auth("paymentagent/withdrawws", function() {
         }
     };
 });
-;var AssetIndexWS = (function() {
+;var AssetIndexData = (function() {
     "use strict";
 
-    var $container,
-        $tabs,
-        $contents;
+    var initSocket = function() {
+        BinarySocket.init({
+            onmessage: function(msg) {
+                var response = JSON.parse(msg.data);
+                if (response) {
+                    AssetIndexData.responseHandler(response);
+                }
+            }
+        });
+    };
 
-    var activeSymbols,
-        assetIndex,
-        marketColumns,
-        idx;
-
-    var init = function() {
-        $container = $('#asset-index');
-        showLoadingImage($container);
-        marketColumns = {};
-        activeSymbols = null;
-        assetIndex = null;
-        // index of items in asset_index response
-        idx = {
-            symbol: 0,
-            displayName: 1,
-            cells : 2,
-                cellName: 0,
-                cellDisplayName: 1,
-                cellFrom: 2,
-                cellTo  : 3,
-            symInfo: 3,
-            values : 4
-        };
-
+    var sendRequest = function() {
+        initSocket();
         var $args = {
             active_symbols: "brief"
         };
@@ -74371,73 +74363,47 @@ pjax_config_page_require_auth("paymentagent/withdrawws", function() {
         BinarySocket.send({"asset_index": 1});
     };
 
-    var getActiveSymbols = function(response) {
-        activeSymbols = response.active_symbols;
-        if(assetIndex) {
-            populateTable();
+    var responseHandler = function(response) {
+        var msg_type = response.msg_type;
+        if (msg_type === "asset_index") {
+            AssetIndexUI.setAssetIndex(response);
+        }
+        else if (msg_type === "active_symbols") {
+            AssetIndexUI.setActiveSymbols(response);
         }
     };
 
-    var getAssetIndex = function(response) {
-        assetIndex = response.asset_index;
-        if(activeSymbols) {
-            populateTable();
-        }
+    return {
+        sendRequest: sendRequest,
+        responseHandler: responseHandler
     };
+}());
+;var AssetIndexUI = (function() {
+    "use strict";
 
-    // Search and Remove (to decrease the next search count)
-    var getSymbolInfo = function(qSymbol) {
-        return activeSymbols.filter(function(sy, id) {
-            if(sy.symbol === qSymbol) {
-                activeSymbols.splice(id, 1);
-                return true;
-            }
-        });
-    };
+    var $container,
+        $tabs,
+        $contents;
+    var activeSymbols,
+        assetIndex,
+        marketColumns;
 
-    /*
-     * This method generates headers for all tables of each market
-     * should include headers existed in all assets of each market and its submarkets
-     */
-    var organizeData = function() {
-        for(var i = 0; i < assetIndex.length; i++) {
-            var assetItem = assetIndex[i];
-            var symbolInfo = getSymbolInfo(assetItem[idx.symbol])[0];
-            if(!symbolInfo) {
-                continue;
-            }
-            var market = symbolInfo.market;
+    var init = function() {
+        Content.populate();
+        $container = $('#asset-index');
+        showLoadingImage($container);
+        activeSymbols = null;
+        assetIndex = null;
 
-            assetItem.push(symbolInfo);
-
-            // Generate market columns to use in all this market's submarket tables
-            if(!(market in marketColumns)) {
-                marketColumns[market] = {
-                    header : [''],
-                    columns: ['']
-                };
-            }
-
-            var assetCells = assetItem[idx.cells],
-                values = {};
-            for(var j = 0; j < assetCells.length; j++) {
-                var col  = assetCells[j][idx.cellName];
-
-                values[col] = assetCells[j][idx.cellFrom] + ' - ' + assetCells[j][idx.cellTo];
-
-                var marketCols = marketColumns[market];
-                if($.inArray(col, marketCols.columns) === -1) {
-                    marketCols.header.push(text.localize(assetCells[j][idx.cellDisplayName]));
-                    marketCols.columns.push(col);
-                }
-            }
-            assetItem.push(values);
-        }
+        AssetIndexData.sendRequest();
     };
 
     var populateTable = function() {
+        if(!activeSymbols || !assetIndex) return;
+
         $('#errorMsg').addClass('hidden');
-        organizeData();
+        assetIndex = AssetIndex.getAssetIndexData(assetIndex, activeSymbols);
+        marketColumns = AssetIndex.getMarketColumns();
 
         var isJapan = page.language().toLowerCase() === 'ja';
 
@@ -74446,7 +74412,7 @@ pjax_config_page_require_auth("paymentagent/withdrawws", function() {
 
         for(var i = 0; i < assetIndex.length; i++) {
             var assetItem  = assetIndex[i];
-            var symbolInfo = assetItem[idx.symInfo];
+            var symbolInfo = assetItem[3];
             if(!symbolInfo) {
                 continue;
             }
@@ -74495,7 +74461,7 @@ pjax_config_page_require_auth("paymentagent/withdrawws", function() {
             columns = ["asset"];
 
         var marketCols = marketColumns[symbolInfo.market],
-            assetCells = assetItem[idx.values];
+            assetCells = assetItem[4];
         for(var i = 1; i < marketCols.columns.length; i++) {
             var prop = marketCols.columns[i];
             if(prop.length > 0) {
@@ -74524,88 +74490,170 @@ pjax_config_page_require_auth("paymentagent/withdrawws", function() {
         return $submarketTable;
     };
 
-
     return {
         init: init,
-        getAssetIndex: getAssetIndex,
-        getActiveSymbols: getActiveSymbols
-    };
-}());
-
-
-
-pjax_config_page("asset_indexws", function() {
-    return {
-        onLoad: function() {
-            BinarySocket.init({
-                onmessage: function(msg) {
-                    var response = JSON.parse(msg.data);
-                    if (response) {
-                        if (response.msg_type === "asset_index") {
-                            AssetIndexWS.getAssetIndex(response);
-                        }
-                        else if (response.msg_type === "active_symbols") {
-                            AssetIndexWS.getActiveSymbols(response);
-                        }
-                    }
-                }
-            });
-
-            Content.populate();
-            AssetIndexWS.init();
+        setActiveSymbols: function(response) {
+            activeSymbols = response.active_symbols;
+            if(assetIndex) populateTable();
+        },
+        setAssetIndex: function(response) {
+            assetIndex = response.asset_index;
+            if(activeSymbols) populateTable();
         }
     };
-});
-;var MarketTimesWS = (function() {
+}());
+;var AssetIndex = (function() {
+    "use strict";
+
+    var marketColumns;
+
+    // Search and Remove (to decrease the next search count)
+    var getSymbolInfo = function(qSymbol, activeSymbols) {
+        return activeSymbols.filter(function(sy, id) {
+            if(sy.symbol === qSymbol) {
+                activeSymbols.splice(id, 1);
+                return true;
+            }
+        });
+    };
+
+    /*
+     * This method generates headers for all tables of each market
+     * should include headers existed in all assets of each market and its submarkets
+     */
+    var getAssetIndexData = function(assetIndex, activeSymbols) {
+        if(!assetIndex || !activeSymbols) return;
+
+        marketColumns = {};
+
+        // index of items in asset_index response
+        var idx = {
+            symbol: 0,
+            displayName: 1,
+            cells : 2,
+                cellName: 0,
+                cellDisplayName: 1,
+                cellFrom: 2,
+                cellTo  : 3,
+            symInfo: 3,
+            values : 4
+        };
+
+        for(var i = 0; i < assetIndex.length; i++) {
+            var assetItem = assetIndex[i];
+            var symbolInfo = getSymbolInfo(assetItem[idx.symbol], activeSymbols)[0];
+            if(!symbolInfo) {
+                continue;
+            }
+            var market = symbolInfo.market;
+
+            assetItem.push(symbolInfo);
+
+            // Generate market columns to use in all this market's submarket tables
+            if(!(market in marketColumns)) {
+                marketColumns[market] = {
+                    header : [''],
+                    columns: ['']
+                };
+            }
+
+            var assetCells = assetItem[idx.cells],
+                values = {};
+            for(var j = 0; j < assetCells.length; j++) {
+                var col  = assetCells[j][idx.cellName];
+
+                values[col] = assetCells[j][idx.cellFrom] + ' - ' + assetCells[j][idx.cellTo];
+
+                var marketCols = marketColumns[market];
+                if(marketCols.columns.indexOf(col) === -1) {
+                    marketCols.header.push(assetCells[j][idx.cellDisplayName]);
+                    marketCols.columns.push(col);
+                }
+            }
+            assetItem.push(values);
+        }
+        return assetIndex;
+    };
+
+    var external = {
+        getAssetIndexData: getAssetIndexData,
+        getMarketColumns: function() {return marketColumns;}
+    };
+    if (typeof module !== 'undefined') {
+        module.exports = external;
+    }
+    return external;
+}());
+;var MarketTimesData = (function() {
+    "use strict";
+
+    var initSocket = function() {
+        BinarySocket.init({
+            onmessage: function(msg) {
+                var response = JSON.parse(msg.data);
+                if (response) {
+                    MarketTimesData.responseHandler(response);
+                }
+            }
+        });
+    };
+
+    var sendRequest = function(date, shouldRequestActiveSymbols) {
+        initSocket();
+        if(shouldRequestActiveSymbols) {
+            BinarySocket.send({"active_symbols": "brief"});
+        }
+
+        BinarySocket.send({"trading_times": date || 'today'});
+    };
+
+    var responseHandler = function(response) {
+        var msg_type = response.msg_type;
+        if (msg_type === "trading_times") {
+            MarketTimesUI.setTradingTimes(response);
+        }
+        else if (msg_type === "active_symbols") {
+            MarketTimesUI.setActiveSymbols(response);
+        }
+    };
+
+    return {
+        sendRequest: sendRequest,
+        responseHandler: responseHandler
+    };
+}());
+;var MarketTimesUI = (function() {
     "use strict";
 
     var $date,
         $container;
-
     var columns,
         activeSymbols,
         tradingTimes;
 
-
     var init = function() {
+        Content.populate();
         $date      = $('#trading-date');
         $container = $('#trading-times');
         columns    = ['Asset', 'Opens', 'Closes', 'Settles', 'UpcomingEvents'];
         activeSymbols = null;
         tradingTimes = null;
         showLoadingImage($container);
-        BinarySocket.send({"active_symbols": "brief"});
-        sendRequest('today');
+        MarketTimesData.sendRequest('today', true);
 
         $date.val(moment.utc(new Date()).format('YYYY-MM-DD'));
         $date.datepicker({minDate: 0, maxDate: '+1y', dateFormat: 'yy-mm-dd', autoSize: true});
         $date.change(function() {
             $container.empty();
             showLoadingImage($container);
-            sendRequest();
+            tradingTimes = null;
+            MarketTimesData.sendRequest($date.val());
         });
     };
 
-    var sendRequest = function(date) {
-        tradingTimes = null;
-        BinarySocket.send({"trading_times": (date ? date : $date.val())});
-    };
-
-    var getActiveSymbols = function(response) {
-        activeSymbols = response.active_symbols;
-        if(tradingTimes) {
-            populateTable();
-        }
-    };
-
-    var getTradingTimes = function(response) {
-        tradingTimes = response.trading_times;
-        if(activeSymbols) {
-            populateTable();
-        }
-    };
-
     var populateTable = function() {
+        if(!activeSymbols || !tradingTimes) return;
+
         $('#errorMsg').addClass('hidden');
 
         var isJapanTrading = page.language().toLowerCase() === 'ja';
@@ -74644,10 +74692,10 @@ pjax_config_page("asset_indexws", function() {
         // submarkets of this market
         var submarkets = market.submarkets;
         for(var s = 0; s < submarkets.length; s++) {
-            // just show "Major Pairs" when the language is JA
+            // display only "Major Pairs" for Japan
             if(isJapanTrading) {
-                var symbolInfo = symbolSearch(submarkets[s].name);
-                if(symbolInfo.length > 0 && symbolInfo[0].submarket !== 'major_pairs') {
+                var submarketInfo = MarketTimes.getSubmarketInfo(activeSymbols, submarkets[s].name);
+                if(submarketInfo.length > 0 && submarketInfo[0].submarket !== 'major_pairs') {
                     continue;
                 }
             }
@@ -74695,12 +74743,6 @@ pjax_config_page("asset_indexws", function() {
         return $tableRow;
     };
 
-    var symbolSearch = function(submarketname) {
-        return activeSymbols.filter(function(sy) {
-            return sy.submarket_display_name === submarketname;
-        });
-    };
-
     var createEventsText = function(events) {
         var result = '';
         for(var i = 0; i < events.length; i++) {
@@ -74726,38 +74768,35 @@ pjax_config_page("asset_indexws", function() {
         return Table.createFlexTable([], metadata, header);
     };
 
-
     return {
         init: init,
-        getTradingTimes : getTradingTimes,
-        getActiveSymbols: getActiveSymbols
-    };
-}());
-
-
-
-pjax_config_page("market_timesws", function() {
-    return {
-        onLoad: function() {
-            BinarySocket.init({
-                onmessage: function(msg) {
-                    var response = JSON.parse(msg.data);
-                    if (response) {
-                        if (response.msg_type === "trading_times") {
-                            MarketTimesWS.getTradingTimes(response);
-                        }
-                        else if (response.msg_type === "active_symbols") {
-                            MarketTimesWS.getActiveSymbols(response);
-                        }
-                    }
-                }
-            });
-
-            Content.populate();
-            MarketTimesWS.init();
+        setActiveSymbols: function(response) {
+            activeSymbols = response.active_symbols;
+            if(tradingTimes) populateTable();
+        },
+        setTradingTimes: function(response) {
+            tradingTimes = response.trading_times;
+            if(activeSymbols) populateTable();
         }
     };
-});
+}());
+;var MarketTimes = (function() {
+    "use strict";
+
+    var getSubmarketInfo = function(activeSymbols, submarketDisplayName) {
+        return activeSymbols.filter(function(sy) {
+            return sy.submarket_display_name === submarketDisplayName;
+        });
+    };
+
+    var external = {
+        getSubmarketInfo: getSubmarketInfo,
+    };
+    if (typeof module !== 'undefined') {
+        module.exports = external;
+    }
+    return external;
+}());
 ;/*
  * It provides a abstraction layer over native javascript Websocket.
  *
@@ -86709,6 +86748,22 @@ pjax_config_page_require_auth("user/statement", function(){
         }
     };
 });
+
+pjax_config_page("resources/asset_indexws", function() {
+    return {
+        onLoad: function() {
+            AssetIndexUI.init();
+        }
+    };
+});
+
+pjax_config_page("resources/market_timesws", function() {
+    return {
+        onLoad: function() {
+            MarketTimesUI.init();
+        }
+    };
+});
 ;pjax_config_page_require_auth("new_account/knowledge_testws", function(){
     return {
         onLoad: function() {
@@ -87544,7 +87599,8 @@ pjax_config_page_require_auth("user/statement", function(){
 
         $topbarmsg.find('> span').removeClass('invisible');
         $topbarmsg.removeClass('invisible')
-            .find('a').attr('href', page.url.url_for('/new_account/knowledge_testws')).html($('<span/>', {text: text.localize('{JAPAN ONLY}Take knowledge test')}));
+            .find('a').removeClass('invisible')
+                .attr('href', page.url.url_for('/new_account/knowledge_testws')).html($('<span/>', {text: text.localize('{JAPAN ONLY}Take knowledge test')}));
     }
 
     return {
@@ -87556,7 +87612,6 @@ pjax_config_page_require_auth("user/statement", function(){
         createKnowledgeTestLink: createKnowledgeTestLink,
     };
 }());
-
 ;if (isJapanTrading()) {
     var Contract = (function() {
         'use strict';
