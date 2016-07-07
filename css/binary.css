@@ -2145,10 +2145,6 @@ table .loss, table .lower {
   margin-bottom: 40px;
 }
 
-#frmPersonalDetails .JpAcc, #frmPersonalDetails .hedge {
-  display: none;
-}
-
 .live_chart_wrapper {
   margin: 0 auto;
 }
@@ -2488,10 +2484,6 @@ table .loss, table .lower {
     padding-bottom: 0px;
     border: none;
   }
-}
-
-a.dynamic, span.dynamic, div.dynamic, p.dynamic, button.dynamic, table.dynamic {
-  display: none !important;
 }
 
 #portfolio td {
@@ -13565,6 +13557,7 @@ body {
   max-width: 960px;
   padding-right: 10px;
   padding-left: 10px;
+  box-sizing: border-box;
 }
 
 /*[class*="gr"] {
