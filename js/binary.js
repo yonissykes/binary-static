@@ -69387,7 +69387,7 @@ URL.prototype = {
         return params;
     },
     default_redirect_url: function() {
-        return this.url_for(page.language() === 'JA' ? 'jptrading' : 'trading');
+        return this.url_for(japanese_client() ? 'jptrading' : 'trading');
     },
 };
 
@@ -69406,7 +69406,7 @@ Menu.prototype = {
         this.hide_main_menu();
 
         var active = this.active_menu_top();
-        var trading = $('#menu-top li:eq(4)');
+        var trading = japanese_client() ? $('#main-navigation-jptrading') : $('#main-navigation-trading');
         if(active) {
             active.addClass('active');
             if(trading.is(active)) {
@@ -69777,7 +69777,8 @@ Contents.prototype = {
                 return;
             }
             if(!page.client.is_virtual()) {
-                $('.by_client_type.client_real').removeClass('invisible');
+                // control-class is a fake class, only used to counteract ja-hide class
+                $('.by_client_type.client_real').not((japanese_client() ? ".ja-hide" : ".control-class")).removeClass('invisible');
                 $('.by_client_type.client_real').show();
 
                 $('#topbar').addClass('dark-blue');
@@ -69959,6 +69960,7 @@ Page.prototype = {
             sessionStorage.removeItem('showLoginPage');
             Login.redirect_to_login();
         }
+        this.check_language();
     },
     on_unload: function() {
         this.header.on_unload();
@@ -70075,6 +70077,19 @@ Page.prototype = {
         };
         xhttp.open('GET', page.url.url_for_static() + 'version?' + Math.random().toString(36).slice(2), true);
         xhttp.send();
+    },
+    check_language: function() {
+        if (page.language() === 'ID') {
+          change_blog_link('id');
+        }
+        if (japanese_client()) {
+            $('.ja-hide').addClass('invisible');
+            $('.ja-show').attr('style', 'display: inline !important; visibility: visible;');
+            $('.ja-show-block').attr('style', 'display: inline-block !important; visibility: visible;');
+            $('.ja-no-padding').attr('style', 'padding-top: 0; padding-bottom: 0;');
+            $('#regulatory-text').removeClass('gr-9 gr-7-p')
+                                 .addClass('gr-12 gr-12-p');
+        }
     },
 };
 ;//For object shape coherence we create named objects to be inserted into the queue.
@@ -71631,7 +71646,7 @@ function generateBirthDate(country){
     var endYear = currentYear - 17;
     //years
     dropDownNumbers(year, startYear, endYear);
-    if ((country && country === 'jp') || page.language().toLowerCase() === 'ja') {
+    if (japanese_client()) {
       days.options[0].innerHTML = text.localize('Day');
       months.options[0].innerHTML = text.localize('Month');
       year.options[0].innerHTML = text.localize('Year');
@@ -71851,11 +71866,8 @@ function checkClientsCountry() {
   }
 }
 
-if (page.language() === 'ID') {
-  change_blog_link('id');
-} else if (page.language() === 'JA') {
-    $('#regulatory-text').removeClass('gr-9 gr-7-p')
-                         .addClass('gr-12 gr-12-p');
+function japanese_client() {
+    return (page.language().toLowerCase() === 'ja' || ($.cookie('residence') && $.cookie('residence') === 'jp') || localStorage.getItem('clients_country') === 'jp');
 }
 
 function change_blog_link(lang) {
@@ -73102,7 +73114,7 @@ if (typeof trackJs !== 'undefined') trackJs.configure(window._trackJs);
 ;pjax_config_page('/get-started-jp', function() {
     return {
         onLoad: function() {
-          if (page.language().toLowerCase() !== 'ja') {
+          if (!japanese_client()) {
             window.location.href = page.url.url_for('get-started');
           }
           var tab = window.location.hash;
@@ -73303,7 +73315,7 @@ pjax_config_page('/payment-agent', function() {
 pjax_config_page('/get-started', function() {
     return {
         onLoad: function() {
-            if (!/jp/.test(window.location.pathname) && page.language().toLowerCase() === 'ja') {
+            if (!/jp/.test(window.location.pathname) && japanese_client()) {
               window.location.href = page.url.url_for('get-started-jp');
             } else if (/jp/.test(window.location.pathname)) {
               return;
@@ -73330,6 +73342,9 @@ pjax_config_page('/contact', function() {
 pjax_config_page('/careers', function() {
     return {
         onLoad: function() {
+            if (japanese_client()) {
+                window.location.href = page.url.url_for('/');
+            }
             display_career_email();
         },
     };
@@ -73338,9 +73353,9 @@ pjax_config_page('/careers', function() {
 pjax_config_page('/terms-and-conditions', function() {
     return {
         onLoad: function() {
-            if (page.language() === 'JA' && /^jp/.test(window.location.pathname)) {
+            if (japanese_client() && !/jp/.test(window.location.pathname)) {
               window.location.href = page.url.url_for('terms-and-conditions-jp');
-            } else if (page.language() === 'EN' && /jp/.test(window.location.pathname)) {
+            } else if (!japanese_client() && /jp/.test(window.location.pathname)) {
               window.location.href = page.url.url_for('terms-and-conditions');
             }
             var selected_tab = page.url.params_hash().selected_tab;
@@ -73372,14 +73387,25 @@ pjax_config_page('/(jp)?trading', function () {
     };
 });
 
-var hide_payment_agents = function() {
-    var language = page.language();
-    if(language == 'JA') {
-        $('.payment_agent_methods').addClass('invisible');
-    }
-};
+pjax_config_page('/affiliate/signup', function() {
+    return {
+        onLoad: function() {
+            if (japanese_client()) {
+                window.location.href = page.url.url_for('user/my_accountws');
+            }
+        }
+    };
+});
 
-onLoad.queue_for_url(hide_payment_agents, 'cashier');
+pjax_config_page('/(us_patents|responsible-trading|partners)', function() {
+    return {
+        onLoad: function() {
+            if (japanese_client()) {
+                window.location.href = page.url.url_for('/');
+            }
+        }
+    };
+});
 ;var account_transferws = (function(){
     "use strict";
     var $form ;
@@ -73701,11 +73727,14 @@ pjax_config_page("/cashier", function(){
 pjax_config_page("/cashier/payment_methods", function(){
     return {
         onLoad: function() {
-          if (!page.client.is_logged_in || page.client.is_virtual()) {
-            return;
-          } else {
-            Cashier.check_withdrawal_locked();
-          }
+            if (japanese_client()) {
+                window.location.href = page.url.url_for('/');
+            }
+            if (!page.client.is_logged_in || page.client.is_virtual()) {
+                return;
+            } else {
+                Cashier.check_withdrawal_locked();
+            }
         }
     };
 });
@@ -74375,14 +74404,8 @@ pjax_config_page_require_auth("paymentagent/withdrawws", function() {
 
     var sendRequest = function() {
         initSocket();
-        var $args = {
-            active_symbols: "brief"
-        };
-        if (isJapanTrading()) {
-            $args['landing_company'] = "japan";
-        }
 
-        BinarySocket.send($args);
+        BinarySocket.send({"active_symbols": "brief"});
         BinarySocket.send({"asset_index": 1});
     };
 
@@ -74412,6 +74435,9 @@ pjax_config_page_require_auth("paymentagent/withdrawws", function() {
         marketColumns;
 
     var init = function() {
+        if (japanese_client()) {
+            window.location.href = page.url.url_for('resources');
+        }
         Content.populate();
         $container = $('#asset-index');
         showLoadingImage($container);
@@ -74427,10 +74453,7 @@ pjax_config_page_require_auth("paymentagent/withdrawws", function() {
         $('#errorMsg').addClass('hidden');
         assetIndex = AssetIndex.getAssetIndexData(assetIndex, activeSymbols);
         marketColumns = AssetIndex.getMarketColumns();
-
-        var isJapan = page.language().toLowerCase() === 'ja';
-
-        $tabs = $('<ul/>', {class: isJapan ? 'hidden' : ''});
+        $tabs = $('<ul/>');
         $contents = $('<div/>');
 
         for(var i = 0; i < assetIndex.length; i++) {
@@ -74439,12 +74462,6 @@ pjax_config_page_require_auth("paymentagent/withdrawws", function() {
             if(!symbolInfo) {
                 continue;
             }
-
-            // just show "Major Pairs" when the language is JA
-            if(isJapan && symbolInfo.submarket !== 'major_pairs') {
-                continue;
-            }
-
             var $submarketTable = getSubmarketTable(assetItem, symbolInfo);
             $submarketTable.find('tbody').append(createSubmarketTableRow(assetItem, symbolInfo));
         }
@@ -74679,7 +74696,7 @@ pjax_config_page_require_auth("paymentagent/withdrawws", function() {
 
         $('#errorMsg').addClass('hidden');
 
-        var isJapanTrading = page.language().toLowerCase() === 'ja';
+        var isJapanTrading = japanese_client();
 
         var markets = tradingTimes.markets;
 
@@ -80734,8 +80751,11 @@ WSTickDisplay.updateChart = function(data, contract) {
   var trading_page = 0;
 
   var onLoad = function(){
-    if(page.language() === 'JA' && /\/trading\.html/i.test(window.location.pathname)) {
+    if(japanese_client() && /\/trading\.html/i.test(window.location.pathname)) {
         window.location.href = page.url.url_for('jptrading');
+        return;
+    } else if (!japanese_client() && /jp/.test(window.location.pathname)) {
+        window.location.href = page.url.url_for('trading');
         return;
     }
     trading_page = 1;
@@ -80820,41 +80840,44 @@ WSTickDisplay.updateChart = function(data, contract) {
   };
 })();
 ;pjax_config_page_require_auth("user/authenticatews", function(){
-  return {
-    onLoad: function() {
-      Content.populate();
-      function show_error(error) {
-        $('#error_message').removeClass('invisible').text(error);
-      }
-      function check_virtual() {
-        if (page.client.is_virtual()) {
-          show_error(text.localize('This feature is not relevant to virtual-money accounts.'));
-        }
-        return page.client.is_virtual();
-      }
-      var message = document.getElementById('authentication-message');
-      if (!check_virtual()) {
-        BinarySocket.init({
-          onmessage: function(msg){
-            var response = JSON.parse(msg.data);
-            if (response) {
-              var error = response.error;
-              if (response.msg_type === 'get_account_status' && !check_virtual() && !error){
-                if ($.inArray('authenticated', response.get_account_status.status) > -1) {
-                  $('#fully-authenticated').removeClass('invisible');
-                } else {
-                  $('#not-authenticated').removeClass('invisible');
-                }
-              } else if (error) {
-                show_error(error.message);
-              }
+    return {
+        onLoad: function() {
+            if (japanese_client()) {
+                window.location.href = page.url.url_for('user/my_accountws');
             }
-          }
-        });
-        BinarySocket.send({'get_account_status': 1});
-      }
-    }
-  };
+            Content.populate();
+            function show_error(error) {
+                $('#error_message').removeClass('invisible').text(error);
+            }
+            function check_virtual() {
+                if (page.client.is_virtual()) {
+                    show_error(text.localize('This feature is not relevant to virtual-money accounts.'));
+                }
+                return page.client.is_virtual();
+            }
+            var message = document.getElementById('authentication-message');
+            if (!check_virtual()) {
+                BinarySocket.init({
+                    onmessage: function(msg){
+                        var response = JSON.parse(msg.data);
+                        if (response) {
+                            var error = response.error;
+                            if (response.msg_type === 'get_account_status' && !check_virtual() && !error){
+                                if ($.inArray('authenticated', response.get_account_status.status) > -1) {
+                                    $('#fully-authenticated').removeClass('invisible');
+                                } else {
+                                    $('#not-authenticated').removeClass('invisible');
+                                }
+                            } else if (error) {
+                                show_error(error.message);
+                            }
+                        }
+                    }
+                });
+                BinarySocket.send({'get_account_status': 1});
+            }
+        }
+    };
 });
 ;var PasswordWS = (function(){
 
@@ -82204,7 +82227,8 @@ pjax_config_page_require_auth("user/settings/self_exclusionws", function() {
             classReal   = '.real';
 
         if(!page.client.is_virtual()) {
-            $(classReal).removeClass(classHidden);
+            // control-class is a fake class, only used to counteract ja-hide class
+            $(classReal).not((japanese_client() ? ".ja-hide" : ".control-class")).removeClass(classHidden);
         }
         else {
             $(classReal).addClass(classHidden);
@@ -82525,6 +82549,10 @@ pjax_config_page_require_auth("settingsws", function() {
 pjax_config_page_require_auth("api_tokenws", function() {
     return {
         onLoad: function() {
+            if (japanese_client()) {
+                window.location.href = page.url.url_for('user/settingsws');
+            }
+
             BinarySocket.init({
                 onmessage: function(msg) {
                     var response = JSON.parse(msg.data);
@@ -82547,6 +82575,9 @@ pjax_config_page_require_auth("api_tokenws", function() {
 ;pjax_config_page_require_auth("user/settings/authorised_appsws", function(){
     return {
         onLoad: function() {
+            if (japanese_client()) {
+                window.location.href = page.url.url_for('user/settingsws');
+            }
             BinarySocket.init({
                 onmessage: function(msg){
                     var response = JSON.parse(msg.data);
@@ -82855,6 +82886,9 @@ pjax_config_page_require_auth("api_tokenws", function() {
 pjax_config_page_require_auth("user/settings/assessmentws", function() {
     return {
         onLoad: function() {
+            if (japanese_client()) {
+                window.location.href = page.url.url_for('user/settingsws');
+            }
             BinarySocket.init({
                 onmessage: function(msg) {
                     var response = JSON.parse(msg.data);
@@ -82871,17 +82905,11 @@ pjax_config_page_require_auth("user/settings/assessmentws", function() {
 ;pjax_config_page_require_auth("user/settings/iphistoryws", function(){
     return {
         onLoad: function() {
+            if (japanese_client()) {
+                window.location.href = page.url.url_for('user/settingsws');
+            }
             BinarySocket.init({
-                onmessage: function(msg){
-                    var response = JSON.parse(msg.data);
-
-                    if (response) {
-                        var type = response.msg_type;
-                        if (type === 'login_history'){
-                            IPHistory.responseHandler(response);
-                        }
-                    }
-                }
+                onmessage: IPHistory.responseHandler
             });
             Content.populate();
             IPHistory.init();
@@ -82891,151 +82919,7 @@ pjax_config_page_require_auth("user/settings/assessmentws", function() {
         }
     };
 });
-;var IPHistoryData = (function(){
-    "use strict";
-
-    function getHistory(limit){
-        var request = {login_history: 1};
-        if(limit){
-            $.extend(request,limit);
-        }
-        BinarySocket.send(request);
-    }
-
-    return{
-      getHistory: getHistory,
-    };
-}());
-;var IPHistory = (function(){
-    "use strict";
-
-    //Batch refer to number of data get from ws service per request
-    //chunk refer to number of data populate to ui for each append
-    //receive means receive from ws service
-    //consume means consume by UI and displayed to page
-
-    var batchSize = 50;
-    var chunkSize = batchSize/5;
-
-    var noMoreData = true;
-    var pending = false;            //serve as a lock to prevent ws request is sequential
-    var currentBatch = [];
-    var historyReceived = 0;
-    var historyConsumed = 0;
-
-    var tableExist = function(){
-        return document.getElementById("login-history-table");
-    };
-    var finishedConsumed = function(){
-        return historyConsumed === historyReceived;
-    };
-
-    function responseHandler(response){
-        if (response.hasOwnProperty('error') && response.error.message) {
-          document.getElementById('err').textContent = response.error.message;
-          return;
-        } else {
-          pending = false;
-
-          var login_history = response.login_history;
-          currentBatch = login_history;
-          historyReceived += currentBatch.length;
-
-          if (!tableExist()) {
-              IPHistoryUI.createEmptyTable().appendTo("#login_history-ws-container");
-              IPHistoryUI.updateTable(getNextChunk());
-
-              // Show a message when the table is empty
-              if ((historyReceived === 0) && (currentBatch.length === 0)) {
-                  $('#login-history-table tbody')
-                      .append($('<tr/>', {class: "flex-tr"})
-                          .append($('<td/>', {colspan: 6})
-                              .append($('<p/>', {class: "notice-msg center-text", text: text.localize("Your account has no Login/Logout activity.")})
-                              )
-                          )
-                      );
-              }
-
-              var titleElement = document.getElementById("login_history-title").firstElementChild;
-              titleElement.textContent = text.localize(titleElement.textContent);
-          }
-        }
-    }
-
-    function getNextBatch(){
-        IPHistoryData.getHistory({limit: 50});
-        pending = true;
-    }
-
-    function getNextChunk(){
-        var chunk = currentBatch.splice(0, chunkSize);
-        historyConsumed += chunk.length;
-        return chunk;
-    }
-
-
-    function loadChunkWhenScroll(){
-        $(document).scroll(function(){
-
-            function hidableHeight(percentage){
-                var totalHidable = $(document).height() - $(window).height();
-                return Math.floor(totalHidable * percentage / 100);
-            }
-
-            var pFromTop = $(document).scrollTop();
-
-            if (!tableExist()){
-                return;
-            }
-
-            if (pFromTop < hidableHeight(70)) {
-                return;
-            }
-
-            /*if (finishedConsumed() && !noMoreData && !pending) {
-                getNextBatchStatement();
-                return;
-            }*/
-
-            if (!finishedConsumed()){
-                IPHistoryUI.updateTable(getNextChunk());
-            }
-        });
-    }
-
-
-    function initTable(){
-        pending = false;
-        noMoreData = false;
-
-        currentBatch = [];
-
-        historyReceived = 0;
-        historyConsumed = 0;
-
-        $("#login_history-ws-container .error-msg").text("");
-
-        IPHistoryUI.clearTableContent();
-    }
-
-    function initPage(){
-        getNextBatch();
-        loadChunkWhenScroll();
-    }
-
-    function cleanPageState(){
-        initTable();
-    }
-
-    return {
-        init: initPage,
-        responseHandler: responseHandler,
-        clean: cleanPageState
-    };
-}());
-;var IPHistoryUI = (function(){
-    "use strict";
-
+;var IPHistoryData = (function() {
     function parse_ua(user_agent) {
         // Table of UA-values (and precedences) from:
         //  https://developer.mozilla.org/en-US/docs/Browser_detection_using_the_user_agent
@@ -83052,33 +82936,112 @@ pjax_config_page_require_auth("user/settings/assessmentws", function() {
             {name: 'IE',        regex: /trident\/\d+\.\d+;.*[rv:]+(\d+\.\d)/i},
             {name: 'Firefox',   regex: /firefox\/([\d\w\.\-]+)/i},
         ];
-        var name = 'Unknown';
-        var version = 'Unknown';
         for (var i = 0; i < lookup.length; i++) {
             var info = lookup[i];
             var match = user_agent.match(info.regex);
             if (match !== null) {
-                name = info.name;
-                version = match[1];
-                break;
+                return {
+                    name: info.name,
+                    version: match[1],
+                };
             }
         }
+        return null;
+    }
+
+    function parse(activity) {
+        var environ    = activity.environment;
+        var ip_addr    = environ.split(' ')[2].split('=')[1];
+        var user_agent = environ.match('User_AGENT=(.+) LANG')[1];
+        var browser    = parse_ua(user_agent);
         return {
-            name: name,
-            version: version,
+            time:    activity.time,
+            action:  activity.action,
+            success: activity.status === 1,
+            browser: parse_ua(user_agent),
+            ip_addr: ip_addr,
         };
     }
 
-    var tableID = "login-history-table",
-        columns = ["timestamp","action","browser","ip","status"];
+    var external = {
+        parse: parse,
+        parseUserAgent: parse_ua,
+    };
 
-    function createEmptyTable(){
+    if (typeof module !== 'undefined') {
+        module.exports = external;
+    }
+
+    return external;
+})();
+;var IPHistory = (function() {
+    'use strict';
+
+    function makeRequest() {
+        BinarySocket.send({login_history: 1, limit: 50});
+    }
+
+    function responseHandler(msg) {
+        var response = JSON.parse(msg.data);
+        if (!response || response.msg_type !== 'login_history') {
+            return;
+        }
+        if (response.error && response.error.message) {
+            return IPHistoryUI.displayError(response.error.message);
+        }
+        var parsed = response.login_history.map(IPHistoryData.parse);
+        IPHistoryUI.displayTable(parsed);
+    }
+
+    function init() {
+        IPHistoryUI.init();
+        makeRequest();
+    }
+
+    function clean() {
+        IPHistoryUI.clean();
+    }
+
+    return {
+        init: init,
+        clean: clean,
+        responseHandler: responseHandler,
+    };
+})();
+;var IPHistoryUI = (function() {
+    'use strict';
+
+    var tableID  = 'login-history-table';
+    var selector = '#' + tableID;
+    var containerSelector = '#login_history-ws-container';
+    var columns  = ['timestamp', 'action', 'browser', 'ip', 'status'];
+    var no_messages_error = 'Your account has no Login/Logout activity.';
+
+    function init() {
+        var $title = $('#login_history-title').children().first();
+        $title.text(text.localize($title.text()));
+    }
+
+    function displayError() {
+        $(selector + ' tbody')
+            .append($('<tr/>', {class: 'flex-tr'})
+                .append($('<td/>', {colspan: 6})
+                    .append($('<p/>', {
+                        class: 'notice-msg center-text',
+                        text: text.localize(no_messages_error)
+                      })
+                    )
+                )
+            );
+    }
+
+    function displayTable(history) {
         var header = [
-            "Date and Time",
-            "Action",
-            "Browser",
-            "IP Address",
-            "Status",
+            'Date and Time',
+            'Action',
+            'Browser',
+            'IP Address',
+            'Status',
         ].map(text.localize);
         var metadata = {
             id: tableID,
@@ -83086,37 +83049,50 @@ pjax_config_page_require_auth("user/settings/assessmentws", function() {
         };
         var data = [];
         var $table = Table.createFlexTable(data, metadata, header);
-        return $table;
-    }
-
-    function updateTable(history){
-        Table.appendTableBody(tableID, history, createRow);
+        $table.appendTo(containerSelector);
+        if (!history.length) {
+            return displayError();
+        }
+        Table.appendTableBody(tableID, history, formatRow);
         showLocalTimeOnHover('td.timestamp');
     }
 
-    function createRow(data){
-        var environ    = data.environment;
-        var timestamp  = moment.unix(data.time).utc().format('YYYY-MM-DD HH:mm:ss').replace(' ', '\n') + ' GMT';
-        var ip_addr    = environ.split(' ')[2].split('=')[1];
-        var user_agent = environ.match('User_AGENT=(.+) LANG')[1];
-        var browser    = parse_ua(user_agent);
-
-        var status = text.localize(data.status === 1 ? 'Successful' : 'Failed');
-        var browserString = browser.name + " v" + browser.version;
-        var $row = Table.createFlexTableRow([timestamp, data['action'], browserString, ip_addr, status], columns, "data");
-        $row.children(".timestamp").addClass('pre');
+    function formatRow(data) {
+        var timestamp = moment.unix(data.time).utc().format('YYYY-MM-DD HH:mm:ss').replace(' ', '\n') + ' GMT';
+        var status = text.localize(data.success ? 'Successful' : 'Failed');
+        var browser = data.browser;
+        var browserString = browser ?
+            browser.name + ' v' + browser.version :
+            'Unknown';
+        var row = [
+            timestamp,
+            data.action,
+            browserString,
+            data.ip_addr,
+            status
+        ];
+        var $row = Table.createFlexTableRow(row, columns, 'data');
+        $row.children('.timestamp').addClass('pre');
         return $row[0];
     }
 
-    function clearTableContent(){
-        Table.clearTableBody(tableID);
-        $("#" + tableID +">tfoot").hide();
+    function clean() {
+        $(containerSelector + ' .error-msg').text('');
+        if ($(selector).length) {
+            Table.clearTableBody(tableID);
+            $(selector +'>tfoot').hide();
+        }
     }
 
-    return{
-        createEmptyTable: createEmptyTable,
-        updateTable: updateTable,
-        clearTableContent: clearTableContent
+    function displayErrorOnMain(error) {
+        $('#err').text(error);
+    }
+
+    return {
+        init: init,
+        clean: clean,
+        displayTable: displayTable,
+        displayError: displayErrorOnMain,
     };
 }());
 ;pjax_config_page_require_auth("limitsws", function(){
@@ -85739,7 +85715,7 @@ pjax_config_page_require_auth("user/my_accountws", function() {
         dobmm = undefined;
         dobyy = undefined;
 
-        if (page.language().toLowerCase() === 'ja') {
+        if (japanese_client()) {
           $("#dobyy").val($("#dobyy option:first").val());
           $("#dobmm").val($("#dobmm option:first").val());
           $("#dobdd").val($("#dobdd option:first").val());
@@ -85771,7 +85747,7 @@ pjax_config_page_require_auth("user/my_accountws", function() {
     function init() {
         $('#reset_passwordws').removeClass('invisible');
         Content.populate();
-        if (page.language().toLowerCase() === 'ja') {
+        if (japanese_client()) {
           $('#dobmm').insertAfter('#dobyy');
           $('#dobdd').insertAfter('#dobmm');
         }

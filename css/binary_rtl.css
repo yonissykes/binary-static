@@ -4122,6 +4122,10 @@ body.JA .ja-show-block {
   display: inline-block !important;
   visibility: visible !important;
 }
+body.JA .ja-no-padding {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
 body.JA .regulatory-logo {
   display: none !important;
 }
@@ -4132,9 +4136,6 @@ body.JA #asset-forex div.table-header:nth-of-type(n + 3), body.JA #asset-forex d
   display: none !important;
 }
 body.JA #tradingtimes-forex div.table-header:nth-of-type(n + 3), body.JA #tradingtimes-forex div.table-body:nth-of-type(n + 15) {
-  display: none !important;
-}
-body.JA #topMenuWebtrader, body.JA #topMenuBetaInterface {
   display: none !important;
 }
 body.JA #footer-regulatory .gr-9, body.JA #footer-regulatory .gr-p-7 {
