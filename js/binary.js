@@ -76818,6 +76818,7 @@ function contractTypeDisplayMapping(type) {
  */
 function isVisible(elem) {
     'use strict';
+    if (!elem) return;
     if (elem.offsetWidth === 0 && elem.offsetHeight === 0) {
         return false;
     } else {
@@ -80631,14 +80632,14 @@ WSTickDisplay.dispatch = function(data) {
   var $self = this;
   var chart = document.getElementById('tick_chart');
 
+  if (!chart || !isVisible(chart) || !data || (!data.tick && !data.history)) {
+      return;
+  }
+
   if (window.subscribe && data.tick && document.getElementById('sell_content_wrapper')) {
       if (data.echo_req.hasOwnProperty('passthrough') && data.echo_req.passthrough.dispatch_to === 'ViewChartWS') return;
       window.responseID = data.tick.id;
       ViewPopupWS.storeSubscriptionID(window.responseID);
-  }
-
-  if (!chart || !isVisible(chart) || !data || (!data.tick && !data.history)) {
-      return;
   }
 
   var epoches, spots2, display_decimals;
@@ -80678,7 +80679,7 @@ WSTickDisplay.dispatch = function(data) {
     epoches = data.history.times;
   }
 
-  if ($self.applicable_ticks.length >= $self.ticks_needed) {
+  if ($self.applicable_ticks && $self.ticks_needed && $self.applicable_ticks.length >= $self.ticks_needed) {
       $self.evaluate_contract_outcome();
       if (window.responseID) {
         BinarySocket.send({'forget':window.responseID});
@@ -81333,7 +81334,7 @@ pjax_config_page_require_auth("user/change_password", function() {
             'transaction_id' : c.transaction_id,
             'contract_id'    : c.contract_id,
             'payout'         : parseFloat(c.payout).toFixed(2),
-            'longcode'       : toJapanTimeIfNeeded(c.expiry_time, '', c.longcode),
+            'longcode'       : toJapanTimeIfNeeded(c.date_start, '', c.longcode),
             'currency'       : c.currency,
             'buy_price'      : addComma(parseFloat(c.buy_price))
         };
@@ -86424,7 +86425,7 @@ pjax_config_page_require_auth("tnc_approvalws", function() {
     var normalMakeTemplate = function() {
         $Container = $('<div/>').append($('<div/>', {id: wrapperID}));
 
-        var longcode = toJapanTimeIfNeeded(contract.date_expiry, '', contract.longcode);
+        var longcode = toJapanTimeIfNeeded(contract.date_start, '', contract.longcode);
 
         $Container.prepend($('<div/>', {id: 'sell_bet_desc', class: 'popup_bet_desc drag-handle', text: longcode}));
         var $sections = $('<div/>').append($('<div class="gr-row container"><div id="sell_details_chart_wrapper" class="gr-8 gr-12-m"></div><div id="sell_details_table" class="gr-4 gr-12-m"></div></div>'));
