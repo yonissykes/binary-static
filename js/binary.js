@@ -70370,9 +70370,18 @@ var Localizable = function(hash) {
 Localizable.prototype = {
     localize: function(text, params) {
         var index = text.replace(/[\s|.]/g, '_');
-        return this.texts[index] || text;
+        text = this.texts[index] || text;
+        // only do templating when explicitly required
+        return params ? template(text, params) : text;
     }
 };
+
+// for testing
+if (typeof module !== 'undefined') {
+    module.exports = {
+        Localizable: Localizable
+    };
+}
 ;//////////////////////////////////////////////////////////////////
 // Purpose: Write loading image to a container for ajax request
 // Parameters:
@@ -70646,10 +70655,17 @@ function downloadCSV(csvContents, filename) {
     document.body.removeChild(downloadLink);
 }
 
+function template(string, content) {
+    return string.replace(/\[_(\d+)\]/g, function(s, index) {
+        return content[(+index) - 1];
+    });
+}
+
 //used temporarily for mocha test
 if (typeof module !== 'undefined') {
     module.exports = {
-        toJapanTimeIfNeeded: toJapanTimeIfNeeded
+        toJapanTimeIfNeeded: toJapanTimeIfNeeded,
+        template: template
     };
 }
 ;// for IE (before 10) we use a jquery plugin called jQuery.XDomainRequest. Explained here,
@@ -82731,7 +82747,7 @@ pjax_config_page_require_auth("api_tokenws", function() {
         var columns = ['name', 'permissions', 'last_used', 'action'];
         flexTable = new FlexTableUI({
             container: containerSelector,
-            header: headers.map(text.localize),
+            header: headers.map(function(s) { return text.localize(s); }),
             id:     'applications-table',
             cols:   columns,
             data:   data,
