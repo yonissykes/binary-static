@@ -71156,9 +71156,9 @@ FlexTableUI.prototype = {
         });
     },
 
-    displayError: function(message) {
+    displayError: function(message, colspan) {
         var $tr = $('<tr/>', {class: 'flex-tr'});
-        var $td = $('<td/>', {colspan: 7});
+        var $td = $('<td/>', {colspan: colspan});
         var $p  = $('<p/>', {class: 'notice-msg center-text', text: message});
         return $('#' + this.id + ' tbody').append($tr.append($td.appnd($p)));
     },
@@ -82969,9 +82969,6 @@ pjax_config_page_require_auth("user/settings/assessmentws", function() {
             if (japanese_client()) {
                 window.location.href = page.url.url_for('user/settingsws');
             }
-            BinarySocket.init({
-                onmessage: IPHistory.responseHandler
-            });
             Content.populate();
             IPHistory.init();
         },
@@ -83014,7 +83011,6 @@ pjax_config_page_require_auth("user/settings/assessmentws", function() {
         var environ    = activity.environment;
         var ip_addr    = environ.split(' ')[2].split('=')[1];
         var user_agent = environ.match('User_AGENT=(.+) LANG')[1];
-        var browser    = parse_ua(user_agent);
         return {
             time:    activity.time,
             action:  activity.action,
@@ -83024,9 +83020,25 @@ pjax_config_page_require_auth("user/settings/assessmentws", function() {
         };
     }
 
+    function calls(callback) {
+        return function(msg) {
+            var response = JSON.parse(msg.data);
+            if (!response || response.msg_type !== 'login_history') {
+                return;
+            }
+            callback(response);
+        };
+    }
+
+    function get(n) {
+        BinarySocket.send({login_history: 1, limit: n});
+    }
+
     var external = {
         parse: parse,
         parseUserAgent: parse_ua,
+        calls: calls,
+        get: get,
     };
 
     if (typeof module !== 'undefined') {
@@ -83038,25 +83050,20 @@ pjax_config_page_require_auth("user/settings/assessmentws", function() {
 ;var IPHistory = (function() {
     'use strict';
 
-    function makeRequest() {
-        BinarySocket.send({login_history: 1, limit: 50});
-    }
-
-    function responseHandler(msg) {
-        var response = JSON.parse(msg.data);
-        if (!response || response.msg_type !== 'login_history') {
-            return;
-        }
+    function responseHandler(response) {
         if (response.error && response.error.message) {
             return IPHistoryUI.displayError(response.error.message);
         }
         var parsed = response.login_history.map(IPHistoryData.parse);
-        IPHistoryUI.displayTable(parsed);
+        IPHistoryUI.update(parsed);
     }
 
     function init() {
         IPHistoryUI.init();
-        makeRequest();
+        BinarySocket.init({
+            onmessage: IPHistoryData.calls(responseHandler)
+        });
+        IPHistoryData.get(50);
     }
 
     function clean() {
@@ -83066,55 +83073,40 @@ pjax_config_page_require_auth("user/settings/assessmentws", function() {
     return {
         init: init,
         clean: clean,
-        responseHandler: responseHandler,
     };
 })();
 ;var IPHistoryUI = (function() {
     'use strict';
 
-    var tableID  = 'login-history-table';
-    var selector = '#' + tableID;
     var containerSelector = '#login_history-ws-container';
-    var columns  = ['timestamp', 'action', 'browser', 'ip', 'status'];
     var no_messages_error = 'Your account has no Login/Logout activity.';
+    var flexTable;
 
     function init() {
         var $title = $('#login_history-title').children().first();
         $title.text(text.localize($title.text()));
     }
 
-    function displayError() {
-        $(selector + ' tbody')
-            .append($('<tr/>', {class: 'flex-tr'})
-                .append($('<td/>', {colspan: 6})
-                    .append($('<p/>', {
-                        class: 'notice-msg center-text',
-                        text: text.localize(no_messages_error)
-                      })
-                    )
-                )
-            );
-    }
-
-    function displayTable(history) {
-        var header = [
-            'Date and Time',
-            'Action',
-            'Browser',
-            'IP Address',
-            'Status',
-        ].map(text.localize);
-        var metadata = {
-            id: tableID,
-            cols: columns
-        };
-        var data = [];
-        var $table = Table.createFlexTable(data, metadata, header);
-        $table.appendTo(containerSelector);
-        if (!history.length) {
-            return displayError();
+    function update(history) {
+        if (flexTable) {
+            return flexTable.replace(history);
         }
-        Table.appendTableBody(tableID, history, formatRow);
+        var headers = ['Date and Time', 'Action', 'Browser', 'IP Address', 'Status'];
+        var columns = ['timestamp', 'action', 'browser', 'ip', 'status'];
+        flexTable = new FlexTableUI({
+            id:        'login-history-table',
+            container: containerSelector,
+            header:    headers.map(function(s) { return text.localize(s); }),
+            cols:      columns,
+            data:      history,
+            formatter: formatRow,
+            style: function($row) {
+                $row.children('.timestamp').addClass('pre');
+            },
+        });
+        if (!history.length) {
+            return flexTable.displayError(text.localize(no_messages_error), 6);
+        }
         showLocalTimeOnHover('td.timestamp');
     }
 
@@ -83125,35 +83117,30 @@ pjax_config_page_require_auth("user/settings/assessmentws", function() {
         var browserString = browser ?
             browser.name + ' v' + browser.version :
             'Unknown';
-        var row = [
+        return [
             timestamp,
             data.action,
             browserString,
             data.ip_addr,
             status
         ];
-        var $row = Table.createFlexTableRow(row, columns, 'data');
-        $row.children('.timestamp').addClass('pre');
-        return $row[0];
     }
 
     function clean() {
         $(containerSelector + ' .error-msg').text('');
-        if ($(selector).length) {
-            Table.clearTableBody(tableID);
-            $(selector +'>tfoot').hide();
-        }
+        flexTable.clear();
+        flexTable = null;
     }
 
-    function displayErrorOnMain(error) {
+    function displayError(error) {
         $('#err').text(error);
     }
 
     return {
         init: init,
         clean: clean,
-        displayTable: displayTable,
-        displayError: displayErrorOnMain,
+        update: update,
+        displayError: displayError,
     };
 }());
 ;pjax_config_page_require_auth("limitsws", function(){
