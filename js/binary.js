@@ -54328,7 +54328,7 @@ if (typeof trackJs !== 'undefined') trackJs.configure(window._trackJs);
             var server_url = ($('#server_url').val() || '').trim().toLowerCase(),
                 app_id = ($('#app_id').val() || '').trim();
             if (server_url) {
-              if(!/^(ws|www2|www)\..*$/i.test(server_url)) server_url = 'www.' + server_url;
+              if(!/^(ws|www2|www|blue|green)\..*$/i.test(server_url)) server_url = 'www.' + server_url;
               localStorage.setItem('config.server_url', server_url);
             }
             if (app_id && !isNaN(app_id)) localStorage.setItem('config.app_id', parseInt(app_id));
@@ -57475,7 +57475,7 @@ TradingAnalysis.tab_last_digitws = new TradingAnalysis.DigitInfoWS();
     var contracts_response = window.contracts_for;
 
     if (contracts_response && contracts_response.echo_req.contracts_for === underlying) {
-      if (contracts_response.contracts_for.feed_license) {
+      if (contracts_response.contracts_for && contracts_response.contracts_for.feed_license) {
         handle_delay(contracts_response.contracts_for.feed_license);
         save_feed_license(contracts_response.echo_req.contracts_for, contracts_response.contracts_for.feed_license);
       }
@@ -59502,6 +59502,7 @@ var Durations = (function(){
 
     var durationPopulate = function() {
         var unit = document.getElementById('duration_units');
+        if (!unit.options[unit.selectedIndex]) return;
         var unitMinValue = unit.options[unit.selectedIndex].getAttribute('data-minimum'),
             unitValue = Defaults.get('duration_amount') || unitMinValue;
         unit.value = Defaults.get('duration_units') &&
@@ -59533,7 +59534,7 @@ var Durations = (function(){
                         var date = new Date(value);
                         var today = window.time ? new Date(window.time) : new Date();
                         dayDiff = Math.ceil((date - today) / (1000 * 60 * 60 * 24));
-                    }                    
+                    }
                     amountElement.val(dayDiff);
                     amountElement.trigger('change');
                 }
@@ -63456,7 +63457,7 @@ pjax_config_page_require_auth("api_tokenws", function() {
         $('#loading').remove();
         createTable(apps);
         if (!apps.length) {
-            flexTable.displayError(text.localize(messages.no_apps));
+            flexTable.displayError(text.localize(messages.no_apps), 7);
             return;
         }
     }
