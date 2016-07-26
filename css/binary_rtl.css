@@ -142,6 +142,13 @@ span.button.button-disabled button.button-disabled {
   cursor: default;
 }
 
+.button.fullwidth {
+  width: 100%;
+}
+.button.fullwidth span {
+  display: block;
+}
+
 form {
   margin: 0;
   padding: 0;
@@ -398,6 +405,10 @@ button.blue-button:hover {
 
 .nowrap {
   white-space: nowrap;
+}
+
+p.no-para-margin {
+  margin: 0;
 }
 
 *, *:after, *:before {
@@ -1398,9 +1409,6 @@ meter#password-meter::-webkit-meter-bar {
   font-weight: bold;
   margin-bottom: 5px;
 }
-.contact-content p.no-para-margin {
-  margin: 0;
-}
 .contact-content .hr-line {
   border-bottom: 1px solid #DEDEDE;
 }
@@ -2048,37 +2056,6 @@ table .loss, table .lower {
 .static_full {
   margin-top: 40px;
 }
-.static_full .sidebar ul {
-  font-size: 90%;
-}
-.static_full .sidebar ul li {
-  list-style-image: none;
-  margin: 0;
-  background: #F2F2F2;
-  line-height: 150%;
-  border-bottom: 1px solid #FFFFFF;
-}
-.static_full .sidebar ul li:hover {
-  background: #DEDEDE;
-}
-.static_full .sidebar ul li a {
-  font-weight: normal;
-  text-decoration: none;
-  display: block;
-  padding: 5px 5px 5px 10px;
-  color: #2a3052;
-}
-.static_full .sidebar ul li.selected {
-  background: #2a3052;
-}
-.static_full .sidebar ul li.selected a {
-  color: #fff;
-  text-decoration: none;
-}
-.static_full .sidebar .open-account {
-  background: #F2F2F2;
-  padding: 20px;
-}
 .static_full .section {
   border-bottom: 1px solid #DEDEDE;
 }
@@ -2123,6 +2100,38 @@ table .loss, table .lower {
 .static_full .sidebar-button a:hover, .static_full .sidebar-button a:active {
   text-decoration: none;
   background-color: #14602B;
+}
+
+.sidebar ul {
+  font-size: 90%;
+}
+.sidebar ul li {
+  list-style-image: none;
+  margin: 0;
+  background: #F2F2F2;
+  line-height: 150%;
+  border-bottom: 1px solid #FFFFFF;
+}
+.sidebar ul li:hover {
+  background: #DEDEDE;
+}
+.sidebar ul li a {
+  font-weight: normal;
+  text-decoration: none;
+  display: block;
+  padding: 5px 5px 5px 10px;
+  color: #2a3052;
+}
+.sidebar ul li.selected {
+  background: #2a3052;
+}
+.sidebar ul li.selected a {
+  color: #fff;
+  text-decoration: none;
+}
+.sidebar .open-account {
+  background: #F2F2F2;
+  padding: 20px;
 }
 
 .payment-agent .faded {
