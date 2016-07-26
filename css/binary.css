@@ -1537,7 +1537,9 @@ a.close:hover {
 }
 .inpage_popup_container_ws .inpage_popup_content_box #sell_content_wrapper {
   max-height: 90vh;
-  overflow: scroll;
+  overflow: auto;
+  overflow-x: hidden;
+  -ms-overflow-x: hidden;
 }
 .inpage_popup_container_ws .inpage_popup_content_box #sell_content_wrapper #sell_details_chart_wrapper {
   border-right: 1px solid #44484C;
