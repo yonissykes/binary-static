@@ -52459,8 +52459,8 @@ FlexTableUI.prototype = {
         for (var i = 0 ; i < data.length ; i++){
             var className = metadata[i].toLowerCase().replace(/\s/g, "-") + " flex-tr-child";
             var rowElement = (isData) ?
-                $("<td></td>", {class: className, text: data[i]}) :
-                $("<th></th>", {class: className, text: data[i]});
+                $("<td></td>", {class: className, html: data[i]}) :
+                $("<th></th>", {class: className, html: data[i]});
             rowElement.appendTo($tr);
         }
 
@@ -60922,7 +60922,7 @@ function processTick(tick) {
 function processProposal(response) {
     'use strict';
     var form_id = Price.getFormId();
-    if(response.echo_req && response.echo_req !== null && response.echo_req.passthrough.form_id===form_id){
+    if(response.echo_req && response.echo_req !== null && response.echo_req.passthrough && response.echo_req.passthrough.form_id === form_id){
         hideOverlayContainer();
         Price.display(response, Contract.contractType()[Contract.form()]);
         hidePriceOverlay();
@@ -62436,7 +62436,8 @@ pjax_config_page_require_auth("user/change_password", function() {
             'payout'         : parseFloat(c.payout).toFixed(2),
             'longcode'       : typeof module !== 'undefined' ? c.longcode : japanese_client() ? toJapanTimeIfNeeded(c.expiry_time, '', c.longcode) : c.longcode,
             'currency'       : c.currency,
-            'buy_price'      : addComma(parseFloat(c.buy_price))
+            'buy_price'      : addComma(parseFloat(c.buy_price)),
+            'app_id'         : c.app_id
         };
 
         return portfolio_data;
@@ -62499,14 +62500,18 @@ pjax_config_page_require_auth("user/change_password", function() {
 
     var createPortfolioRow = function(data) {
         $('#portfolio-body').append(
-            '<tr class="flex-tr" id="' + data.contract_id + '">' +
-                '<td class="ref flex-tr-child">' + data.transaction_id + '</td>' +
+            $('<tr class="flex-tr" id="' + data.contract_id + '">' +
+                '<td class="ref flex-tr-child">' +
+                    (data.app_id ? ('<span data-balloon="' + text.localize('Contract purchased with app ID') + ': ' + data.app_id + '">') : '') +
+                        data.transaction_id +
+                    (data.app_id ? '</span>' : '') +
+                '</td>' +
                 '<td class="payout flex-tr-child">' + data.currency + ' <strong>' + data.payout + '</strong></td>' +
                 '<td class="details flex-tr-child">' + data.longcode + '</td>' +
                 '<td class="purchase flex-tr-child">' + data.currency + ' <strong>' + data.buy_price + '</strong></td>' +
                 '<td class="indicative flex-tr-child">' + data.currency + ' <strong class="indicative_price"></strong></td>' +
                 '<td class="button flex-tr-child"><button class="button open_contract_detailsws" contract_id="' + data.contract_id + '">' + text.localize('View') + '</button></td>' +
-            '</tr>'
+            '</tr>')
         );
     };
 
@@ -62695,7 +62700,8 @@ pjax_config_page_require_auth("user/change_password", function() {
             'sellPrice' : sellPrice,
             'pl'        : Number(sellPrice - buyPrice).toFixed(2),
             'desc'      : transaction["longcode"],
-            'id'        : transaction["contract_id"]
+            'id'        : transaction["contract_id"],
+            'app_id'    : transaction["app_id"]
         };
 
         return profit_table_data;
@@ -62936,7 +62942,8 @@ pjax_config_page_require_auth("user/change_password", function() {
 
         var plType = (profit_table_data.pl >= 0) ? "profit" : "loss";
 
-        var data = [profit_table_data.buyDate, profit_table_data.ref, profit_table_data.payout, '', profit_table_data.buyPrice, profit_table_data.sellDate, profit_table_data.sellPrice, profit_table_data.pl, ''];
+        var data = [profit_table_data.buyDate, (profit_table_data.app_id ? ('<span data-balloon="' + text.localize('Contract purchased with app ID') + ': ' + profit_table_data.app_id + '">') : '') + profit_table_data.ref  +
+    (profit_table_data.app_id ? '</span>' : ''), profit_table_data.payout, '', profit_table_data.buyPrice, profit_table_data.sellDate, profit_table_data.sellPrice, profit_table_data.pl, ''];
         var $row = Table.createFlexTableRow(data, cols, "data");
 
         $row.children(".buy-date").addClass("pre");
@@ -63994,8 +64001,41 @@ pjax_config_page_require_auth("user/settings/assessmentws", function() {
         return errMsg;
     };
 
+    var validateName = function(name) {
+        var errMsg = '';
+
+        if (!/^.+$/.test(name)) {
+            errMsg = Content.errorMessage('req');
+        } else if (name.length < 2 || name.length > 30) {
+            errMsg = Content.errorMessage('range', '2-30');
+        } else if (!/^[a-zA-Z\s-.']+$/.test(name)) {
+            var letters = Content.localize().textLetters,
+                space   = Content.localize().textSpace,
+                hyphen  = Content.localize().textHyphen,
+                period  = Content.localize().textPeriod,
+                apost   = Content.localize().textApost;
+            errMsg = Content.errorMessage('reg', [letters, space, hyphen, period, apost]);
+        }
+
+        return errMsg;
+    };
+
+    var validateAmount = function(amount) {
+        var errMsg = '';
+
+        if (!/^.+$/.test(amount)) {
+            errMsg = Content.errorMessage('req');
+        } else if(!(/^\d+(\.\d+)?$/).test(amount) || !$.isNumeric(amount)) {
+            errMsg = Content.errorMessage('reg', [numbers]);
+        }
+
+        return errMsg;
+    };
+
     return {
         validatePassword: validatePassword,
+        validateName    : validateName,
+        validateAmount  : validateAmount,
     };
 }());
 ;var MetaTraderData = (function() {
@@ -64017,19 +64057,39 @@ pjax_config_page_require_auth("user/settings/assessmentws", function() {
     };
 
     var requestLoginDetails = function(login) {
-        if(login && login.length) {
+        if(login && +login > 0) {
             BinarySocket.send({'mt5_get_settings': 1, 'login': login});
         }
     };
 
-    var requestNewAccount = function(request) {
+    var requestPasswordCheck = function(login, password) {
+        if(login && +login > 0 && password && password.length > 0) {
+            BinarySocket.send({'mt5_password_check': 1, 'login': login, 'password': password});
+        }
+    };
+
+    var requestSend = function(request) {
         BinarySocket.send(request);
+    };
+
+    var requestAccountStatus = function() {
+        BinarySocket.send({'get_account_status': 1});
+    };
+
+    var requestLandingCompany = function() {
+        BinarySocket.send({'landing_company': page.client.residence});
     };
 
     var responseHandler = function(response) {
         switch(response.msg_type) {
             case 'authorize':
                 MetaTraderUI.init();
+                break;
+            case 'get_account_status':
+                MetaTraderUI.responseAccountStatus(response);
+                break;
+            case 'landing_company':
+                MetaTraderUI.responseLandingCompany(response);
                 break;
             case 'mt5_login_list':
                 MetaTraderUI.responseLoginList(response);
@@ -64040,15 +64100,27 @@ pjax_config_page_require_auth("user/settings/assessmentws", function() {
             case 'mt5_new_account':
                 MetaTraderUI.responseNewAccount(response);
                 break;
+            case 'mt5_deposit':
+                MetaTraderUI.responseDeposit(response);
+                break;
+            case 'mt5_withdrawal':
+                MetaTraderUI.responseWithdrawal(response);
+                break;
+            case 'mt5_password_check':
+                MetaTraderUI.responsePasswordCheck(response);
+                break;
         }
     };
 
     return {
-        initSocket          : initSocket,
-        responseHandler     : responseHandler,
-        requestLoginList    : requestLoginList,
-        requestLoginDetails : requestLoginDetails,
-        requestNewAccount   : requestNewAccount,
+        initSocket           : initSocket,
+        responseHandler      : responseHandler,
+        requestLoginList     : requestLoginList,
+        requestLoginDetails  : requestLoginDetails,
+        requestPasswordCheck : requestPasswordCheck,
+        requestSend          : requestSend,
+        requestAccountStatus : requestAccountStatus,
+        requestLandingCompany: requestLandingCompany,
     };
 }());
 ;var MetaTraderUI = (function() {
@@ -64058,6 +64130,9 @@ pjax_config_page_require_auth("user/settings/assessmentws", function() {
         errorClass,
         $form,
         isValid,
+        isAuthenticated,
+        currency,
+        highlightBalance,
         mt5Logins,
         mt5Accounts;
 
@@ -64069,31 +64144,142 @@ pjax_config_page_require_auth("user/settings/assessmentws", function() {
 
         hiddenClass = 'invisible';
         errorClass  = 'errorfield';
+        currency    = 'USD';
         mt5Logins   = [];
         mt5Accounts = {};
+        highlightBalance = false;
 
         Content.populate();
+
+        MetaTraderData.requestLandingCompany();
+    };
+
+    var initOk = function() {
+        MetaTraderData.requestLoginList();
+
         // Tab
         $('.sidebar-nav li a').click(function(e) {
             e.preventDefault();
             displayTab($(this).attr('href').substring(1));
         });
 
-        var tab = page.url.location.hash.substring(1);
-        if(!tab || !/demo|real|howto/.test(tab)) {
-            tab = 'demo';
-        }
-        displayTab(tab);
+        $('#mt-container').removeClass(hiddenClass);
+    };
 
-        MetaTraderData.requestLoginList();
+    var notEligible = function() {
+        showPageError(Content.localize().textFeatureUnavailable);
+        $('mt-container').addClass(hiddenClass);
+    };
+
+    var displayAccount = function(accType) {
+        $('#form-new-' + accType).addClass(hiddenClass);
+        var $details = $('<div/>').append($(
+            makeTextRow('Login', mt5Accounts[accType].login) +
+            makeTextRow('Balance', currency + ' ' + mt5Accounts[accType].balance, 'balance-' + accType) +
+            makeTextRow('Name', mt5Accounts[accType].name) +
+            // makeTextRow('Leverage', mt5Accounts[accType].leverage)
+            makeTextRow('', text.localize('Start trading with your ' + (accType === 'demo' ? 'Demo' : 'Real') + ' Account') +
+                ' <a class="button" href="' + page.url.url_for('metatrader/download') + '" style="margin:0 20px;">' +
+                    '<span>' + text.localize('Download MetaTrader') + '</span></a>')
+        ));
+        $('#details-' + accType).html($details.html());
+
+        // display deposit form
+        if(accType === 'real') {
+            if(page.client.is_virtual()) {
+                $('#accordion').addClass(hiddenClass);
+            } else {
+                ['#form-deposit-real', '#form-withdrawal-real'].map(function(formID){
+                    $form = $(formID);
+                    $form.find('.binary-login').text(page.client.loginid);
+                    $form.find('.mt-login').text(mt5Accounts[accType].login);
+                    $form.find('button').unbind('click').click(function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if(/deposit/.test(formID)) {
+                            depositToMTAccount();
+                        } else {
+                            withdrawFromMTAccount();
+                        }
+                    });
+                });
+
+                if(highlightBalance) {
+                    $('#balance-real').addClass('notice-msg').delay(5000).queue(function(){$(this).removeClass('notice-msg');});
+                    highlightBalance = false;
+                }
+
+                $('#accordion').removeClass(hiddenClass).accordion({
+                    heightStyle : 'content',
+                    collapsible : true,
+                    active      : false
+                });
+            }
+        }
+    };
+
+    var makeTextRow = function(label, value, id) {
+        return '<div' + (id ? ' id="' + id + '"' : '') + ' class="gr-row gr-padding-10">' +
+            (label ? '<div class="gr-4">' + text.localize(label) + '</div>' : '') +
+            '<div class="gr-' + (label ? '8' : '12') + '">' + value + '</div></div>';
+    };
+
+    var createNewAccount = function() {
+        if(formValidate()) {
+            var isDemo = /demo/.test($form.attr('id'));
+            MetaTraderData.requestSend({
+                'mt5_new_account' : 1,
+                'account_type'    : isDemo ? 'demo' : 'vanuatu',
+                'email'           : TUser.get().email,
+                'name'            : isDemo ? $form.find('#txtName').val() : TUser.get().fullname,
+                'mainPassword'    : $form.find('#txtMainPass').val(),
+                'investPassword'  : $form.find('#txtInvestPass').val(),
+                'leverage'        : '100' // $form.find('#ddlLeverage').val()
+            });
+        }
+    };
+
+    var depositToMTAccount = function() {
+        $form = $('#form-deposit-real');
+        if(formValidate('deposit')) {
+            MetaTraderData.requestSend({
+                'mt5_deposit' : 1,
+                'from_binary' : page.client.loginid,
+                'to_mt5'      : mt5Accounts.real.login,
+                'amount'      : $form.find('#txtAmount').val()
+            });
+        }
+    };
+
+    var withdrawFromMTAccount = function(isPasswordChecked) {
+        $form = $('#form-withdrawal-real');
+        if(formValidate('withdrawal')) {
+            if(!isPasswordChecked) {
+                MetaTraderData.requestPasswordCheck(mt5Accounts.real.login, $form.find('#txtMainPass').val());
+            } else {
+                MetaTraderData.requestSend({
+                    'mt5_withdrawal' : 1,
+                    'from_mt5'       : mt5Accounts.real.login,
+                    'to_binary'      : page.client.loginid,
+                    'amount'         : $form.find('#txtAmount').val()
+                });
+            }
+        }
     };
 
     // --------------------------
     // ----- Tab Management -----
     // --------------------------
     var displayTab = function(tab) {
+        if(!tab) {
+            tab = page.url.location.hash.substring(1);
+            if(!tab || !/demo|real|howto/.test(tab)) {
+                tab = 'demo';
+            }
+        }
+
         // url
-        window.history.replaceState(null, null, window.location.href.replace(/^(.*#).*/, '$1' + tab));
+        window.location.hash = '#' + tab;
 
         // tab
         $('.sidebar-nav li').removeClass('selected');
@@ -64116,35 +64302,41 @@ pjax_config_page_require_auth("user/settings/assessmentws", function() {
             if(!hasMTDemo) {
                 $form = $('#form-new-demo');
                 $form.removeClass(hiddenClass);
+                $form.find('#name-row').removeClass(hiddenClass);
                 passwordMeter();
             }
         } else if(/real/.test(accType)) {
             if(!hasMTReal) {
                 if(page.client.is_virtual()) {
                     // check if this client has real binary account
-                    var hasReal = false;
+                    var hasRealBinaryAccount = false;
                     page.user.loginid_array.map(function(loginInfo) {
-                        if(loginInfo.real) hasReal = true;
+                        if(loginInfo.real) hasRealBinaryAccount = true;
                     });
 
                     $('#msgRealAccount').html(
-                        '<strong>' + text.localize('To create a Real account for MetaTrader:') + '</strong> ' +
-                        (hasReal ? text.localize('please switch to your Real account.') :
-                            text.localize('please <a href="[_1]">upgrade to Real account</a>.', [page.url.url_for('new_account/realws')]))
+                        text.localize('To create a Real account for MetaTrader:') + '&nbsp;' +
+                        (hasRealBinaryAccount ? text.localize('Please switch to your Real account.') :
+                            text.localize('Please <a href="[_1]">upgrade to Real account</a>.', [page.url.url_for('new_account/realws')]))
                     ).removeClass(hiddenClass);
                 } else {
-                    $form = $('#form-new-real');
-                    if($form.contents().length === 0) {
-                        $('#form-new-demo').contents().clone().appendTo('#form-new-real');
-                        $form.find('.account-type').text(text.localize('Real'));
-                        passwordMeter();
-                    }
-                    $form.removeClass(hiddenClass);
+                    if(!isAuthenticated && !page.client.is_virtual()) {
+                        MetaTraderData.requestAccountStatus();
+                    } else {
+                        $form = $('#form-new-real');
+                        if($form.contents().length === 0) {
+                            $('#form-new-demo').contents().clone().appendTo('#form-new-real');
+                            $form.find('.account-type').text(text.localize('Real'));
+                            $form.find('#name-row').addClass(hiddenClass);
+                            passwordMeter();
+                        }
+                        $form.removeClass(hiddenClass);
+                    }   
                 }
             }
         }
 
-        if($form) {
+        if($form && /new/.test($form.attr('id'))) {
             $form.find('button').unbind('click').click(function(e) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -64153,32 +64345,35 @@ pjax_config_page_require_auth("user/settings/assessmentws", function() {
         }
     };
 
-    var displayAccount = function(accType) {
-        $('#form-new-' + accType).remove();
-        var $details = $('<div/>').append($('<h3>' + text.localize(accType === 'demo' ? 'Demo Account' : 'Real Account') + ' #' + mt5Accounts[accType].login + '</h3>' +
-            '<div class="gr-4">' + text.localize('Balance') + '</div><div class="gr-8">' + mt5Accounts[accType].balance + '</div>' +
-            '<div class="gr-4">' + text.localize('Leverage') + '</div><div class="gr-8">' + mt5Accounts[accType].leverage + '</div>'
-            // '<div class="separator-line"></div>' +
-            ));
-        $('#details-' + accType).html($details.html());
-    };
-
-    var createNewAccount = function() {
-        if(formValidate()) {
-            MetaTraderData.requestNewAccount({
-                'mt5_new_account': 1,
-                'account_type': /demo/.test($form.attr('id')) ? 'demo' : 'vanuatu',
-                'email': TUser.get().email,
-                'mainPassword': $form.find('#txtMainPass').val(),
-                'investPassword': $form.find('#txtInvestPass').val(),
-                'leverage': '100'
-            });
-        }
-    };
-
     // -----------------------------
     // ----- Response Handlers -----
     // -----------------------------
+    var responseLandingCompany = function(response) {
+        if(response.hasOwnProperty('error')) {
+            return showPageError(response.error.message, true);
+        }
+
+        var lc = response.landing_company;
+        if (lc.hasOwnProperty('financial_company') && lc.financial_company.shortcode === 'costarica') {
+            initOk();
+        } else {
+            notEligible();
+        }
+    };
+
+    var responseAccountStatus = function(response) {
+        if(response.hasOwnProperty('error')) {
+            return showPageError(response.error.message, false);
+        }
+
+        if($.inArray('authenticated', response.get_account_status.status) > -1) {
+            isAuthenticated = true;
+            manageTabContents();
+        } else if(!page.client.is_virtual()) {
+            $('#authenticate').removeClass(hiddenClass);
+        }
+    };
+
     var responseLoginList = function(response) {
         if(response.hasOwnProperty('error')) {
             return showPageError(response.error.message, false);
@@ -64192,27 +64387,73 @@ pjax_config_page_require_auth("user/settings/assessmentws", function() {
                 MetaTraderData.requestLoginDetails(obj.login);
             });
         } else {
-            manageTabContents();
+            displayTab();
         }
     };
 
     var responseLoginDetails = function(response) {
-        if(response.hasOwnProperty('error')){
+        if(response.hasOwnProperty('error')) {
             return showPageError(response.error.message, false);
         }
 
-        var accType = response.mt5_get_settings.group.split('\\')[0];
+        var accType = /^demo/.test(response.mt5_get_settings.group) ? 'demo' : 'real';
         mt5Accounts[accType] = response.mt5_get_settings;
+        displayTab();
         displayAccount(accType);
     };
 
     var responseNewAccount = function(response) {
-        if(response.hasOwnProperty('error')){
+        if(response.hasOwnProperty('error')) {
             return showFormMessage(response.error.message, false);
         }
 
         showFormMessage('Your new account has been created.', true);
         MetaTraderData.requestLoginDetails(response.mt5_new_account.login);
+        $('#msg-new-account-' + (/demo/.test(response.mt5_new_account.account_type) ? 'demo' : 'real'))
+            .html(text.localize('Congratulations! Your account has been created.')).removeClass(hiddenClass).delay(5000).fadeOut(1000);
+    };
+
+    var responseDeposit = function(response) {
+        $form = $('#form-deposit-real');
+        if(response.hasOwnProperty('error')) {
+            return showFormMessage(response.error.message, false);
+        }
+
+        if(+response.mt5_deposit === 1) {
+            $form.find('#txtAmount').val('');
+            showFormMessage(text.localize('Deposit is done. Transaction ID:') + ' ' + response.binary_transaction_id, true);
+            highlightBalance = true;
+            MetaTraderData.requestLoginDetails(response.echo_req.to_mt5);
+        } else {
+            showFormMessage('Sorry, an error occurred while processing your request.', false);
+        }
+    };
+
+    var responseWithdrawal = function(response) {
+        $form = $('#form-withdrawal-real');
+        if(response.hasOwnProperty('error')) {
+            return showFormMessage(response.error.message, false);
+        }
+
+        if(+response.mt5_withdrawal === 1) {
+            $form.find('#txtAmount').val('');
+            showFormMessage(text.localize('Withdrawal is done. Transaction ID:') + ' ' + response.binary_transaction_id, true);
+            highlightBalance = true;
+            MetaTraderData.requestLoginDetails(response.echo_req.from_mt5);
+        } else {
+            showFormMessage('Sorry, an error occurred while processing your request.', false);
+        }
+    };
+
+    var responsePasswordCheck = function(response) {
+        $form = $('#form-withdrawal-real');
+        if(response.hasOwnProperty('error')) {
+            return showFormMessage(response.error.message, false);
+        }
+
+        if(+response.mt5_password_check === 1) {
+            withdrawFromMTAccount(true);
+        }
     };
 
     // --------------------------
@@ -64224,28 +64465,55 @@ pjax_config_page_require_auth("user/settings/assessmentws", function() {
             return;
         }
 
-        if($form.find('meter').length === 0) {
+        if($form.find('meter').length !== 0) {
             $form.find('.password').on('input', function() {
                 $form.find('.password-meter').attr('value', testPassword($form.find('.password').val())[0]);
             });
         }
     };
 
-    var formValidate = function() {
+    var formValidate = function(formName) {
         clearError();
         isValid = true;
 
-        var passwords = ['#txtMainPass', '#txtMainPass2', '#txtInvestPass'];
-        passwords.map(function(elmID){
-            var errMsg = MetaTrader.validatePassword($form.find(elmID).val());
-            if(errMsg) {
-                showError(elmID, errMsg);
+        if(formName === 'deposit') { // deposit form
+            var errMsgDeposit = MetaTrader.validateAmount($form.find('#txtAmount').val());
+            if(errMsgDeposit) {
+                showError('#txtAmount', errMsgDeposit);
                 isValid = false;
             }
-        });
-        if($form.find('#txtMainPass').val() !== $form.find('#txtMainPass2').val()) {
-            showError('#txtMainPass2', Content.localize().textPasswordsNotMatching);
-            isValid = false;
+        } else if(formName === 'withdrawal') {  // withdrawal form
+            var errMsgPass = MetaTrader.validatePassword($form.find('#txtMainPass').val());
+            if(errMsgPass) {
+                showError('#txtMainPass', errMsgPass);
+                isValid = false;
+            }
+            var errMsgWithdrawal = MetaTrader.validateAmount($form.find('#txtAmount').val());
+            if(errMsgWithdrawal) {
+                showError('#txtAmount', errMsgWithdrawal);
+                isValid = false;
+            }
+        } else { // create new account form
+            var passwords = ['#txtMainPass', '#txtMainPass2', '#txtInvestPass'];
+            passwords.map(function(elmID){
+                var errMsg = MetaTrader.validatePassword($form.find(elmID).val());
+                if(errMsg) {
+                    showError(elmID, errMsg);
+                    isValid = false;
+                }
+            });
+            if($form.find('#txtMainPass').val() !== $form.find('#txtMainPass2').val()) {
+                showError('#txtMainPass2', Content.localize().textPasswordsNotMatching);
+                isValid = false;
+            }
+            // name
+            if(/demo/.test($form.attr('id'))) {
+                var errMsgName = MetaTrader.validateName($form.find('#txtName').val());
+                if(errMsgName) {
+                    showError('#txtName', errMsgName);
+                    isValid = false;
+                }
+            }
         }
 
         return isValid;
@@ -64259,7 +64527,7 @@ pjax_config_page_require_auth("user/settings/assessmentws", function() {
     var clearError = function(selector) {
         $(selector ? selector : 'p.' + errorClass).remove();
         $('#errorMsg').html('').addClass(hiddenClass);
-        $('#formMessage').html('');
+        $form.find('#formMessage').html('');
     };
 
     var showFormMessage = function(msg, isSuccess) {
@@ -64281,9 +64549,14 @@ pjax_config_page_require_auth("user/settings/assessmentws", function() {
 
     return {
         init: init,
-        responseLoginList: responseLoginList,
-        responseLoginDetails: responseLoginDetails,
-        responseNewAccount: responseNewAccount,
+        responseLoginList      : responseLoginList,
+        responseLoginDetails   : responseLoginDetails,
+        responseNewAccount     : responseNewAccount,
+        responseDeposit        : responseDeposit,
+        responseWithdrawal     : responseWithdrawal,
+        responsePasswordCheck  : responsePasswordCheck,
+        responseAccountStatus  : responseAccountStatus,
+        responseLandingCompany : responseLandingCompany,
     };
 }());
 ;var SelfExclusionWS = (function() {
@@ -64336,12 +64609,18 @@ pjax_config_page_require_auth("user/settings/assessmentws", function() {
         });
 
         initDatePicker();
-        $form.find('button').on('click', function(e) {
+        $form.submit(function(e) {
             e.preventDefault();
             e.stopPropagation();
             var info = formValidate();
             if (info.valid && info.changed) {
-                setRequest(info.data);
+                if ((Trim($('#' + timeDateID).val()) !== '' || Trim($('#' + dateID).val()) !== '')) {
+                    if (hasConfirmed()) {
+                        setRequest(info.data);
+                    }
+                } else {
+                    setRequest(info.data);
+                }
             } else if (info.valid && !info.changed) {
                 showFormMessage('You did not change anything.', false);
             }
@@ -64526,7 +64805,7 @@ pjax_config_page_require_auth("user/settings/assessmentws", function() {
                     null
                 );
             } else {
-                if (date.isAfter(six_weeeks_date)) {
+                if (date.isAfter(six_weeks_date)) {
                     errMsg = 'Exclude time cannot be more than 6 weeks.';
                 }
             }
@@ -64536,12 +64815,12 @@ pjax_config_page_require_auth("user/settings/assessmentws", function() {
             showError((opt ? timeDateID : dateID), errMsg);
             return false;
         }
-        return true && hasConfirmed();
+        return true;
     };
 
     var validateExclusionTime = function(exclusion_time) {
         var time = moment(exclusion_time, 'HH:mm');
-        if (time.isValid()) {
+        if (!time.isValid() || !/^\d{2}\:\d{2}$/.test(time._i)) {
             showError(timeID, 'Please select a valid time');
             return false;
         }
@@ -64623,7 +64902,7 @@ pjax_config_page_require_auth("user/settings/assessmentws", function() {
     var getDetails = function(response) {
         var data = response.get_settings;
 
-        $('#lblCountry').text(data.country);
+        $('#lblCountry').text(data.country || '-');
         $('#lblEmail').text(data.email);
 
         if(page.client.is_virtual()){ // Virtual Account
@@ -64634,10 +64913,12 @@ pjax_config_page_require_auth("user/settings/assessmentws", function() {
             $('#lblBirthDate').text(birthDate);
             // Generate states list
             var residence = $.cookie('residence');
-            BinarySocket.send({"states_list": residence, "passthrough": {"value": data.address_state}});
+            if (residence) {
+                BinarySocket.send({"states_list": residence, "passthrough": {"value": data.address_state}});
+            }
             if (page.client.residence === 'jp') {
                 var jpData = response.get_settings.jp_settings;
-                $('#lblName').text((data.last_name || '') + ' ' + (data.first_name || ''));
+                $('#lblName').text((data.last_name || ''));
                 $('#lblGender').text(text.localize(jpData.gender) || '');
                 $('#lblAddress1').text(data.address_line_1 || '');
                 $('#lblAddress2').text(data.address_line_2 || '');
@@ -64928,197 +65209,186 @@ pjax_config_page_require_auth("settings/detailsws", function() {
         }
     };
 });
-;var securityws = (function(){
+;var SecurityWS = (function() {
     "use strict";
-    var $form,
-        init_done;
+    var $form;
+    var current_state;
+    var STATE = {
+        WAIT_AUTH:    'WAIT_AUTH',
+        QUERY_LOCKED: 'QUERY_LOCKED',
+        LOCKED:       'LOCKED',
+        UNLOCKED:     'UNLOCKED',
+        TRY_UNLOCK:   'TRY_UNLOCK',
+        TRY_LOCK:     'TRY_LOCK',
+        DONE:         'DONE',
+    };
 
-    var clearErrors = function(){
+    function clearErrors() {
         $("#SecuritySuccessMsg").text('');
         $("#invalidinputfound").text('');
         $('#errorcashierlockpassword1').contents().filter(function () {
-          return this.nodeType === 3;
+            return this.nodeType === Node.TEXT_NODE;
         }).remove();
-    };
+    }
 
-    var init = function(){
-        init_done = true;
+    function checkIsVirtual() {
+        if (!page.client.is_virtual()) {
+            return false;
+        }
+        $form.hide();
+        $('#SecuritySuccessMsg')
+            .addClass('notice-msg center-text')
+            .text(Content.localize().textFeatureUnavailable);
+        return true;
+    }
 
-        $form   = $("#changeCashierLock");
+    function makeAuthRequest() {
+        BinarySocket.send({
+            authorize: CommonData.getApiToken(),
+        });
+    }
 
-        clearErrors();
+    function init() {
+        Content.populate();
+        $form = $("#changeCashierLock");
+        if (checkIsVirtual()) return;
 
-        if(checkIsVirtual()) {
+        current_state = STATE.WAIT_AUTH;
+        BinarySocket.init({onmessage: handler});
+        makeAuthRequest();
+    }
+
+    function authorised() {
+        current_state = STATE.QUERY_LOCKED;
+        BinarySocket.send({
+            cashier_password: "1",
+        });
+    }
+
+    function updatePage(config) {
+        $('legend').text(text.localize(config.legend));
+        $('#lockInfo').text(text.localize(config.info));
+        $form.find('button')
+            .attr('value', config.button)
+            .html(text.localize(config.button));
+    }
+
+    function setupRepeatPasswordForm() {
+        $("#repasswordrow").show();
+        $('#password-meter-div').css({display: 'block'});
+        if (isIE()) {
+            $('#password-meter').remove();
             return;
         }
+        $('#cashierlockpassword1').on('input', function() {
+            $('#password-meter').attr('value', testPassword($('#cashierlockpassword1').val())[0]);
+        });
+    }
 
-        $form   = $("#changeCashierLock");
-        clearErrors();
-
-        var loginToken = CommonData.getApiToken();
-        $form.find("button").on("click", function(e){
+    function lockedStatus(response) {
+        var locked = +response.cashier_password === 1;
+        if (locked) {
+            updatePage({
+                legend: 'Unlock Cashier',
+                info:   'Your cashier is locked as per your request - to unlock it, please enter the password.',
+                button: 'Unlock Cashier',
+            });
+            $("#repasswordrow").hide();
+        } else {
+            updatePage({
+                legend: 'Lock Cashier',
+                info:   'An additional password can be used to restrict access to the cashier.',
+                button: 'Update',
+            });
+            setupRepeatPasswordForm();
+        }
+        current_state = locked ? STATE.LOCKED : STATE.UNLOCKED;
+        $form.show();
+        $form.find('button').click(function(e) {
             e.preventDefault();
             e.stopPropagation();
-            if(validateForm() === false){
+            if (!validateForm()) {
                 return false;
             }
-            BinarySocket.send({"authorize": loginToken, "passthrough": {"value": $(this).attr("value") === "Update" ? "lock_password" : "unlock_password"}});
+            current_state = locked ? STATE.TRY_UNLOCK : STATE.TRY_LOCK;
+            makeAuthRequest();
         });
-        BinarySocket.send({"authorize": loginToken, "passthrough": {"value": "is_locked"}});
-    };
+    }
 
-    var checkIsVirtual = function(){
-        if(page.client.is_virtual()) {
-            $form.hide();
-            $('#SecuritySuccessMsg').addClass('notice-msg center-text').text(Content.localize().textFeatureUnavailable);
-            return true;
-        }
-        return false;
-    };
-
-    var validateForm = function(){
-        var isValid = true;
+    function validateForm() {
         clearErrors();
+        var pwd1 = $("#cashierlockpassword1").val(),
+            pwd2 = $("#cashierlockpassword2").val(),
+            errorPassword  = $('#errorcashierlockpassword1')[0],
+            errorRPassword = $('#errorcashierlockpassword2')[0],
+            checkRepeat = current_state === STATE.UNLOCKED;
 
-        var pwd1 = document.getElementById("cashierlockpassword1").value,
-            pwd2 = document.getElementById("cashierlockpassword2").value,
-            errorPassword = document.getElementById('errorcashierlockpassword1'),
-            errorRPassword = document.getElementById('errorcashierlockpassword2'),
-            isVisible = $("#repasswordrow").is(':visible');
-
-        if(isVisible === true){
-          if (!Validate.errorMessagePassword(pwd1, pwd2, errorPassword, errorRPassword)){
-            isValid = false;
-          }
+        if (checkRepeat && !Validate.errorMessagePassword(pwd1, pwd2, errorPassword, errorRPassword)) {
+            return false;
         } else if (!/[ -~]{6,25}/.test(pwd1)) {
-          errorPassword.textContent = Content.errorMessage('min', 6);
-          isValid = false;
+            errorPassword.textContent = Content.errorMessage('min', 6);
+            return false;
         }
-        return isValid;
-    };
-    var isAuthorized =  function(response){
-        if(response.echo_req.passthrough){
-            var option = response.echo_req.passthrough.value;
-            var pwd = $("#cashierlockpassword1").val();
+        return true;
+    }
 
-            switch(option){
-                case   "lock_password" :
-                        BinarySocket.send({
-                            "cashier_password": "1",
-                            "lock_password": pwd
-                        });
-                        break;
-                case   "unlock_password" :
-                        BinarySocket.send({
-                            "cashier_password": "1",
-                            "unlock_password": pwd
-                        });
-                        break;
-                case   "is_locked" :
-                        BinarySocket.send({
-                            "cashier_password": "1",
-                            "passthrough" : {"value" : "lock_status"}
-                        });
-                        break ;
-                default:
-                        if(!init_done) {
-                            init();
-                        }
-                        break;
-            }
-        }
-    };
-    var responseMessage = function(response){
+    function makeTryingRequest() {
+        var key = current_state === STATE.TRY_UNLOCK ?
+            'unlock_password' :
+            'lock_password';
+        var params  = {cashier_password: '1'};
+        params[key] = $('#cashierlockpassword1').val();
+        BinarySocket.send(params);
+    }
 
-       var resvalue;
-
-       if(response.echo_req.passthrough && (response.echo_req.passthrough.value === "lock_status") ){
-            var passthrough = response.echo_req.passthrough.value;
-            resvalue = response.cashier_password;
-            if(parseInt(resvalue) === 1){
-                $("#repasswordrow").hide();
-                $("legend").text(text.localize("Unlock Cashier"));
-                $("#lockInfo").text(text.localize("Your cashier is locked as per your request - to unlock it, please enter the password."));
-                $form.find("button").attr("value","Unlock Cashier");
-                $form.find("button").html(text.localize("Unlock Cashier"));
-                $('#changeCashierLock').show();
-            }
-            else if(parseInt(resvalue) === 0){
-                $("#repasswordrow").show();
-                $("legend").text(text.localize("Lock Cashier"));
-                $("#lockInfo").text(text.localize("An additional password can be used to restrict access to the cashier."));
-                $form.find("button").attr("value","Update");
-                $form.find("button").html(text.localize("Update"));
-                $('#password-meter-div').attr('style', 'display:block');
-                if (isIE() === false) {
-                  $('#cashierlockpassword1').on('input', function() {
-                    $('#password-meter').attr('value', testPassword($('#cashierlockpassword1').val())[0]);
-                  });
-                } else {
-                  $('#password-meter').remove();
-                }
-                $('#changeCashierLock').show();
-            }
-        }
-        else{
-            if("error" in response) {
-                if("message" in response.error) {
-                    $("#invalidinputfound").text(text.localize(response.error.message));
-                }
-                return false;
-            }
-            else{
-                resvalue = response.echo_req.cashier_password;
-                if(parseInt(resvalue) === 1){
-                    $("#changeCashierLock").hide();
-                    $("#invalidinputfound").text('');
-                    $("#SecuritySuccessMsg").text(text.localize('Your settings have been updated successfully.'));
-                }
-                else{
-                    $("#invalidinputfound").text(text.localize('Sorry, an error occurred while processing your account.'));
-                    return false;
-                }
-            }
-        }
-        return;
-    };
-    var SecurityApiResponse = function(response){
-        if(checkIsVirtual()) {
+    function tryStatus(response) {
+        if (response.error) {
+            current_state = current_state === STATE.TRY_UNLOCK ?
+                STATE.LOCKED :
+                STATE.UNLOCKED;
+            $("#invalidinputfound").text(text.localize(response.error.message));
             return;
         }
-        var type = response.msg_type;
-        if (type === "cashier_password" || (type === "error" && "cashier_password" in response.echo_req)){
-           responseMessage(response);
-        }else if(type === "authorize" || (type === "error" && "authorize" in response.echo_req))
-        {
-            isAuthorized(response);
+        $form.hide();
+        clearErrors();
+        $("#SecuritySuccessMsg").text(text.localize('Your settings have been updated successfully.'));
+        current_state = STATE.DONE;
+    }
+
+    function handler(msg) {
+        if (checkIsVirtual()) return;
+        var response = JSON.parse(msg.data);
+        if (response.msg_type === 'authorize') {
+            switch (current_state) {
+                case STATE.WAIT_AUTH:
+                    authorised();
+                    break;
+                case STATE.TRY_UNLOCK:
+                case STATE.TRY_LOCK:
+                    makeTryingRequest();
+                    break;
+                default:
+                    break;
+            }
+        } else if (response.msg_type === 'cashier_password') {
+            switch (current_state) {
+                case STATE.QUERY_LOCKED:
+                    lockedStatus(response);
+                    break;
+                case STATE.TRY_UNLOCK:
+                case STATE.TRY_LOCK:
+                    tryStatus(response);
+                    break;
+                default:
+                    break;
+            }
         }
-    };
+    }
 
     return {
-        init : init,
-        SecurityApiResponse : SecurityApiResponse
+        init: init,
     };
 })();
-
-pjax_config_page_require_auth("user/settings/securityws", function() {
-    return {
-        onLoad: function() {
-            Content.populate();
-
-            BinarySocket.init({
-                onmessage: function(msg){
-                    var response = JSON.parse(msg.data);
-                    if (response) {
-                        securityws.SecurityApiResponse(response);
-                    }
-                }
-            });
-
-            securityws.init();
-        }
-    };
-});
 ;var Statement = (function(){
     'use strict';
     var Compatibility = typeof window !== 'undefined' ? window.Compatibility : require('../../../common_functions/compatibility');
@@ -65139,7 +65409,8 @@ pjax_config_page_require_auth("user/settings/securityws", function() {
             'amount'  : addComma(parseFloat(statement["amount"])),
             'balance' : addComma(parseFloat(statement["balance_after"])),
             'desc'    : statement["longcode"].replace(/\n/g, '<br />'),
-            'id'      : statement["contract_id"]
+            'id'      : statement["contract_id"],
+            'app_id'  : statement["app_id"]
         };
 
         return statement_data;
@@ -65171,7 +65442,7 @@ pjax_config_page_require_auth("user/settings/securityws", function() {
     if (typeof module !== 'undefined') {
         module.exports = external;
     }
-    
+
     return external;
 }());
 ;var StatementData = (function(){
@@ -65389,7 +65660,8 @@ pjax_config_page_require_auth("user/settings/securityws", function() {
         allData.push(statement_data);
         var creditDebitType = (parseFloat(statement_data.amount) >= 0) ? "profit" : "loss";
 
-        var $statementRow = Table.createFlexTableRow([statement_data.date, statement_data.ref, isNaN(statement_data.payout) ? '-' : statement_data.payout, statement_data.action, '', statement_data.amount, statement_data.balance, ''], columns, "data");
+        var $statementRow = Table.createFlexTableRow([statement_data.date, (statement_data.app_id ? ('<span data-balloon="' + text.localize('Contract purchased with app ID') + ': ' + statement_data.app_id + '">') : '') + statement_data.ref  +
+    (statement_data.app_id ? '</span>' : ''), isNaN(statement_data.payout) ? '-' : statement_data.payout, statement_data.action, '', statement_data.amount, statement_data.balance, ''], columns, "data");
         $statementRow.children(".credit").addClass(creditDebitType);
         $statementRow.children(".date").addClass("pre");
         $statementRow.children(".desc").html(statement_data.desc + "<br>");
@@ -68184,6 +68456,14 @@ pjax_config_page_require_auth("user/settings/metatrader", function() {
     return {
         onLoad: function() {
             MetaTraderUI.init();
+        }
+    };
+});
+
+pjax_config_page_require_auth("user/settings/securityws", function() {
+    return {
+        onLoad: function() {
+            SecurityWS.init();
         }
     };
 });
