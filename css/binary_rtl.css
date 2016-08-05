@@ -567,31 +567,7 @@ p.no-para-margin {
   width: 90%;
 }
 #header #client-logged-out #btn_login {
-  color: #fff;
-  text-decoration: none;
-  text-align: center;
-  line-height: 100%;
-  background: #2E8836;
-  border-radius: 4px;
-  text-transform: capitalize;
-  padding: 10px 25px 10px 25px;
-  display: inline-block;
-  letter-spacing: 0.75px;
-  border: 0;
-  text-transform: uppercase;
-  padding: 0px 10px;
-  white-space: nowrap;
-  font-weight: normal;
-  font-size: 0.8em;
-  line-height: 2em;
-  margin: 0.8em 0;
-}
-#header #client-logged-out #btn_login:visited {
-  color: #fff;
-}
-#header #client-logged-out #btn_login:hover, #header #client-logged-out #btn_login:active {
-  text-decoration: none;
-  background-color: #14602B;
+  margin-bottom: 0;
 }
 #header #client-logged-out, #header #loginid-switch-form {
   text-align: left;
