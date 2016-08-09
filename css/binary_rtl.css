@@ -158,10 +158,7 @@ fieldset {
   position: relative;
   border: 1px solid #DEDEDE;
   padding: 5px;
-  background: -moz-linear-gradient(top, #fff 30%, #F2F2F2 90%);
-  background: -webkit-linear-gradient(top, #fff 30%, #F2F2F2 90%);
-  background: -ms-linear-gradient(top, #fff 30%, #F2F2F2 90%);
-  border-bottom: 1px solid transparent;
+  margin-bottom: 10px;
 }
 fieldset#formlayout {
   background: none;
@@ -2286,18 +2283,21 @@ table .loss, table .lower {
   clear: left;
   width: 40%;
   background: #fff;
-  text-align: left;
+  text-align: right;
   margin-bottom: 20px;
   box-shadow: 0 0 2px #DEDEDE;
+  direction: ltr;
 }
 .timeline .event .header {
   background: #F2F2F2;
   font-weight: bold;
   padding: 12px;
+  direction: rtl;
 }
 .timeline .event .event-body {
   border: 1px solid #F2F2F2;
   padding: 12px;
+  direction: rtl;
 }
 .timeline .event.featured .header {
   background: #e98024;
@@ -2409,7 +2409,7 @@ table .loss, table .lower {
 }
 .career .xquote div .picture, .user_testing .xquote div .picture {
   float: left;
-  padding-right: 20px;
+  padding-left: 20px;
 }
 .career .xquote div .text, .user_testing .xquote div .text {
   display: table-cell;
@@ -2439,9 +2439,10 @@ table .loss, table .lower {
 }
 .about-us .border-bottom {
   border-bottom: 1px solid #DEDEDE;
+  padding-bottom: 0;
 }
 .about-us .border-right-top {
-  border-right: 1px solid #DEDEDE;
+  border-left: 1px solid #DEDEDE;
   padding-bottom: 50px;
 }
 .about-us .align {
@@ -2451,7 +2452,7 @@ table .loss, table .lower {
   height: 200px;
 }
 .about-us .border-right-bottom {
-  border-right: 1px solid #DEDEDE;
+  border-left: 1px solid #DEDEDE;
   padding-top: 30px;
 }
 .about-us h1 {
@@ -2931,7 +2932,7 @@ div.kineticjs-content {
 
 .open-positions .eq:not(:first-child) {
   border: 1px dashed #DEDEDE;
-  border-width: 0 0 0 1px;
+  border-width: 0 1px 0 0;
 }
 .open-positions .eq:nth-child(3n+1) {
   border-width: 0;
@@ -3404,7 +3405,7 @@ div.kineticjs-content {
   align-items: center;
   width: 100%;
   justify-content: flex-start;
-  padding-left: 30px;
+  padding-right: 30px;
 }
 #trading_socket_container #contract_prices_container .price_container .price_wrapper.small {
   width: 95px;
@@ -3444,10 +3445,10 @@ div.kineticjs-content {
   display: none;
 }
 #trading_socket_container #duration_amount {
-  margin-right: 5px;
+  margin-left: 5px;
 }
 #trading_socket_container #duration_units {
-  margin-right: 10px;
+  margin-left: 10px;
 }
 #trading_socket_container #duration_tooltip_wrapper {
   line-height: 28px;
@@ -3461,7 +3462,7 @@ div.kineticjs-content {
 }
 #trading_socket_container #expiry_date {
   width: 175px;
-  margin-right: 5px;
+  margin-left: 5px;
   margin-bottom: 5px;
 }
 #trading_socket_container #expiry_time {
@@ -3472,6 +3473,7 @@ div.kineticjs-content {
 }
 #trading_socket_container .barrier_class input, #trading_socket_container #jhigh_barrier_row select, #trading_socket_container #jlow_barrier_row select, #trading_socket_container #jbarrier_row select, #trading_socket_container #period {
   width: 175px;
+  margin-left: 5px;
 }
 #trading_socket_container #period {
   font-size: 80%;
@@ -3923,6 +3925,10 @@ body .calls_recording {
 }
 body .all-hide {
   display: none !important;
+}
+body ul.checked li {
+  background-position: right;
+  padding-right: 35px;
 }
 
 body.EN .calls_recording {

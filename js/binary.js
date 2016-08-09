@@ -49789,7 +49789,7 @@ Market.prototype = {
     by_symbol: function(symbol) {
         var count = this.submarkets.length;
         while(count--) {
-            found = this.submarkets[count].by_symbol(symbol);
+            var found = this.submarkets[count].by_symbol(symbol);
             if(found) {
                 found['market'] = this;
                 return found;
@@ -51135,6 +51135,7 @@ Page.prototype = {
             Login.redirect_to_login();
         }
         this.check_language();
+        TrafficSource.setData();
     },
     on_unload: function() {
         this.header.on_unload();
@@ -51377,7 +51378,7 @@ var pjax_config = function() {
                 $.get('/errors/500.html').always(function(content) {
                     var tmp = document.createElement('div');
                     tmp.innerHTML = content;
-                    tmpNodes = tmp.getElementsByTagName('div');
+                    var tmpNodes = tmp.getElementsByTagName('div');
                     for(var i=0,l=tmpNodes.length;i<l;i++){
                         if(tmpNodes[i].id == 'content') {
                             SessionStore.set('errors.500', tmpNodes[i].innerHTML);
@@ -51494,6 +51495,7 @@ var CookieStorage = function (cookie_name, cookie_domain) {
     this.cookie_name = cookie_name;
     var hostname = window.location.hostname;
     this.domain = cookie_domain || (/\.binary\.com/i.test(hostname) ? '.' + hostname.split('.').slice(-2).join('.') : hostname);
+    this.path = '/';
     this.expires = new Date('Thu, 1 Jan 2037 12:00:00 GMT');
     this.value = {};
 };
@@ -51514,7 +51516,7 @@ CookieStorage.prototype = {
         if(expireDate) this.expires = expireDate;
         $.cookie(this.cookie_name, this.value, {
             expires: this.expires,
-            path   : '/',
+            path   : this.path,
             domain : this.domain,
             secure : !!isSecure,
         });
@@ -51527,9 +51529,15 @@ CookieStorage.prototype = {
         if (!this.initialized) this.read();
         this.value[key] = value;
         $.cookie(this.cookie_name, JSON.stringify(this.value), {
-            expires: this.expires,
-            path: '/',
-            domain: this.domain,
+            expires: new Date(this.expires),
+            path   : this.path,
+            domain : this.domain,
+        });
+    },
+    remove: function() {
+        $.removeCookie(this.cookie_name, {
+            path   : this.path,
+            domain : this.domain,
         });
     }
 };
@@ -52690,7 +52698,7 @@ var select_nav_element = function() {
   var $navLink = $('.nav li a');
   var $navList = $('.nav li');
   $navList.removeClass('selected');
-  for (i = 0; i < $navLink.length; i++) {
+  for (var i = 0; i < $navLink.length; i++) {
     if ($navLink[i].href.match(window.location.pathname)) {
       document.getElementsByClassName('nav')[0].getElementsByTagName('li')[i].setAttribute('class', 'selected');
       break;
@@ -52840,7 +52848,7 @@ function appendTextValueChild(element, text, value, disabled){
 function dropDownNumbers(select, startNum, endNum) {
     select.appendChild(document.createElement("option"));
 
-    for (i = startNum; i <= endNum; i++){
+    for (var i = startNum; i <= endNum; i++){
         var option = document.createElement("option");
         option.text = i;
         option.value = i;
@@ -52866,14 +52874,14 @@ function dropDownMonths(select, startNum, endNum) {
         text.localize("Dec")
     ];
     select.appendChild(document.createElement("option"));
-    for (i = startNum; i <= endNum; i++){
+    for (var i = startNum; i <= endNum; i++){
         var option = document.createElement("option");
         if (i <= '9') {
             option.value = '0' + i;
         } else {
             option.value = i;
         }
-        for (j = i; j <= i; j++) {
+        for (var j = i; j <= i; j++) {
             option.text = months[j-1];
         }
         select.appendChild(option);
@@ -53666,6 +53674,75 @@ function testPassword(passwd)
 
     return external;
 }());
+;/*
+ * Handles utm parameters/referrer to use on signup
+ * 
+ * Priorities:
+ * 1. Cookie having utm data (utm_source, utm_medium, utm_campaign) [Expires in 3 months]
+ * 2. Query string utm parameters
+ * 3. document.referrer
+ *
+ */
+
+var TrafficSource = (function(){
+    'use strict';
+
+    var cookie,
+        expire_months = 3;
+
+    var initCookie = function() {
+        if (!cookie) {
+            cookie = new CookieStorage('utm_data');
+            cookie.read();
+            // expiration date is used when writing cookie
+            var now = new Date();
+            cookie.expires = now.setMonth(now.getMonth() + expire_months);
+        }
+    };
+
+    var getData = function() {
+        initCookie();
+        return cookie.value;
+    };
+
+    var getSource = function(utm_data) {
+        if (!utm_data) utm_data = getData();
+        return utm_data.utm_source || utm_data.referrer || 'direct'; // in order of precedence
+    };
+
+    var setData = function() {
+        if (page.client.is_logged_in) return clearData();
+
+        var current_values = getData(),
+            params = page.url.params_hash(),
+            param_keys = ['utm_source', 'utm_medium', 'utm_campaign'];
+
+        if (params.utm_source) { // url params can be stored only if utm_source is available
+            param_keys.map(function(key) {
+                if (params[key] && !current_values[key]) {
+                    cookie.set(key, params[key]);
+                }
+            });
+        }
+
+        if(document.referrer && !current_values.referrer && !params.utm_source && !current_values.utm_source) {
+            var referrer = (new URL(document.referrer)).location.hostname;
+            cookie.set('referrer', referrer);
+        }
+    };
+
+    var clearData = function() {
+        initCookie();
+        cookie.remove();
+    };
+
+    return {
+        getData  : getData,
+        setData  : setData,
+        clearData: clearData,
+        getSource: getSource,
+    };
+})();
 ;var ValidAccountOpening = (function(){
   var redirectCookie = function() {
     if (page.client.show_login_if_logout(true)) {
@@ -53675,7 +53752,7 @@ function testPassword(passwd)
       window.location.href = page.url.url_for('user/my_accountws');
       return;
     }
-    for (i = 0; i < page.user.loginid_array.length; i++){
+    for (var i = 0; i < page.user.loginid_array.length; i++){
       if (page.user.loginid_array[i].real === true){
         window.location.href = page.url.url_for('user/my_accountws');
         return;
@@ -53819,7 +53896,7 @@ function testPassword(passwd)
     par.className = 'error-message-password';
     var parClass = $('.' + par.className);
     if (parClass.length > 1) {
-      for (i = 0; i < parClass.length; i++){
+      for (var i = 0; i < parClass.length; i++){
         allText = allText + parClass[i].textContent;
       }
       if (!re.test(allText)){
@@ -60492,63 +60569,45 @@ var Price = (function() {
             }
         }
 
+        var setData = function(data) {
+            if (!data) return;
+            if (data['display_value']) {
+                if (is_spread) {
+                    $('.stake:visible').hide();
+                    amount.textContent = data['display_value'];
+                } else {
+                    $('.stake:hidden').show();
+                    stake.textContent = text.localize('Stake') + ': ';
+                    amount.textContent = currency.value + ' ' + (data['display_value']*1).toFixed(2);
+                }
+                $('.stake_wrapper:hidden').show();
+            } else {
+                $('.stake_wrapper:visible').hide();
+            }
+
+            if (data['payout']) {
+              payout.textContent = (is_spread ? text.localize('Payout/point') : text.localize('Payout')) + ': ';
+              payoutAmount.textContent = currency.value + ' ' + (data['payout']*1).toFixed(2);
+              $('.payout_wrapper:hidden').show();
+            } else {
+              $('.payout_wrapper:visible').hide();
+            }
+
+            if (data['longcode'] && window.innerWidth > 500) {
+                description.setAttribute('data-balloon', data['longcode']);
+            } else {
+                description.removeAttribute('data-balloon');
+            }
+        };
+
         if (details['error']) {
             purchase.hide();
             comment.hide();
-            var extraInfo = details['error']['details'];
-            if (extraInfo && extraInfo['display_value']) {
-                if (is_spread) {
-                    $('.stake').hide();
-                    amount.textContent = extraInfo['display_value'];
-                    if (extraInfo['payout']) {
-                      payout.textContent = text.localize('Payout/point') + ': ';
-                      payoutAmount.textContent = currency.value + ' ' + (extraInfo['payout']*1).toFixed(2);
-                    }
-                } else {
-                    $('.stake').show();
-                    stake.textContent = text.localize('Stake') + ': ';
-                    amount.textContent = currency.value + ' ' + (extraInfo['display_value']*1).toFixed(2);
-                    if (extraInfo['payout']) {
-                      payout.textContent = text.localize('Payout') + ': ';
-                      payoutAmount.textContent = currency.value + ' ' + (extraInfo['payout']*1).toFixed(2);
-                    }
-                }
-
-                if (extraInfo['longcode'] && window.innerWidth > 500) {
-                  description.setAttribute('data-balloon', extraInfo['longcode']);
-                } else {
-                  description.removeAttribute('data-balloon');
-                }
-            }
-
+            setData(details['error']['details']);
             error.show();
             error.textContent = details['error']['message'];
         } else {
-            if (proposal && proposal['display_value']) {
-                if (is_spread) {
-                    $('.stake').hide();
-                    amount.textContent = proposal['display_value'];
-                    if (proposal['payout']) {
-                      payout.textContent = text.localize('Payout/point') + ': ';
-                      payoutAmount.textContent = currency.value + ' ' + (proposal['payout']*1).toFixed(2);
-                    }
-                } else {
-                    $('.stake').show();
-                    stake.textContent = text.localize('Stake') + ': ';
-                    amount.textContent = currency.value + ' ' + (proposal['display_value']*1).toFixed(2);
-                    if (proposal['payout']) {
-                      payout.textContent = text.localize('Payout') + ': ';
-                      payoutAmount.textContent = currency.value + ' ' + (proposal['payout']*1).toFixed(2);
-                    }
-                }
-            }
-
-            if (proposal && proposal['longcode'] && window.innerWidth > 500) {
-                description.setAttribute('data-balloon', proposal['longcode']);
-            } else {
-              description.removeAttribute('data-balloon');
-            }
-
+            setData(proposal);
             purchase.show();
             comment.show();
             error.hide();
@@ -64350,9 +64409,9 @@ pjax_config_page_require_auth("user/settings/assessmentws", function() {
                         if(loginInfo.real) hasRealBinaryAccount = true;
                     });
 
-                    $('#msg-cannot-create-real').html(text.localize('To create a Real account for MetaTrader, ' +
-                        (hasRealBinaryAccount ? 'switch to your Binary Real account.' :
-                            '<a href="[_1]">upgrade to Bianry Real account</a>.'), [page.url.url_for('new_account/realws')])
+                    $('#msg-cannot-create-real').html(hasRealBinaryAccount ?
+                        text.localize('To create a real account for MetaTrader, switch to your [_1] real money account.', ['Binary.com']) :
+                        text.localize('To create a real account for MetaTrader, <a href="[_1]">upgrade to [_2] real money account</a>.', [page.url.url_for('new_account/realws'), 'Binary.com'])
                     ).removeClass(hiddenClass);
                 } else {
                     if(!isAuthenticated && !page.client.is_virtual()) {
@@ -66864,6 +66923,14 @@ pjax_config_page_require_auth("user/my_accountws", function() {
                     residence: residence,
                     verification_code: verificationCode
                 };
+
+        // Add TrafficSource parameters
+        // NOTE: following lines can be uncommented (Re-check property names)
+        // once these fields added to this ws call
+        // var utm_data = TrafficSource.getData();
+        // req.source = TrafficSource.getSource(utm_data);
+        // if(utm_data.utm_medium)   req.medium   = utm_data.utm_medium;
+        // if(utm_data.utm_campaign) req.campaign = utm_data.utm_campaign;
 
         if ($.cookie('affiliate_tracking')) {
             req.affiliate_token = JSON.parse($.cookie('affiliate_tracking')).t;
