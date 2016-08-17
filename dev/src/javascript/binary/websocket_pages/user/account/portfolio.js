@@ -5,8 +5,8 @@ var Portfolio = (function(){
     var addComma = Compatibility.requireIfNotExist('addComma', '../websocket_pages/trade/common', 'addComma'),
         toJapanTimeIfNeeded = Compatibility.requireIfNotExist('toJapanTimeIfNeeded', '../base/utility', 'toJapanTimeIfNeeded');
 
-    function getBalance(data, withCurrency) {
-        return withCurrency ? data.balance.currency + ' ' + addComma(parseFloat(data.balance.balance)) : parseFloat(data.balance.balance);
+    function getBalance(balance, currency) {
+        return currency ? currency + ' ' + addComma(parseFloat(balance)) : parseFloat(balance);
     }
 
     function getPortfolioData(c) {
@@ -17,8 +17,7 @@ var Portfolio = (function(){
             'longcode'       : typeof module !== 'undefined' ? c.longcode : japanese_client() ? toJapanTimeIfNeeded(c.expiry_time, '', c.longcode) : c.longcode,
             'currency'       : c.currency,
             'buy_price'      : addComma(parseFloat(c.buy_price)),
-            'app_id'         : c.app_id,
-            'app_name'       : c.app_name
+            'app_id'         : c.app_id
         };
 
         return portfolio_data;
