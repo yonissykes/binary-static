@@ -53392,7 +53392,7 @@ var addTooltip = function(oauth_apps) {
 
 var add_app_id_name = function(app_id, app_name) {
     var ref_string;
-    if (app_id && getAppId() != app_id) {
+    if (app_id) {
         ref_string = text.localize('Transaction performed by') + ' ' + (app_name ? app_name : '') + ' (' + text.localize('App ID') + ': ' + app_id + ')';
     }
     return ref_string;
@@ -53400,7 +53400,7 @@ var add_app_id_name = function(app_id, app_name) {
 
 var showTooltip = function(app_id, oauth_app_id) {
     return (
-        app_id && getAppId() != app_id ?
+        app_id ?
             ' class="' + app_id + '" data-balloon="' + (
                 oauth_app_id ?
                     add_app_id_name(app_id, oauth_app_id) :
@@ -68505,7 +68505,7 @@ pjax_config_page_require_auth("tnc_approvalws", function() {
     var normalUpdate = function() {
         var finalPrice       = contract.sell_price || contract.bid_price,
             is_started       = !contract.is_forward_starting || contract.current_spot_time > contract.date_start,
-            user_sold        = contract.sell_spot_time && contract.sell_spot_time < contract.date_expiry,
+            user_sold        = contract.sell_time && contract.sell_time <= contract.date_expiry,
             is_ended         = contract.is_expired || contract.is_sold || user_sold,
             indicative_price = finalPrice && is_ended ? (contract.sell_price || contract.bid_price) : contract.bid_price ? contract.bid_price : null;
 
@@ -68516,10 +68516,11 @@ pjax_config_page_require_auth("tnc_approvalws", function() {
             containerSetText('trade_details_barrier'    , contract.entry_tick_time ? contract.barrier : '-', '', true);
         }
 
-        var currentSpot = user_sold ? contract.sell_spot : (is_ended ? contract.exit_tick : contract.current_spot);
+        var currentSpot     = !is_ended ? contract.current_spot      : (user_sold ? contract.sell_spot      : contract.exit_tick);
+        var currentSpotTime = !is_ended ? contract.current_spot_time : (user_sold ? contract.sell_spot_time : contract.exit_tick_time);
 
         containerSetText('trade_details_ref_id'          , contract.transaction_ids.buy + (contract.transaction_ids.sell ? ' - ' + contract.transaction_ids.sell : ''));
-        containerSetText('trade_details_current_date'    , toJapanTimeIfNeeded(epochToDateTime(!is_ended ? contract.current_spot_time : (user_sold ? contract.sell_spot_time : contract.exit_tick_time))));
+        containerSetText('trade_details_current_date'    , toJapanTimeIfNeeded(epochToDateTime(currentSpotTime)));
         containerSetText('trade_details_current_spot'    , currentSpot || text.localize('not available'));
         containerSetText('trade_details_indicative_price', indicative_price ? format_money(contract.currency, parseFloat(indicative_price).toFixed(2)) : '-');
 
