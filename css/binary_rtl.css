@@ -2285,12 +2285,12 @@ table .loss, table .lower {
   }
 }
 
-.api_token table td, .api_token table th.flex-tr-child {
+.api_token table td, .api_token table th {
   text-align: center !important;
   vertical-align: middle !important;
   line-height: 30px;
 }
-.api_token table td .button, .api_token table th.flex-tr-child .button {
+.api_token table td .button, .api_token table th .button {
   margin: 3px 0px;
 }
 .api_token table tr.deleting {
@@ -2323,12 +2323,12 @@ table .loss, table .lower {
     font-size: 80% !important;
   }
 }
-#applications-ws-container table td, #applications-ws-container table th.flex-tr-child {
+#applications-ws-container table td, #applications-ws-container table th {
   text-align: center !important;
   vertical-align: middle !important;
   line-height: 30px;
 }
-#applications-ws-container table td .button, #applications-ws-container table th.flex-tr-child .button {
+#applications-ws-container table td .button, #applications-ws-container table th .button {
   margin: 3px 0px;
 }
 
@@ -2463,7 +2463,7 @@ table .loss, table .lower {
 #trading-times tr:nth-child(1) th, #asset-index tr:nth-child(1) th {
   background-color: #C2C2C2;
 }
-#trading-times th.flex-tr-child, #asset-index th.flex-tr-child {
+#trading-times th, #asset-index th {
   line-height: 30px;
 }
 #trading-times th.submarket-name, #asset-index th.submarket-name {
@@ -2486,13 +2486,13 @@ table .loss, table .lower {
 #asset-index th {
   width: 12%;
 }
-#asset-index .asset {
-  width: 18%;
-}
-#asset-index th.flex-tr-child:nth-child(2):nth-last-child(1) {
+#asset-index th:nth-child(2):nth-last-child(1) {
   width: 24%;
 }
-#asset-index th.flex-tr-child:nth-child(2):nth-last-child(2), #asset-index th.flex-tr-child:nth-child(3):nth-last-child(1) {
+#asset-index th:nth-child(2):nth-last-child(2), #asset-index th:nth-child(3):nth-last-child(1) {
+  width: 18%;
+}
+#asset-index .asset {
   width: 18%;
 }
 
@@ -3723,69 +3723,69 @@ div.kineticjs-content {
   min-width: 210px;
 }
 
-.flex-table-container th {
+.table-container th {
   text-align: right !important;
   border-bottom: none !important;
   overflow: hidden;
 }
-.flex-table-container td {
+.table-container td {
   text-align: right !important;
   padding-right: 10px;
 }
-.flex-table-container td[data-balloon] {
+.table-container td[data-balloon] {
   border-bottom: 3px solid #F2F2F2;
 }
-.flex-table-container .pre {
+.table-container .pre {
   white-space: pre;
 }
 @media (max-width: 600px) {
-  .flex-table-container td {
+  .table-container td {
     padding-left: 5px !important;
     padding-right: 5px !important;
   }
-  .flex-table-container th {
+  .table-container th {
     padding-left: 5px !important;
     padding-right: 5px !important;
   }
 }
-.flex-table-container #statement-table .flex-tr > th.details, .flex-table-container #statement-table .flex-tr > td.details {
+.table-container #statement-table tr > th.details, .table-container #statement-table tr > td.details {
   display: none !important;
 }
 @media (max-width: 600px) {
-  .flex-table-container #statement-table .flex-tr > th.desc, .flex-table-container #statement-table .flex-tr > td.desc {
+  .table-container #statement-table tr > th.desc, .table-container #statement-table tr > td.desc {
     display: none !important;
   }
-  .flex-table-container #statement-table .flex-tr > th.details, .flex-table-container #statement-table .flex-tr > td.details {
+  .table-container #statement-table tr > th.details, .table-container #statement-table tr > td.details {
     display: table-cell !important;
   }
-  .flex-table-container #statement-table .flex-tr > th.details .button, .flex-table-container #statement-table .flex-tr > td.details .button {
+  .table-container #statement-table tr > th.details .button, .table-container #statement-table tr > td.details .button {
     padding: 8px 15px;
   }
-  .flex-table-container #statement-table .flex-tr .flex-tr-child {
+  .table-container #statement-table tr th, .table-container #statement-table tr td {
     font-size: 12px;
   }
 }
-.flex-table-container #statement-table .flex-tr td {
+.table-container #statement-table tr td {
   overflow: initial;
 }
-.flex-table-container #profit-table .flex-tr > th.details, .flex-table-container #profit-table .flex-tr > td.details {
+.table-container #profit-table tr > th.details, .table-container #profit-table tr > td.details {
   display: none !important;
 }
 @media (max-width: 600px) {
-  .flex-table-container #profit-table .flex-tr > th.contract, .flex-table-container #profit-table .flex-tr > td.contract {
+  .table-container #profit-table tr > th.contract, .table-container #profit-table tr > td.contract {
     display: none !important;
   }
-  .flex-table-container #profit-table .flex-tr > th.details, .flex-table-container #profit-table .flex-tr > td.details {
+  .table-container #profit-table tr > th.details, .table-container #profit-table tr > td.details {
     display: table-cell !important;
   }
-  .flex-table-container #profit-table .flex-tr > th.details .button, .flex-table-container #profit-table .flex-tr > td.details .button {
+  .table-container #profit-table tr > th.details .button, .table-container #profit-table tr > td.details .button {
     padding: 8px 15px;
   }
-  .flex-table-container #profit-table .flex-tr .flex-tr-child {
+  .table-container #profit-table tr th, .table-container #profit-table tr td {
     font-size: 12px;
   }
 }
-.flex-table-container #profit-table .flex-tr td {
+.table-container #profit-table tr td {
   overflow: initial;
 }
 
@@ -3822,7 +3822,7 @@ iframe#chart_frame {
   padding-right: 20px;
 }
 
-#limits-ws-container .item.flex-tr-child img {
+#limits-ws-container .item img {
   margin-left: 5px;
 }
 #limits-ws-container thead {
@@ -4040,7 +4040,7 @@ body.PT h1, body.PT h2, body.PT h3, body.PT h4, body.PT h5, body.PT h6, body.RU 
     text-align: center;
   }
 
-  .flex-table-container {
+  .table-container {
     overflow-x: auto;
   }
 }
