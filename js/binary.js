@@ -57194,7 +57194,7 @@ var TradingAnalysis = (function() {
         };
 
         if(show_image && images.hasOwnProperty(form_name)) {
-            var image_path = page.url.url_for_static('images/pages/trade-explanation/');
+            var image_path = page.url.url_for_static('images/pages/trade-explanation/' + (page.language() === 'JA' ? 'ja/' : ''));
             $Container.find('#explanation_image_1').attr('src', image_path + images[form_name].image1);
             $Container.find('#explanation_image_2').attr('src', image_path + images[form_name].image2);
             $Container.find('#explanation_image').removeClass(hidden_class);
@@ -65517,15 +65517,7 @@ pjax_config_page_require_auth("user/settings/assessmentws", function() {
 
             $(RealAccElements).removeClass('hidden');
         }
-        $('.JpAcc').removeClass('invisible')
-                   .removeClass('hidden');
 
-        $('#AnnualIncome, #FinancialAsset, #Occupation, #Equities, #Commodities,' +
-            '#ForeignCurrencyDeposit, #MarginFX, #InvestmentTrust, #PublicCorporationBond,' +
-            '#DerivativeTrading, #PurposeOfTrading, #HedgeAsset, #HedgeAssetAmount')
-            .on('change', function() {
-            changed = true;
-        });
         $(formID).removeClass('hidden');
     }
 

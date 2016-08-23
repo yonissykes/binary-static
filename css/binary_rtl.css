@@ -3863,6 +3863,12 @@ button:disabled {
   border: none;
 }
 
+.big-error-code {
+  color: #DEDEDE;
+  font-size: 10em;
+  font-weight: normal;
+}
+
 /* Language based rules */
 /* Specific rules for languages */
 body .calls_recording {
