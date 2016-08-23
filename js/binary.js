@@ -51122,8 +51122,8 @@ Contents.prototype = {
                 $('.by_client_type.client_real').not((japanese_client() ? ".ja-hide" : ".control-class")).removeClass('invisible');
                 $('.by_client_type.client_real').show();
 
-                $('#topbar').addClass('dark-blue');
-                $('#topbar').removeClass('orange');
+                $('#topbar').addClass('primary-color-dark');
+                $('#topbar').removeClass('secondary-bg-color');
 
                 if (!/^CR/.test(this.client.loginid)) {
                     $('#payment-agent-section').addClass('invisible');
@@ -51138,8 +51138,8 @@ Contents.prototype = {
                 $('.by_client_type.client_virtual').removeClass('invisible');
                 $('.by_client_type.client_virtual').show();
 
-                $('#topbar').addClass('orange');
-                $('#topbar').removeClass('dark-blue');
+                $('#topbar').addClass('secondary-bg-color');
+                $('#topbar').removeClass('primary-color-dark');
 
                 $('#account-transfer-section').addClass('invisible');
                 $('#account-transfer-section').hide();
@@ -51150,8 +51150,8 @@ Contents.prototype = {
             $('.by_client_type.client_logged_out').removeClass('invisible');
             $('.by_client_type.client_logged_out').show();
 
-            $('#topbar').removeClass('orange');
-            $('#topbar').addClass('dark-blue');
+            $('#topbar').removeClass('secondary-bg-color');
+            $('#topbar').addClass('primary-color-dark');
 
             $('#account-transfer-section').addClass('invisible');
             $('#account-transfer-section').hide();
@@ -52562,11 +52562,8 @@ FlexTableUI.prototype = {
      * eg. ["", "halo", ""] will have 3 elements in footer, 2 of them being empty
      */
     function createFlexTable(body, metadata, header, footer){
-
-        var tableClasses = (metadata.tableClass) ? metadata.tableClass + " flex-table" : "flex-table";
-
-        var $tableContainer = $("<div></div>", {class: "flex-table-container"});
-        var $table = $("<table></table>", {class: tableClasses, id: metadata.id});
+        var $tableContainer = $("<div></div>");
+        var $table = $("<table></table>", {class: metadata.tableClass || '', id: metadata.id});
         var $body = createFlexTableTopGroup(body, metadata.cols, "body");
 
         if (header) {
@@ -52627,9 +52624,9 @@ FlexTableUI.prototype = {
 
         var isData = (opt === "data");
 
-        var $tr = $("<tr></tr>", {class: "flex-tr"});
+        var $tr = $("<tr></tr>");
         for (var i = 0 ; i < data.length ; i++){
-            var className = metadata[i].toLowerCase().replace(/\s/g, "-") + " flex-tr-child";
+            var className = metadata[i].toLowerCase().replace(/\s/g, "-");
             var rowElement = (isData) ?
                 $("<td></td>", {class: className, html: data[i]}) :
                 $("<th></th>", {class: className, html: data[i]});
@@ -65846,7 +65843,12 @@ pjax_config_page_require_auth("settings/detailsws", function() {
             current_state = current_state === STATE.TRY_UNLOCK ?
                 STATE.LOCKED :
                 STATE.UNLOCKED;
-            $("#invalidinputfound").text(text.localize(response.error.message));
+            var message = response.error.message;
+            if (current_state === STATE.LOCKED &&
+                response.error.code === 'InputValidationFailed') {
+                message = 'Sorry, you have entered an incorrect cashier password';
+            }
+            $("#invalidinputfound").text(text.localize(message));
             return;
         }
         $form.hide();
