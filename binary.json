@@ -155,7 +155,6 @@
     "src/javascript/binary/websocket_pages/user/account/top_up_virtualws.js",
     "src/javascript/binary/websocket_pages/user/lost_password.js",
     "src/javascript/binary/websocket_pages/user/lost_password/lost_password.init.js",
-    "src/javascript/binary/websocket_pages/user/my_accountws.js",
     "src/javascript/binary/websocket_pages/user/new_account/financial_acc_opening.js",
     "src/javascript/binary/websocket_pages/user/new_account/financial_acc_opening/financial_acc_opening.data.js",
     "src/javascript/binary/websocket_pages/user/new_account/financial_acc_opening/financial_acc_opening.ui.js",
