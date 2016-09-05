@@ -64,6 +64,12 @@ table {
  * with the same value for LTR and RTL languages
  * sample usage: @include BIDIR_PROP(margin-left, margin-right, 5px);
  */
+/*
+ * To replace characters in a string
+ */
+/*
+ * To create an optimized svg url
+ */
 /* DO NOT include any rules for specific pages in this file. */
 /* theme elements */
 html {

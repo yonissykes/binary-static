@@ -64,6 +64,12 @@ table {
  * with the same value for LTR and RTL languages
  * sample usage: @include BIDIR_PROP(margin-left, margin-right, 5px);
  */
+/*
+ * To replace characters in a string
+ */
+/*
+ * To create an optimized svg url
+ */
 /* DO NOT include any rules for specific pages in this file. */
 /* theme elements */
 html {
@@ -1046,7 +1052,7 @@ meter#password-meter::-webkit-meter-bar {
   background-position: left !important;
 }
 #accordion h3.ui-state-default {
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><defs><style>.cls-1{fill:#2a3052;}</style></defs><title>arrow_left</title><path class="cls-1" d="M15.7,16.59,11.125,12,15.7,7.41,14.3,6l-6,6,6,6Z"/></svg>');
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='%232a3052' d='M15.7,16.59,11.125,12,15.7,7.41,14.3,6l-6,6,6,6Z'/%3E%3C/svg%3E");
 }
 #accordion .ui-accordion-content {
   padding-top: 0;
