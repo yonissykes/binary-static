@@ -4024,10 +4024,13 @@ div.kineticjs-content {
 #trading_socket_container_beta #contract_prices_container #contract_purchase_new_trade {
   margin: 10px auto;
 }
-#trading_socket_container_beta #contract_prices_container #confirmation_error {
+#trading_socket_container_beta #contract_prices_container #confirmation_error_contents {
   padding: 20px;
   font-style: italic;
   vertical-align: middle;
+  border: 1px solid #DEDEDE;
+  border-top: none;
+  line-height: 1.5em;
 }
 #trading_socket_container_beta #contract_prices_container .price_comment, #trading_socket_container_beta #contract_prices_container .contract_error, #trading_socket_container_beta #contract_prices_container #contract_purchase_balance {
   background-color: #DEDEDE;
@@ -4147,7 +4150,7 @@ div.kineticjs-content {
 #trading_socket_container_beta #contract_confirmation_container {
   text-align: right;
 }
-#trading_socket_container_beta #contract_confirmation_container #contract_purchase_heading {
+#trading_socket_container_beta #contract_confirmation_container #contract_purchase_heading, #trading_socket_container_beta #contract_confirmation_container #confirmation_error_heading {
   font-size: 18px;
   line-height: 35px;
   margin-bottom: 0px;
@@ -4479,6 +4482,9 @@ div.kineticjs-content {
 #content #trading_socket_container_beta #trading_analysis_content .content-tab-container #analysis_content #trade_live_chart table td {
   height: 100%;
   border: 0;
+}
+#content #trading_socket_container_beta #trading_analysis_content .content-tab-container #analysis_content #tab_asset_index-content .ui-tabs-panel {
+  border: none;
 }
 #content #trading_socket_container_beta #trading_analysis_content .content-tab-container #analysis_content #portfolio #portfolio-content > div, #content #trading_socket_container_beta #trading_analysis_content .content-tab-container #analysis_content #tab_trading_times-content > p {
   margin: 0 10px 10px;

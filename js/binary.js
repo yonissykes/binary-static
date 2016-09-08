@@ -59142,7 +59142,7 @@ var TradingEvents_Beta = (function () {
                     processForgetTicks_Beta();
                     // get ticks for current underlying
                     Tick.request(underlying);
-                    displayTooltip(Defaults.get('market'), underlying);
+                    displayTooltip_Beta(Defaults.get('market'), underlying);
                 }
             });
         }
@@ -59946,7 +59946,7 @@ function processMarketUnderlying_Beta() {
 
     Contract_Beta.getContracts(underlying);
 
-    displayTooltip(Defaults.get('market'), underlying);
+    displayTooltip_Beta(Defaults.get('market'), underlying);
 }
 
 /*
@@ -59959,12 +59959,13 @@ function processContract_Beta(contracts) {
         var container = document.getElementById('contract_confirmation_container'),
             message_container = document.getElementById('confirmation_message'),
             confirmation_error = document.getElementById('confirmation_error'),
+            confirmation_error_contents = document.getElementById('confirmation_error_contents'),
             contracts_list = document.getElementById('contracts_list');
         container.style.display = 'block';
         contracts_list.style.display = 'none';
         message_container.hide();
         confirmation_error.show();
-        confirmation_error.innerHTML = contracts.error.message + ' <a href="javascript:;" onclick="TradePage_Beta.reload();">' + text.localize('Please reload the page') + '</a>';
+        confirmation_error_contents.innerHTML = contracts.error.message + ' <a href="javascript:;" onclick="TradePage_Beta.reload();">' + text.localize('Please reload the page') + '</a>';
         return;
     }
 
@@ -60254,6 +60255,7 @@ var Purchase_Beta = (function () {
             profit = document.getElementById('contract_purchase_profit'),
             spots = document.getElementById('contract_purchase_spots'),
             confirmation_error = document.getElementById('confirmation_error'),
+            confirmation_error_contents = document.getElementById('confirmation_error_contents'),
             contracts_list = document.getElementById('contracts_list'),
             button = document.getElementById('contract_purchase_button');
 
@@ -60266,7 +60268,7 @@ var Purchase_Beta = (function () {
             container.style.display = 'block';
             message_container.hide();
             confirmation_error.show();
-            confirmation_error.innerHTML = (/ClientUnwelcome/.test(error.code) ? error['message'] + '<a class="pjaxload" href="' + page.url.url_for('user/authenticatews') + '"> ' + text.localize('Authorise your account.' + '</a>') : error['message']);
+            confirmation_error_contents.innerHTML = (/ClientUnwelcome/.test(error.code) ? error['message'] + '<a class="pjaxload" href="' + page.url.url_for('user/authenticatews') + '"> ' + text.localize('Authorise your account.' + '</a>') : error['message']);
         } else {
             var guideBtn = document.getElementById('guideBtn');
             if(guideBtn) {
@@ -63079,6 +63081,33 @@ function updatePurchaseStatus_Beta(final_price, pnl, contract_status){
     var isWin = (+final_price > 0);
     $('#contract_purchase_profit_value').attr('class', (isWin ? 'profit' : 'loss'));
     label_value(profit, isWin ? Content.localize().textProfit : Content.localize().textLoss, addComma(Math.round((final_price - pnl) * 100) / 100));
+}
+
+function displayTooltip_Beta(market, symbol){
+    'use strict';
+    var tip = document.getElementById('symbol_tip'),
+        markets = document.getElementById('contract_markets').value;
+    if (!market || !symbol) return;
+    if (market.match(/^volidx/) || symbol.match(/^R/) || market.match(/^random_index/) || market.match(/^random_daily/)){
+        tip.show();
+        tip.setAttribute('target', page.url.url_for('/get-started/volidx-markets'));
+    } else {
+      tip.hide();
+    }
+    if (market.match(/^otc_index/) || symbol.match(/^OTC_/) || market.match(/stock/) || markets.match(/stocks/)){
+        tip.show();
+        tip.setAttribute('target', page.url.url_for('/get-started/otc-indices-stocks'));
+    }
+    if (market.match(/^random_index/) || symbol.match(/^R_/)){
+        tip.setAttribute('target', page.url.url_for('/get-started/volidx-markets', '#volidx-indices'));
+    }
+    if (market.match(/^random_daily/) || symbol.match(/^RDB/) || symbol.match(/^RDMO/) || symbol.match(/^RDS/)){
+        tip.setAttribute('target', page.url.url_for('/get-started/volidx-markets', '#volidx-quotidians'));
+    }
+    if (market.match(/^smart_fx/) || symbol.match(/^WLD/)){
+        tip.show();
+        tip.setAttribute('target', page.url.url_for('/get-started/smart-indices', '#world-fx-indices'));
+    }
 }
 
 function label_value(label_elem, label, value, no_currency) {
