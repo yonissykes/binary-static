@@ -4785,6 +4785,9 @@ body.JA #language_select {
 body.JA #header #menu-top li {
   white-space: nowrap;
 }
+body.JA #profit-table .buy-price, body.JA #profit-table .sell-price, body.JA #profit-table .payout, body.JA #profit-table .pl.loss, body.JA #profit-table .act, body.JA #statement-table .buy-price, body.JA #statement-table .sell-price, body.JA #statement-table .payout, body.JA #statement-table .pl.loss, body.JA #statement-table .act {
+  white-space: nowrap;
+}
 
 /*Vietnamese Language */
 body.VI #legal-tab li.tm-li-2 {
