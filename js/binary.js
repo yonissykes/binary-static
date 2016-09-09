@@ -55011,8 +55011,10 @@
 
 	var buildOauthApps = function(data) {
 	    var oauth_apps = {};
-	    for (var i = 0; i < data.length; i++) {
-	        oauth_apps[data[i].app_id] = data[i].name;
+	    if (data) {
+	        for (var i = 0; i < data.length; i++) {
+	            oauth_apps[data[i].app_id] = data[i].name;
+	        }
 	    }
 	    oauth_apps[2] = 'Binary.com Autoexpiry';
 	    return oauth_apps;
@@ -57252,7 +57254,7 @@
 	        else if (page.client_status_detected('unwelcome')) {
 	            lock_cashier('locked', 'deposit');
 	        }
-	        else if (!sessionStorage.getItem('client_status')) {
+	        else if (sessionStorage.getItem('client_status') === null) {
 	            BinarySocket.send({"get_account_status": "1", "passthrough":{"dispatch_to":"Cashier"}});
 	        }
 	    };
@@ -57466,7 +57468,7 @@
 	                }
 	              }
 	            });
-	            if (!sessionStorage.getItem('client_status')) {
+	            if (sessionStorage.getItem('client_status') === null) {
 	                BinarySocket.send({"get_account_status": "1", "passthrough":{"dispatch_to":"ForwardWS"}});
 	            }
 	            else if (
@@ -57976,7 +57978,7 @@
 	            Content.populate();
 	            if(TUser.get().hasOwnProperty('is_virtual') || page.client_status_detected('withdrawal_locked, cashier_locked', 'any')) {
 	                PaymentAgentWithdrawWS.init();
-	            } else if (!sessionStorage.getItem('client_status')) {
+	            } else if (sessionStorage.getItem('client_status') === null) {
 	              BinarySocket.send({"get_account_status": "1", "passthrough":{"dispatch_to":"PaymentAgentWithdrawWS"}});
 	            }
 	        }
@@ -59639,6 +59641,7 @@
 	      var title = options.title;
 	      // element where chart is to be displayed
 	      var el = document.getElementById('analysis_live_chart');
+	      if(!el) return;
 	
 	      var chartOptions = {
 	        chart: {
