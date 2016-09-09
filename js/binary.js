@@ -53309,65 +53309,8 @@ function handle_residence_state_ws(){
       var select;
       var response = JSON.parse(msg.data);
       var type = response.msg_type;
-      var country;
       var residenceDisabled = $('#residence-disabled');
-      if (type === 'get_settings') {
-        country = response.get_settings.country_code;
-        if (country && country !== null) {
-          page.client.residence = country;
-          generateBirthDate(country);
-          generateState();
-          if (/maltainvestws/.test(window.location.pathname)) {
-            var settings = response.get_settings;
-            var title = document.getElementById('title'),
-                fname = document.getElementById('fname'),
-                lname = document.getElementById('lname'),
-                dobdd = document.getElementById('dobdd'),
-                dobmm = document.getElementById('dobmm'),
-                dobyy = document.getElementById('dobyy');
-            var inputs = document.getElementsByClassName('input-disabled');
-            if (settings.salutation) {
-              title.value = settings.salutation;
-              fname.value = settings.first_name;
-              lname.value = settings.last_name;
-              var date = moment.utc(settings.date_of_birth * 1000);
-              dobdd.value = date.format('DD').replace(/^0/, '');
-              dobmm.value = date.format('MM');
-              dobyy.value = date.format('YYYY');
-              for (i = 0; i < inputs.length; i++) {
-                  inputs[i].disabled = true;
-              }
-              document.getElementById('address1').value = settings.address_line_1;
-              document.getElementById('address2').value = settings.address_line_2;
-              document.getElementById('address-town').value = settings.address_city;
-              window.state = settings.address_state;
-              document.getElementById('address-postcode').value = settings.address_postcode;
-              document.getElementById('tel').value = settings.phone;
-            } else {
-              for (i = 0; i < inputs.length; i++) {
-                  inputs[i].disabled = false;
-              }
-            }
-          }
-          return;
-        } else if (document.getElementById('move-residence-here')) {
-          var residenceForm = $('#residence-form');
-          $('#real-form').hide();
-          residenceDisabled.insertAfter('#move-residence-here');
-          $('#error-residence').insertAfter('#residence-disabled');
-          residenceDisabled.removeAttr('disabled');
-          residenceForm.show();
-          residenceForm.submit(function(evt) {
-            evt.preventDefault();
-            if (Validate.fieldNotEmpty(residenceDisabled.val(), document.getElementById('error-residence'))) {
-              page.client.residence = residenceDisabled.val();
-              BinarySocket.send({set_settings:1, residence:page.client.residence});
-            }
-            return;
-          });
-          return;
-        }
-      } else if (type === 'set_settings') {
+      if (type === 'set_settings') {
         var errorElement = document.getElementById('error-residence');
         if (response.hasOwnProperty('error')) {
           if (response.error.message) {
@@ -53389,13 +53332,14 @@ function handle_residence_state_ws(){
           window.location.href = page.url.url_for('new_account/japanws');
           return;
         } else if (!$('#real-form').is(':visible')) {
+          BinarySocket.send({residence_list:1});
           $('#residence-form').hide();
           residenceDisabled.insertAfter('#move-residence-back');
           $('#error-residence').insertAfter('#residence-disabled');
           residenceDisabled.attr('disabled', 'disabled');
-          $('#real-form').show();
-          generateBirthDate(country);
+          generateBirthDate(page.client.residence);
           generateState();
+          $('#real-form').show();
           return;
         }
       } else if (type === 'states_list') {
@@ -53420,7 +53364,7 @@ function handle_residence_state_ws(){
             if (select) {
               appendTextValueChild(select, residence.text, residence.value, residence.disabled ? 'disabled' : undefined);
             }
-            if (phoneElement && phoneElement.value === '' && residence.phone_idd && residenceValue === residence.value) {
+            if (residenceValue !== 'jp' && phoneElement && phoneElement.value === '' && residence.phone_idd && residenceValue === residence.value) {
               phoneElement.value = '+' + residence.phone_idd;
             }
           }
@@ -53435,11 +53379,15 @@ function handle_residence_state_ws(){
       } else if (type === 'website_status') {
         var status  = response.website_status;
         if (status && status.clients_country) {
+          if (status.clients_country === 'jp' || japanese_client()) {
+              $('#residence').replaceWith('<label>' + text.localize('Japan') + '</label>');
+          }
           var clientCountry = $('#residence option[value="' + status.clients_country + '"]');
           if (!clientCountry.attr('disabled')) {
               clientCountry.prop('selected', true);
           }
         }
+        $('#residence').removeClass('invisible');
         return;
       } else if (type === 'get_financial_assessment' && objectNotEmpty(response.get_financial_assessment)) {
           for (var key in response.get_financial_assessment) {
@@ -53539,6 +53487,71 @@ function jqueryuiTabsToDropdown($container) {
         $container.find('li a[href="' + $(this).val() + '"]').click();
     });
     return $ddl;
+}
+
+function handle_account_opening_settings(response) {
+    var country = response.get_settings.country_code;
+    if (country && country !== null) {
+      $('#real-form').show();
+      page.client.residence = country;
+      generateBirthDate(country);
+      generateState();
+      if (/maltainvestws/.test(window.location.pathname)) {
+        var settings = response.get_settings;
+        var title = document.getElementById('title'),
+            fname = document.getElementById('fname'),
+            lname = document.getElementById('lname'),
+            dobdd = document.getElementById('dobdd'),
+            dobmm = document.getElementById('dobmm'),
+            dobyy = document.getElementById('dobyy');
+        var inputs = document.getElementsByClassName('input-disabled');
+        if (settings.salutation) {
+          title.value = settings.salutation;
+          fname.value = settings.first_name;
+          lname.value = settings.last_name;
+          var date = moment.utc(settings.date_of_birth * 1000);
+          dobdd.value = date.format('DD').replace(/^0/, '');
+          dobmm.value = date.format('MM');
+          dobyy.value = date.format('YYYY');
+          for (i = 0; i < inputs.length; i++) {
+              inputs[i].disabled = true;
+          }
+          document.getElementById('address1').value = settings.address_line_1;
+          document.getElementById('address2').value = settings.address_line_2;
+          document.getElementById('address-town').value = settings.address_city;
+          window.state = settings.address_state;
+          document.getElementById('address-postcode').value = settings.address_postcode;
+          document.getElementById('tel').value = settings.phone;
+        } else {
+          for (i = 0; i < inputs.length; i++) {
+              inputs[i].disabled = false;
+          }
+        }
+      }
+      return;
+    } else if (document.getElementById('move-residence-here') && $('#residence-form').is(':hidden')) {
+      show_residence_form();
+      return;
+    }
+}
+
+
+function show_residence_form() {
+    var residenceForm = $('#residence-form');
+    var residenceDisabled = $('#residence-disabled');
+    residenceDisabled.insertAfter('#move-residence-here');
+    $('#error-residence').insertAfter('#residence-disabled');
+    residenceDisabled.removeAttr('disabled');
+    residenceForm.show();
+    residenceForm.submit(function(evt) {
+      evt.preventDefault();
+      if (Validate.fieldNotEmpty(residenceDisabled.val(), document.getElementById('error-residence'))) {
+        page.client.set_cookie('residence', residenceDisabled.val());
+        page.client.residence = residenceDisabled.val();
+        BinarySocket.send({set_settings:1, residence:page.client.residence});
+      }
+      return;
+    });
 }
 
 $(function() {
@@ -57169,6 +57182,11 @@ function BinarySocketClass() {
                       page.client.set_cookie('residence', response.get_settings.country_code);
                       page.client.residence = response.get_settings.country_code;
                       send({landing_company: Cookies.get('residence')});
+                    } else if (response.get_settings.country_code === null && response.get_settings.country === null) {
+                        page.contents.topbar_message_visibility('show_residence');
+                    }
+                    if (/realws|maltainvestws|japanws/.test(window.location.href)) {
+                        handle_account_opening_settings(response);
                     }
                     GTM.event_handler(response.get_settings);
                     page.client.set_storage_value('tnc_status', response.get_settings.client_tnc_status || '-');
@@ -61631,7 +61649,10 @@ TradingAnalysis.tab_last_digitws = new TradingAnalysis.DigitInfoWS();
 
       // display comma after every three digits instead of space
       Highcharts.setOptions({
-        lang: {thousandsSep: ','}
+          global: {
+              timezoneOffset: japanese_client() ? -9 * 60 : 0 // Converting chart time to JST.
+          },
+          lang: {thousandsSep: ','}
       });
 
       // display a guide for clients to know how we are marking entry and exit spots
@@ -63055,7 +63076,10 @@ function chartFrameSource() {
 }
 
 function setChartSource() {
-  document.getElementById('chart_frame').src = 'https://webtrader.binary.com?affiliates=true&instrument=' + document.getElementById('underlying').value + '&timePeriod=1t&gtm=true&lang=' + (page.language() || 'en').toLowerCase();
+    var ja = japanese_client();
+  document.getElementById('chart_frame').src = 'https://webtrader.binary.com?affiliates=true&instrument=' + document.getElementById('underlying').value + '&timePeriod=1t&gtm=true&lang=' + (page.language() || 'en').toLowerCase() +
+  '&hideOverlay=' + (ja ? 'true' : 'false') + '&hideShare=' + (ja ? 'true' : 'false') + '&timezone=GMT+' + (ja ? '9' : '0') +
+  '&hideFooter=' + (ja ? 'true' : 'false');
 }
 
 
@@ -69116,13 +69140,17 @@ pjax_config_page_require_auth("user/settings/assessmentws", function() {
 
     function getJPSchema(data) {
         var V2 = ValidateV2;
-        return {
-            hedge_asset_amount: [
-                function(v) { return dv.ok(v.trim()); },
-                V2.required,
-                V2.regex(/^\d+$/, [Content.localize().textNumbers]),
-            ],
-        };
+        if (/Hedging/.test($('#PurposeOfTrading').val())) {
+            return {
+                hedge_asset_amount: [
+                    function(v) { return dv.ok(v.trim()); },
+                    V2.required,
+                    V2.regex(/^\d+$/, [Content.localize().textNumbers]),
+                ]
+            };
+        } else {
+            return true;
+        }
     }
 
     function submitNonJP(data) {
@@ -69923,7 +69951,6 @@ pjax_config_page_require_auth("top_up_virtualws", function() {
       }
       handle_residence_state_ws();
       BinarySocket.send({residence_list:1});
-      BinarySocket.send({get_settings:1});
       BinarySocket.send({get_financial_assessment:1});
       $('#financial-form').submit(function(evt) {
         evt.preventDefault();
@@ -70168,7 +70195,6 @@ pjax_config_page_require_auth("top_up_virtualws", function() {
         return;
       }
       handle_residence_state_ws();
-      BinarySocket.send({get_settings:1});
       detect_hedging($('#trading-purpose'), $('.hedging-assets'));
       $('#japan-form').submit(function(evt) {
         evt.preventDefault();
@@ -70439,7 +70465,6 @@ pjax_config_page_require_auth("top_up_virtualws", function() {
       if (page.client.residence) {
         BinarySocket.send({landing_company: page.client.residence});
       }
-      BinarySocket.send({get_settings:1});
       BinarySocket.send({residence_list:1});
       $('#real-form').submit(function(evt) {
         evt.preventDefault();
@@ -70649,6 +70674,7 @@ pjax_config_page_require_auth("top_up_virtualws", function() {
         Content.populate();
         handle_residence_state_ws();
         BinarySocket.send({residence_list: 1});
+        BinarySocket.send({website_status: 1});
 
         var form = $('#virtual-form')[0];
         if (!form) return;
@@ -73016,18 +73042,12 @@ pjax_config_page_require_auth("user/security/cashier_passwordws", function() {
     }
 
     function showDisallowedMsg(jpStatus) {
-        var nextTestEpoch = jpStatus.next_test_epoch;
-        var lastTestEpoch = jpStatus.last_test_epoch;
-
-        var nextTestDate = new Date(nextTestEpoch * 1000);
-        var lastTestDate = new Date(lastTestEpoch * 1000);
-
         var msgTemplate =
             '{JAPAN ONLY}Dear customer, you are not allowed to take knowledge test until [_1]. Last test taken at [_2].';
 
         var msg = text.localize(msgTemplate, [
-            nextTestDate.toUTCString(),
-            lastTestDate.toUTCString(),
+            toJapanTimeIfNeeded(jpStatus.next_test_epoch),
+            toJapanTimeIfNeeded(jpStatus.last_test_epoch)
             ]);
 
         showMsgOnly(msg);
