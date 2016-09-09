@@ -55,10 +55,10 @@
           <link rel="alternate" href="/zh_cn/trading_beta.html" hreflang="ZH_CN" /> 
           <link rel="alternate" href="/zh_tw/trading_beta.html" hreflang="ZH_TW" /> 
         
-         <link rel="stylesheet" href="/css/binary_rtl.min.css?6myqb68u">
-         <link rel="stylesheet" href="https://style.binary.com/binary.css?6myqb68u">
+         <link rel="stylesheet" href="/css/binary_rtl.min.css?p63piqcw">
+         <link rel="stylesheet" href="https://style.binary.com/binary.css?p63piqcw">
         
-        <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=Array.prototype.includes,String.prototype.includes&unknown=polyfill"></script>  <script src='/js/binary.min.js?6myqb68u' defer async></script>
+        <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=Array.prototype.includes,String.prototype.includes&unknown=polyfill"></script>  <script src='/js/binary.min.js?p63piqcw' defer async></script>
     </head>
 
 
@@ -495,31 +495,41 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                                     <div class="gr-12">
                                         <div class="gr-row">
                                             <div class="gr-4 gr-12-m" id="contract_purchase_profit_list">
-                                                <div class="gr-row chart-values">
-                                                    <div class="gr-adapt">
-                                                        <div id="chart_values_tick">حركة</div>
-                                                        <div id="chart_values_time">وقت</div>
-                                                        <div id="chart_values_price">سعر</div>
-                                                    </div>
-                                                    <div class="gr-grow values">
-                                                        <div id="chart_values_tick_value"></div>
-                                                        <div id="chart_values_time_value"></div>
-                                                        <div id="chart_values_price_value"></div>
-                                                    </div>
+                                                <div id="chart-values">
+                                                    <table>
+                                                        <tr>
+                                                            <td id="chart_values_tick">حركة</td>
+                                                            <td id="chart_values_tick_value"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td id="chart_values_time">وقت</td>
+                                                            <td id="chart_values_time_value"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td id="chart_values_price">سعر</td>
+                                                            <td id="chart_values_price_value"></td>
+                                                        </tr>
+                                                    </table>
                                                 </div>
-                                                <div class="gr-row" id="contract-values">
-                                                    <div class="gr-adapt">
-                                                        <div id="contract_purchase_cost"></div>
-                                                        <div id="contract_purchase_payout"></div>
-                                                        <div id="contract_purchase_barrier"></div>
-                                                        <div id="contract_purchase_profit"></div>
-                                                    </div>
-                                                    <div class="gr-grow values">
-                                                        <div id="contract_purchase_cost_value"></div>
-                                                        <div id="contract_purchase_payout_value"></div>
-                                                        <div id="contract_purchase_barrier_value"></div>
-                                                        <div id="contract_purchase_profit_value"></div>
-                                                    </div>
+                                                <div id="contract-values">
+                                                    <table>
+                                                        <tr>
+                                                            <td id="contract_purchase_cost"></td>
+                                                            <td id="contract_purchase_cost_value"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td id="contract_purchase_payout"></td>
+                                                            <td id="contract_purchase_payout_value"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td id="contract_purchase_barrier"></td>
+                                                            <td id="contract_purchase_barrier_value"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td id="contract_purchase_profit"></td>
+                                                            <td id="contract_purchase_profit_value"></td>
+                                                        </tr>
+                                                    </table>
                                                 </div>
                                                 <div class="contract_purchase_reference gr-hide-m"></div>
                                             </div>
@@ -641,7 +651,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <p class="error-msg" id="chart-error"></p>
                 <div id="trade_live_chart">
                     <table><tr><td>
-                        <iframe src="" width="100%" height="100%" id="chart_frame" style="overflow-y : hidden;" scrolling="no"></iframe>
+                        <iframe src="" width="100%" height="99%" id="chart_frame" style="overflow-y : hidden;" scrolling="no"></iframe>
                     </td></tr></table>
                 </div>
             </div>
@@ -655,15 +665,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
     <div id="portfolio-content" class="invisible">
         <div class="gr-parent gr-padding-10">
-            <div class="gr-hide-m gr-hide-p">
-                رصيد الحساب: 
-                <span class="loading" id="portfolio-balance"></span>
+            رصيد الحساب: 
+            <span class="loading" id="portfolio-balance"></span>
 
-                <!-- If the account balance is zero we show the following button, otherwise we remove it -->
-                <a href="/ar/cashier/forwardws.html#deposit" id="if-balance-zero" class="invisible button button_large by_client_type client_real with_login_cookies">
-                    <span>قم بعمل إيداع</span>
-                </a>
-            </div>
+            <!-- If the account balance is zero we show the following button, otherwise we remove it -->
+            <a href="/ar/cashier/forwardws.html#deposit" id="if-balance-zero" class="invisible button button_large by_client_type client_real with_login_cookies">
+                <span>قم بعمل إيداع</span>
+            </a>
         </div>
 
         <div id="portfolio-no-contract">

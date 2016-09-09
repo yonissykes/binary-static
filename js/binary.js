@@ -71,7 +71,7 @@
 	__webpack_require__(27);
 	__webpack_require__(28);
 	window.pjax = __webpack_require__(29);
-	__webpack_require__(30);
+	window.ResizeSensor = __webpack_require__(30);
 	window.dv = __webpack_require__(31);
 	
 	__webpack_require__(32);
@@ -55000,6 +55000,8 @@
 	    japanese_client: japanese_client,
 	    change_blog_link: change_blog_link,
 	    detect_hedging: detect_hedging,
+	    jqueryuiTabsToDropdown: jqueryuiTabsToDropdown,
+	    handle_account_opening_settings: handle_account_opening_settings,
 	};
 
 
@@ -61120,9 +61122,9 @@
 	    location.reload();
 	}
 	
-	function addComma(num){
-	    num = (num || 0) * 1;
-	    return num.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+	function addComma(num, decimal_points){
+	    num = String(num || 0).replace(/,/g, '') * 1;
+	    return num.toFixed(decimal_points || 2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 	}
 	
 	function showHighchart(){
@@ -61196,12 +61198,13 @@
 	        profit  = document.getElementById('contract_purchase_profit'),
 	        currency = TUser.get().currency;
 	
-	    label_value(cost  , Content.localize().textStake , Math.abs(pnl));
+	    label_value(cost  , Content.localize().textStake , addComma(Math.abs(pnl)));
 	    label_value(payout, Content.localize().textPayout, addComma(final_price));
 	
 	    var isWin = (+final_price > 0);
 	    $('#contract_purchase_profit_value').attr('class', (isWin ? 'profit' : 'loss'));
-	    label_value(profit, isWin ? Content.localize().textProfit : Content.localize().textLoss, addComma(Math.round((final_price - pnl) * 100) / 100));
+	    label_value(profit, isWin ? Content.localize().textProfit : Content.localize().textLoss,
+	        addComma(isWin ? Math.round((final_price - pnl) * 100) / 100 : - Math.abs(pnl)));
 	}
 	
 	function displayTooltip_Beta(market, symbol){
@@ -65009,19 +65012,19 @@
 	        underlyings = underlyings.sort();
 	        var elem = '<select class="smallfont" name="underlying">';
 	        for(i=0;i<underlyings.length;i++){
-	            elem = elem + '<option value="'+underlyings[i]+'">'+text.localize(symbols[underlyings[i]])+'</option>';
+	            elem = elem + '<option value="' + underlyings[i] + '">' + page.text.localize(symbols[underlyings[i]]) + '</option>';
 	        }
 	        elem = elem + '</select>';
 	        var contentId = document.getElementById('tab_last_digit-content'),
 	            content = '<div class="gr-parent">'+
 	                        '<div id="last_digit_histo_form" class="gr-12 gr-12-m gr-centered">'+
 	                        '<form class="smallfont gr-row" action="#" method="post">'+
-	                        '<div class="gr-6 gr-12-m center-text"><div class="gr-padding-10">'+ text.localize('Select market')+':</div>' + elem +' </div>'+
-	                        '<div class="gr-6 gr-12-m center-text"><div class="gr-padding-10">'+ text.localize('Number of ticks')+':</div><select class="smallfont" name="tick_count"><option value="25">25</option><option value="50">50</option><option selected="selected" value="100">100</option><option value="500">500</option><option value="1000">1000</option></select></div>'+
+	                        '<div class="gr-6 gr-12-m center-text"><div class="gr-padding-10">'+ page.text.localize('Select market')+':</div>' + elem +' </div>'+
+	                        '<div class="gr-6 gr-12-m center-text"><div class="gr-padding-10">'+ page.text.localize('Number of ticks')+':</div><select class="smallfont" name="tick_count"><option value="25">25</option><option value="50">50</option><option selected="selected" value="100">100</option><option value="500">500</option><option value="1000">1000</option></select></div>'+
 	                        '</form>'+
 	                        '</div>'+
 	                        '<div id="last_digit_histo" class="gr-12 gr-12-m gr-centered"></div>'+
-	                        '<div id="last_digit_title" class="gr-hide">'+ (domain.charAt(0).toUpperCase() + domain.slice(1)) + ' - ' + text.localize('Last digit stats for the latest [_1] ticks on [_2]') +'</div>'+
+	                        '<div id="last_digit_title" class="gr-hide">'+ (domain.charAt(0).toUpperCase() + domain.slice(1)) + ' - ' + page.text.localize('Last digit stats for the latest [_1] ticks on [_2]') +'</div>'+
 	                        '</div>';
 	        contentId.innerHTML = content;
 	        $('[name=underlying]').val(underlying);
@@ -65299,7 +65302,7 @@
 	                }
 	
 	                if (!contractType[contractCategory].hasOwnProperty(currentObj['contract_type'])) {
-	                    contractType[contractCategory][currentObj['contract_type']] = text.localize(currentObj['contract_display']);
+	                    contractType[contractCategory][currentObj['contract_type']] = page.text.localize(currentObj['contract_display']);
 	                }
 	            }
 	        });
@@ -65331,7 +65334,7 @@
 	                        tradeContractForms['higherlower'] = Content.localize().textFormHigherLower;
 	                    }
 	                } else {
-	                    tradeContractForms[contractCategory] = text.localize(currentObj['contract_category_display']);
+	                    tradeContractForms[contractCategory] = page.text.localize(currentObj['contract_category_display']);
 	                    if (contractCategory === 'digits') {
 	                        tradeContractForms['matchdiff'] = Content.localize().textFormMatchesDiffers;
 	                        if (page.language() !== 'ID') {
@@ -66623,7 +66626,7 @@
 	                    amount.textContent = data['display_value'];
 	                } else {
 	                    $('.stake:hidden').show();
-	                    stake.textContent = text.localize('Stake') + ': ';
+	                    stake.textContent = page.text.localize('Stake') + ': ';
 	                    amount.textContent = format_money(currency.value, (data['display_value']*1).toFixed(2));
 	                }
 	                $('.stake_wrapper:hidden').show();
@@ -66632,7 +66635,7 @@
 	            }
 	
 	            if (data['payout']) {
-	              payout.textContent = (is_spread ? text.localize('Payout/point') : text.localize('Payout')) + ': ';
+	              payout.textContent = (is_spread ? page.text.localize('Payout/point') : page.text.localize('Payout')) + ': ';
 	              payoutAmount.textContent = format_money(currency.value, (data['payout']*1).toFixed(2));
 	              $('.payout_wrapper:hidden').show();
 	            } else {
@@ -66817,7 +66820,7 @@
 	        contracts_list.style.display = 'none';
 	        message_container.hide();
 	        confirmation_error.show();
-	        confirmation_error_contents.innerHTML = contracts.error.message + ' <a href="javascript:;" onclick="TradePage_Beta.reload();">' + text.localize('Please reload the page') + '</a>';
+	        confirmation_error_contents.innerHTML = contracts.error.message + ' <a href="javascript:;" onclick="TradePage_Beta.reload();">' + page.text.localize('Please reload the page') + '</a>';
 	        return;
 	    }
 	
@@ -67140,7 +67143,7 @@
 	            container.style.display = 'block';
 	            message_container.hide();
 	            confirmation_error.show();
-	            confirmation_error_contents.innerHTML = (/ClientUnwelcome/.test(error.code) ? error['message'] + '<a class="pjaxload" href="' + page.url.url_for('user/authenticatews') + '"> ' + text.localize('Authorise your account.' + '</a>') : error['message']);
+	            confirmation_error_contents.innerHTML = (/ClientUnwelcome/.test(error.code) ? error['message'] + '<a class="pjaxload" href="' + page.url.url_for('user/authenticatews') + '"> ' + page.text.localize('Authorise your account.' + '</a>') : error['message']);
 	        } else {
 	            var guideBtn = document.getElementById('guideBtn');
 	            if(guideBtn) {
@@ -67150,7 +67153,7 @@
 	            message_container.show();
 	            confirmation_error.hide();
 	
-	            $('#contract-values > div > div').each(function() {
+	            $('#contract-values td').each(function() {
 	                $(this).text('').removeAttr('class', '');
 	            });
 	            brief.textContent = $('#underlying option:selected').text() + ' / ' +
@@ -67621,7 +67624,7 @@
 	                        zIndex: 1
 	                    },
 	                    title: {
-	                        text: text.localize('Tick')
+	                        text: page.text.localize('Tick')
 	                    }
 	                },
 	                yAxis: {
@@ -67641,10 +67644,11 @@
 	            };
 	            // Trading page's chart
 	            function show_values(tick, time, price) {
-	                $('#contract_purchase_profit_list .chart-values').css('display', 'flex');
+	                $('#contract_purchase_profit_list #chart-values').css('display', 'flex');
+	                $('#contract_purchase_profit_list #contract-values').css('display', 'none');
 	                $('#chart_values_tick_value').text(tick);
 	                $('#chart_values_time_value').text(time);
-	                $('#chart_values_price_value').text(addComma(price));
+	                $('#chart_values_price_value').text(price);
 	            }
 	            if($self.is_trading_page) {
 	                $.extend(true, chart_options, {
@@ -67656,11 +67660,12 @@
 	                        formatter: function () {
 	                            var that = this;
 	                            var time = moment.utc($self.applicable_ticks[that.x].epoch*1000).format('HH:mm:ss');
-	                            show_values(+that.x + (is_start_on_first_tick ? 1 : 0), time, that.y);
+	                            show_values(+that.x + (is_start_on_first_tick ? 1 : 0), time, addComma(that.y, $self.display_decimals));
 	                        },
 	                        events: {
 	                            hide: function () {
-	                                $('#contract_purchase_profit_list .chart-values').hide();
+	                                $('#contract_purchase_profit_list #chart-values').hide();
+	                                $('#contract_purchase_profit_list #contract-values').show();
 	                            }
 	                        }
 	                    },
@@ -67776,7 +67781,7 @@
 	            }
 	            var barrier = document.getElementById('contract_purchase_barrier');
 	            if ($self.contract_barrier && barrier) {
-	                label_value(barrier, Content.localize().textBarrier, addComma($self.contract_barrier), true);
+	                label_value(barrier, Content.localize().textBarrier, addComma($self.contract_barrier, $self.display_decimals), true);
 	            }
 	        },
 	        add: function(indicator) {
@@ -67819,11 +67824,11 @@
 	            var $self = this;
 	
 	            var profit = $self.payout - $self.price;
-	            $self.update_ui($self.payout, profit, text.localize('This contract won'));
+	            $self.update_ui($self.payout, profit, page.text.localize('This contract won'));
 	        },
 	        lose: function() {
 	            var $self = this;
-	            $self.update_ui(0, -$self.price, text.localize('This contract lost'));
+	            $self.update_ui(0, -$self.price, page.text.localize('This contract lost'));
 	        },
 	        to_monetary_format: function(number) {
 	            return number.toFixed(2);
@@ -69185,7 +69190,7 @@
 	
 	        var jpClient = japanese_client();
 	
-	        var data = [jpClient ? toJapanTimeIfNeeded(transaction.purchase_time) : profit_table_data.buyDate, '<span' + showTooltip(profit_table_data.app_id, oauth_apps[profit_table_data.app_id]) + '>' + profit_table_data.ref + '</span>', jpClient ? format_money_jp(TUser.get().currency, profit_table_data.payout) : profit_table_data.payout , '', jpClient ? format_money_jp(TUser.get().currency, profit_table_data.buyPrice) : profit_table_data.buyPrice , profit_table_data.sellDate, jpClient ? format_money_jp(TUser.get().currency, profit_table_data.sellPrice) : profit_table_data.sellPrice , jpClient ? format_money_jp(TUser.get().currency, profit_table_data.pl) : profit_table_data.pl , ''];
+	        var data = [jpClient ? toJapanTimeIfNeeded(transaction.purchase_time) : profit_table_data.buyDate, '<span' + showTooltip(profit_table_data.app_id, oauth_apps[profit_table_data.app_id]) + '>' + profit_table_data.ref + '</span>', jpClient ? format_money_jp(TUser.get().currency, profit_table_data.payout) : profit_table_data.payout , '', jpClient ? format_money_jp(TUser.get().currency, profit_table_data.buyPrice) : profit_table_data.buyPrice , (jpClient ? toJapanTimeIfNeeded(transaction.sell_time) : profit_table_data.sellDate), jpClient ? format_money_jp(TUser.get().currency, profit_table_data.sellPrice) : profit_table_data.sellPrice , jpClient ? format_money_jp(TUser.get().currency, profit_table_data.pl) : profit_table_data.pl , ''];
 	        var $row = Table.createFlexTableRow(data, cols, "data");
 	
 	        $row.children(".buy-date").addClass("pre");
@@ -71474,8 +71479,17 @@
 	
 	        var jpClient = japanese_client();
 	
-	        var $statementRow = Table.createFlexTableRow([(jpClient ? toJapanTimeIfNeeded(transaction.transaction_time) : statement_data.date), '<span' + showTooltip(statement_data.app_id, oauth_apps[statement_data.app_id]) + '>' + statement_data.ref + '</span>', isNaN(statement_data.payout) ? '-' : (jpClient ? format_money_jp(TUser.get().currency, statement_data.payout) : statement_data.payout ), page.text.localize(statement_data.action), '', jpClient ? format_money_jp(TUser.get().currency, statement_data.amount) : statement_data.amount, jpClient ? format_money_jp(TUser.get().currency, statement_data.balance) : statement_data.balance, ''], columns, "data");
-	
+	        var $statementRow = Table.createFlexTableRow([
+	                (jpClient ? toJapanTimeIfNeeded(transaction.transaction_time) : statement_data.date),
+	                '<span' + showTooltip(statement_data.app_id, oauth_apps[statement_data.app_id]) + '>' + statement_data.ref + '</span>',
+	                isNaN(statement_data.payout) ? '-' : (jpClient ? format_money_jp(TUser.get().currency, statement_data.payout) : statement_data.payout ),
+	                page.text.localize(statement_data.action),
+	                '',
+	                jpClient ? format_money_jp(TUser.get().currency, statement_data.amount) : statement_data.amount,
+	                jpClient ? format_money_jp(TUser.get().currency, statement_data.balance) : statement_data.balance,
+	                ''
+	            ], columns, "data");
+	        
 	        $statementRow.children(".credit").addClass(creditDebitType);
 	        $statementRow.children(".date").addClass("pre");
 	        $statementRow.children(".desc").html(statement_data.desc + "<br>");
