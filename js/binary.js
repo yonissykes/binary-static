@@ -50838,6 +50838,7 @@
 	}
 	
 	function showLocalTimeOnHover(s) {
+	    if (japanese_client()) return;
 	    $(s || '.date').each(function(idx, ele) {
 	        var gmtTimeStr = ele.textContent.replace('\n', ' ');
 	        var localTime  = moment.utc(gmtTimeStr, 'YYYY-MM-DD HH:mm:ss').local();
@@ -50857,7 +50858,7 @@
 	      if (!match) return longcode;
 	    }
 	
-	    var curr = localStorage.getItem('client.currencies'),
+	    var jp_client = japanese_client(),
 	        timeStr = gmtTimeStr,
 	        time;
 	
@@ -50873,7 +50874,7 @@
 	        return;
 	    }
 	
-	    timeStr = time.zone(curr === 'JPY' ? '+09:00' : '+00:00').format((hideSeconds ? 'YYYY-MM-DD HH:mm' : 'YYYY-MM-DD HH:mm:ss' ) + (showTimeZone && showTimeZone !== '' ? curr === 'JPY' ? ' zZ' : ' Z' : ''));
+	    timeStr = time.zone(jp_client ? '+09:00' : '+00:00').format((hideSeconds ? 'YYYY-MM-DD HH:mm' : 'YYYY-MM-DD HH:mm:ss' ) + (showTimeZone && showTimeZone !== '' ? jp_client ? ' zZ' : ' Z' : ''));
 	
 	    return (longcode ? longcode.replace(match[0], timeStr) : timeStr);
 	}
@@ -51336,15 +51337,12 @@
 	            is_ok = false;
 	        }
 	
-	        // allowed markets
 	        if(this.is_logged_in) {
 	            if(
 	                !this.get_storage_value('is_virtual') &&
-	                !this.get_storage_value('allowed_markets') &&
 	                Cookies.get('residence') &&
 	                !this.get_storage_value('has_reality_check')
 	            ) {
-	                $('#topMenuStartBetting').addClass('invisible');
 	                BinarySocket.send({
 	                    'landing_company': Cookies.get('residence'),
 	                    'passthrough': {
@@ -51373,15 +51371,11 @@
 	    },
 	    response_landing_company: function(response) {
 	        if (!response.hasOwnProperty('error')) {
-	            var allowed_markets = response.legal_allowed_markets;
 	            var company = response.name;
 	            var has_reality_check = response.has_reality_check;
 	
-	            this.set_storage_value('allowed_markets', allowed_markets.length === 0 ? '' : allowed_markets.join(','));
 	            this.set_storage_value('landing_company_name', company);
 	            this.set_storage_value('has_reality_check', has_reality_check);
-	
-	            page.header.menu.register_dynamic_links();
 	        }
 	    },
 	    response_authorize: function(response) {
@@ -51408,7 +51402,7 @@
 	    },
 	    clear_storage_values: function() {
 	        var that  = this;
-	        var items = ['currencies', 'allowed_markets', 'landing_company_name', 'is_virtual',
+	        var items = ['currencies', 'landing_company_name', 'is_virtual',
 	                     'has_reality_check', 'tnc_status', 'session_duration_limit', 'session_start'];
 	        items.forEach(function(item) {
 	            that.set_storage_value(item, '');
@@ -51727,19 +51721,6 @@
 	
 	        return { item: item, subitem: subitem };
 	    },
-	    register_dynamic_links: function() {
-	        var stored_market = page.url.param('market') || LocalStore.get('bet_page.market') || 'forex';
-	        var allowed_markets = page.client.get_storage_value('allowed_markets');
-	        if(!allowed_markets && page.client.is_logged_in && !TUser.get().is_virtual) {
-	            return;
-	        }
-	
-	        var markets_array = allowed_markets ? allowed_markets.split(',') : [];
-	        if(!TUser.get().is_virtual && markets_array.indexOf(stored_market) < 0) {
-	            stored_market = markets_array[0];
-	            LocalStore.set('bet_page.market', stored_market);
-	        }
-	    },
 	    check_payment_agent: function(is_authenticated_payment_agent) {
 	        if(is_authenticated_payment_agent) {
 	            $('#topMenuPaymentAgent').removeClass('invisible');
@@ -51756,7 +51737,6 @@
 	Header.prototype = {
 	    on_load: function() {
 	        this.show_or_hide_login_form();
-	        this.register_dynamic_links();
 	        this.logout_handler();
 	        this.check_risk_classification();
 	        if (!$('body').hasClass('BlueTopBack')) {
@@ -51819,10 +51799,6 @@
 	        }
 	        $(".login-id-list").html(loginid_select);
 	    },
-	    register_dynamic_links: function() {
-	       $('#logo').attr('href', page.url.url_for(this.client.is_logged_in ? 'trading' : ''));
-	       this.menu.register_dynamic_links();
-	    },
 	    start_clock_ws: function() {
 	        function getTime() {
 	            clock_started = true;
@@ -51851,9 +51827,8 @@
 	        that.server_time_at_response = ((start_timestamp * 1000) + (that.client_time_at_response - pass));
 	        var update_time = function() {
 	            window.time = moment(that.server_time_at_response + moment().valueOf() - that.client_time_at_response).utc();
-	            var curr = localStorage.getItem('client.currencies');
 	            var timeStr = window.time.format("YYYY-MM-DD HH:mm") + ' GMT';
-	            if(curr === 'JPY'){
+	            if(japanese_client()){
 	                clock.html(toJapanTimeIfNeeded(timeStr, 1, '', 1));
 	            } else {
 	                clock.html(timeStr);
@@ -51911,7 +51886,7 @@
 	        LocalStore.remove('client.tokens');
 	        LocalStore.set('reality_check.ack', 0);
 	        sessionStorage.removeItem('client_status');
-	        var cookies = ['login', 'loginid', 'loginid_list', 'email', 'settings', 'reality_check', 'affiliate_token', 'affiliate_tracking', 'residence', 'allowed_markets'];
+	        var cookies = ['login', 'loginid', 'loginid_list', 'email', 'settings', 'reality_check', 'affiliate_token', 'affiliate_tracking', 'residence'];
 	        var domains = [
 	            '.' + document.domain.split('.').slice(-2).join('.'),
 	            '.' + document.domain,
@@ -52087,6 +52062,9 @@
 	    this.header = new Header({ user: this.user, client: this.client, url: this.url});
 	    this.contents = new Contents(this.client, this.user);
 	    this._lang = null;
+	    $('#logo').on('click', function() {
+	        load_with_pjax(page.url.url_for(page.client.is_logged_in ? japanese_client() ? 'jptrading' : 'trading' : ''));
+	    });
 	};
 	
 	Page.prototype = {
@@ -54805,15 +54783,16 @@
 	      } else if (type === 'website_status') {
 	        var status  = response.website_status;
 	        if (status && status.clients_country) {
-	          if (status.clients_country === 'jp' || japanese_client()) {
-	              $('#residence').replaceWith('<label>' + text.localize('Japan') + '</label>');
-	          }
 	          var clientCountry = $('#residence option[value="' + status.clients_country + '"]');
 	          if (!clientCountry.attr('disabled')) {
 	              clientCountry.prop('selected', true);
 	          }
+	          if (status.clients_country === 'jp' || japanese_client()) {
+	              if (!document.getElementById('japan-label')) $('#residence').parent().append('<label id="japan-label">' + page.text.localize('Japan') + '</label>');
+	          } else {
+	              $('#residence').removeClass('invisible');
+	          }
 	        }
-	        $('#residence').removeClass('invisible');
 	        return;
 	      } else if (type === 'get_financial_assessment' && objectNotEmpty(response.get_financial_assessment)) {
 	          for (var key in response.get_financial_assessment) {
@@ -61211,7 +61190,7 @@
 	}
 	
 	function updatePurchaseStatus_Beta(final_price, pnl, contract_status){
-	    $('#contract_purchase_heading').text(text.localize(contract_status));
+	    $('#contract_purchase_heading').text(page.text.localize(contract_status));
 	    var payout  = document.getElementById('contract_purchase_payout'),
 	        cost    = document.getElementById('contract_purchase_cost'),
 	        profit  = document.getElementById('contract_purchase_profit'),
@@ -69206,7 +69185,7 @@
 	
 	        var jpClient = japanese_client();
 	
-	        var data = [profit_table_data.buyDate, '<span' + showTooltip(profit_table_data.app_id, oauth_apps[profit_table_data.app_id]) + '>' + profit_table_data.ref + '</span>', jpClient ? format_money_jp(TUser.get().currency, profit_table_data.payout) : profit_table_data.payout , '', jpClient ? format_money_jp(TUser.get().currency, profit_table_data.buyPrice) : profit_table_data.buyPrice , profit_table_data.sellDate, jpClient ? format_money_jp(TUser.get().currency, profit_table_data.sellPrice) : profit_table_data.sellPrice , jpClient ? format_money_jp(TUser.get().currency, profit_table_data.pl) : profit_table_data.pl , ''];
+	        var data = [jpClient ? toJapanTimeIfNeeded(transaction.purchase_time) : profit_table_data.buyDate, '<span' + showTooltip(profit_table_data.app_id, oauth_apps[profit_table_data.app_id]) + '>' + profit_table_data.ref + '</span>', jpClient ? format_money_jp(TUser.get().currency, profit_table_data.payout) : profit_table_data.payout , '', jpClient ? format_money_jp(TUser.get().currency, profit_table_data.buyPrice) : profit_table_data.buyPrice , profit_table_data.sellDate, jpClient ? format_money_jp(TUser.get().currency, profit_table_data.sellPrice) : profit_table_data.sellPrice , jpClient ? format_money_jp(TUser.get().currency, profit_table_data.pl) : profit_table_data.pl , ''];
 	        var $row = Table.createFlexTableRow(data, cols, "data");
 	
 	        $row.children(".buy-date").addClass("pre");
@@ -70862,7 +70841,7 @@
 	            return $(s).val().trim();
 	        }
 	        setDetails(toJPSettings({
-	            hedgeAssetAmount       : data.hedge_asset_amount,
+	            hedgeAssetAmount       : trim('#HedgeAssetAmount'),
 	            annualIncome           : trim('#AnnualIncome'),
 	            financialAsset         : trim('#FinancialAsset'),
 	            occupation             : trim('#Occupation'),
@@ -71495,8 +71474,8 @@
 	
 	        var jpClient = japanese_client();
 	
-	        var $statementRow = Table.createFlexTableRow([statement_data.date, '<span' + showTooltip(statement_data.app_id, oauth_apps[statement_data.app_id]) + '>' + statement_data.ref + '</span>', isNaN(statement_data.payout) ? '-' : (jpClient ? format_money_jp(TUser.get().currency, statement_data.payout) : statement_data.payout ), text.localize(statement_data.action), '', jpClient ? format_money_jp(TUser.get().currency, statement_data.amount) : statement_data.amount, jpClient ? format_money_jp(TUser.get().currency, statement_data.balance) : statement_data.balance, ''], columns, "data");
-	        
+	        var $statementRow = Table.createFlexTableRow([(jpClient ? toJapanTimeIfNeeded(transaction.transaction_time) : statement_data.date), '<span' + showTooltip(statement_data.app_id, oauth_apps[statement_data.app_id]) + '>' + statement_data.ref + '</span>', isNaN(statement_data.payout) ? '-' : (jpClient ? format_money_jp(TUser.get().currency, statement_data.payout) : statement_data.payout ), page.text.localize(statement_data.action), '', jpClient ? format_money_jp(TUser.get().currency, statement_data.amount) : statement_data.amount, jpClient ? format_money_jp(TUser.get().currency, statement_data.balance) : statement_data.balance, ''], columns, "data");
+	
 	        $statementRow.children(".credit").addClass(creditDebitType);
 	        $statementRow.children(".date").addClass("pre");
 	        $statementRow.children(".desc").html(statement_data.desc + "<br>");
@@ -71633,8 +71612,8 @@
 	
 	    var generateCSV = function(allData){
 	        var columns = ['date', 'ref', 'payout', 'action', 'desc', 'amount', 'balance'],
-	            header  = ['Date', 'Reference ID', 'Potential Payout', 'Action', 'Description', 'Credit/Debit'].map(function(str){return text.localize(str);});
-	        header.push(text.localize('Balance') + (TUser.get().currency ? ' (' + TUser.get().currency + ')' : ''));
+	            header  = ['Date', 'Reference ID', 'Potential Payout', 'Action', 'Description', 'Credit/Debit'].map(function(str){return page.text.localize(str);});
+	        header.push(page.text.localize('Balance') + (TUser.get().currency ? ' (' + TUser.get().currency + ')' : ''));
 	        var sep = ',',
 	            csv = [header.join(sep)];
 	        if (allData && allData.length > 0) {
@@ -72756,7 +72735,7 @@
 	                var data = info.values;
 	                VirtualAccOpeningData.newAccount({
 	                    password:  data.password,
-	                    residence: data.residence,
+	                    residence: (japanese_client() ? 'jp' : data.residence),
 	                    verification_code: data['verification-code'],
 	                });
 	            },
