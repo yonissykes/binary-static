@@ -68,8 +68,8 @@
 	__webpack_require__(24);
 	__webpack_require__(25);
 	window.Cookies = __webpack_require__(26);
-	__webpack_require__(27);
-	__webpack_require__(28);
+	exportAllFunctions(__webpack_require__(27));
+	exportAllFunctions(__webpack_require__(28));
 	window.pjax = __webpack_require__(29);
 	window.ResizeSensor = __webpack_require__(30);
 	window.dv = __webpack_require__(31);
@@ -48988,6 +48988,10 @@
 		} );
 		return ss;
 	 }
+	
+	module.exports = {
+		loadCSS: loadCSS,
+	};
 
 
 /***/ },
@@ -49003,6 +49007,10 @@
 		ref.parentNode.insertBefore( script, ref );
 		return script;
 	}
+	
+	module.exports = {
+	    loadJS: loadJS,
+	};
 
 
 /***/ },
@@ -54522,17 +54530,12 @@
 	                  'min-height': 50,
 	                  'width': 'auto'
 	              });
-	              desk_widget.hover(function() {
-	                  $(this).css({
-	                      'background': 'url("' + image_url + '") no-repeat scroll 0 0',
-	                      'background-size': 'contain',
-	                  });
-	              });
 	
 	              if(image_str.match(/live-chat-icon/g)){
 	                  clearInterval(timer);
 	              }
 	          }
+	          desk_widget.removeAttr('onmouseover onmouseout');
 	      };
 	      timer = setInterval(updateIcon, 500);
 	  }
@@ -54585,7 +54588,6 @@
 	        loadCSS("https://d3jyn100am7dxp.cloudfront.net/assets/widget_embed_191.cssgz?1367387331");
 	        loadJS("https://d3jyn100am7dxp.cloudfront.net/assets/widget_embed_libraries_191.jsgz?1367387332");
 	    }
-	
 	
 	    var desk_load = setInterval(function() {
 	        if(typeof DESK !== "undefined") {

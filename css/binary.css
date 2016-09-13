@@ -2472,27 +2472,27 @@ table .loss, table .lower {
   }
 }
 
-#tab_portfolio-content #portfolio .details {
+#trading_socket_container_beta #tab_portfolio-content #portfolio .details {
   display: table-column;
   width: 0px !important;
 }
-#tab_portfolio-content #portfolio tr td {
+#trading_socket_container_beta #tab_portfolio-content #portfolio tr td {
   padding: 10px 5px 5px;
 }
-#tab_portfolio-content #portfolio tr.tr-first td {
+#trading_socket_container_beta #tab_portfolio-content #portfolio tr.tr-first td {
   border-bottom: none;
   padding-bottom: 0;
 }
-#tab_portfolio-content #portfolio tr.tr-desc {
+#trading_socket_container_beta #tab_portfolio-content #portfolio tr.tr-desc {
   display: table-row;
 }
-#tab_portfolio-content #portfolio tr.tr-desc td {
+#trading_socket_container_beta #tab_portfolio-content #portfolio tr.tr-desc td {
   padding-top: 0;
 }
-#tab_portfolio-content #portfolio [data-balloon] {
+#trading_socket_container_beta #tab_portfolio-content #portfolio [data-balloon] {
   cursor: initial;
 }
-#tab_portfolio-content #portfolio [data-balloon]:after, #tab_portfolio-content #portfolio [data-balloon]:before {
+#trading_socket_container_beta #tab_portfolio-content #portfolio [data-balloon]:after, #trading_socket_container_beta #tab_portfolio-content #portfolio [data-balloon]:before {
   display: none !important;
 }
 
