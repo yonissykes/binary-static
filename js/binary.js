@@ -58065,6 +58065,8 @@
 	        }
 	
 	        $container = $('#asset-index');
+	        activeSymbols = assetIndex = marketColumns = undefined;
+	
 	        if ($container.contents().length) return;
 	
 	        Content.populate();
@@ -58336,6 +58338,7 @@
 	        $date      = $('#trading-date');
 	        $container = $('#trading-times');
 	        columns    = ['Asset', 'Opens', 'Closes', 'Settles', 'UpcomingEvents'];
+	        activeSymbols = tradingTimes = undefined;
 	
 	        if ($container.contents().length) return;
 	
@@ -58351,7 +58354,7 @@
 	            $container.empty();
 	            showLoadingImage($container);
 	            tradingTimes = null;
-	            MarketTimesData.sendRequest($date.val());
+	            MarketTimesData.sendRequest($date.val(), !activeSymbols);
 	        });
 	    };
 	
@@ -70900,11 +70903,11 @@
 	            comma   = Content.localize().textComma;
 	
 	        var V2 = ValidateV2;
-	        var isAddress  = V2.regex(/^[a-zA-Z0-9\s\,\.\-\/\(\)#']+$/, [letters, numbers, space, period, comma, '- / ( ) # \'']);
-	        var isCity     = isAddress;
-	        var isState    = V2.regex(/^[a-zA-Z\s\-']+$/,               [letters, space, '- \'']);
-	        var isPostcode = V2.regex(/^[\w\s-]+$/,                     [letters, numbers, space, '-']);
-	        var isPhoneNo  = V2.regex(/^(|\+?[0-9\s\-]+)$/,             [numbers, space, '-']);
+	        var isAddress  = V2.regex(/^[^~!#$%^&*)(_=+\[}{\]\\\"\;\:\?\><\|]+$/, [letters, numbers, space, period, comma, '- . / @ \' ']);
+	        var isCity     = V2.regex(/^[^~!@#$%^&*)(_=+\[\}\{\]\\\/\"\;\:\?\><\,\|\d]+$/, [letters, space, '- . \' ']);
+	        var isState    = V2.regex(/^[^~!@#$%^&*)(_=+\[\}\{\]\\\/\"\;\:\?\><\|]+$/,     [letters, numbers, space, comma, '- . \'']);
+	        var isPostcode = V2.regex(/^[\w\s-]+$/,                      [letters, numbers, space, '-']);
+	        var isPhoneNo  = V2.regex(/^(|\+?[0-9\s\-]+)$/,              [numbers, space, '-']);
 	
 	        function maybeEmptyAddress(value) {
 	            return value.length ? isAddress(value) : dv.ok(value);

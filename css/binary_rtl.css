@@ -534,13 +534,13 @@ p.no-para-margin {
   text-decoration: none;
 }
 #header a img {
-  max-height: 55px;
+  height: 55px;
 }
 #header select#client_loginid option[disabled=disabled] {
   background-color: #F2F2F2;
 }
 #header #binary-logo-text {
-  margin-top: 10px;
+  margin-top: 0 !important;
 }
 #header #binary-logo-text img {
   width: 90%;
