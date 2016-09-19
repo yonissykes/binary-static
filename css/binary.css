@@ -1592,6 +1592,13 @@ a.close:hover {
   pointer-events: none;
 }
 
+input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+
 #popup {
   background-color: #fff;
 }
@@ -3860,6 +3867,9 @@ div.kineticjs-content {
 #trading_socket_container_beta #contract_market_form_container ul li, #trading_socket_container_beta #analysis_tab_container ul li {
   margin: 0 2px 0 0;
   font-size: 1rem;
+}
+#trading_socket_container_beta #contract_market_form_container ul li .tm-a-2, #trading_socket_container_beta #analysis_tab_container ul li .tm-a-2 {
+  font-size: 80%;
 }
 #trading_socket_container_beta .button button {
   cursor: pointer;
