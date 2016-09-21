@@ -50325,13 +50325,12 @@
 	                // set cookies
 	                page.client.set_cookie('loginid'     , loginid);
 	                page.client.set_cookie('loginid_list', loginid_list);
-	
-	                if (!$('body').hasClass('BlueTopBack')) sessionStorage.setItem('check_tnc', loginid_list);
 	            }
 	            page.client.set_cookie('login', tokens[loginid]);
 	
 	            // set flags
 	            if (!$('body').hasClass('BlueTopBack')) localStorage.setItem('risk_classification', 'check');
+	            if (!$('body').hasClass('BlueTopBack')) sessionStorage.setItem('check_tnc', Cookies.get('loginid_list'));
 	            GTM.set_login_flag();
 	
 	            // redirect url
@@ -51379,10 +51378,7 @@
 	    },
 	    response_landing_company: function(response) {
 	        if (!response.hasOwnProperty('error')) {
-	            var company = response.name;
 	            var has_reality_check = response.has_reality_check;
-	
-	            this.set_storage_value('landing_company_name', company);
 	            this.set_storage_value('has_reality_check', has_reality_check);
 	        }
 	    },
@@ -54320,7 +54316,9 @@
 	    var sign = '';
 	    var updatedAmount = amount;
 	    if(currency === 'JPY') { // remove decimal points and add comma.
-	        if (Number(amount) < 0 ) {
+	
+	        updatedAmount = updatedAmount.replace(/,/g,'');
+	        if (Number(updatedAmount) < 0 ) {
 	           sign = '-';
 	        }
 	
@@ -58707,12 +58705,16 @@
 	                            break;
 	                        }
 	                    }
-	                    if (company && company.has_reality_check) {
-	                        page.client.response_landing_company(company);
-	                        var currentData = TUser.get();
-	                        var addedLoginTime = $.extend({logintime: window.time.unix()}, currentData);
-	                        TUser.set(addedLoginTime);
-	                        RealityCheck.init();
+	
+	                    if (company) {
+	                        page.client.set_storage_value('landing_company_name', company.name);
+	                        if (company.has_reality_check) {
+	                            page.client.response_landing_company(company);
+	                            var currentData = TUser.get();
+	                            var addedLoginTime = $.extend({logintime: window.time.unix()}, currentData);
+	                            TUser.set(addedLoginTime);
+	                            RealityCheck.init();
+	                        }
 	                    }
 	                } else if (type === 'get_self_exclusion') {
 	                    SessionDurationLimit.exclusionResponseHandler(response);
@@ -73881,12 +73883,13 @@
 	        containerSetText('trade_details_current_spot'    , currentSpot || page.text.localize('not available'));
 	        containerSetText('trade_details_indicative_price', indicative_price ? format_money(contract.currency, parseFloat(indicative_price).toFixed(2)) : '-');
 	
-	        var profit_loss, percentage;
+	        var profit_loss, percentage, jp_client;
 	        if (finalPrice) {
 	            profit_loss = finalPrice - contract.buy_price;
 	            percentage  = (profit_loss * 100 / contract.buy_price).toFixed(2);
+	            jp_client   = japanese_client();
 	            containerSetText('trade_details_profit_loss',
-	                format_money(contract.currency, parseFloat(profit_loss).toFixed(2)) + '<span>(' + (percentage > 0 ? '+' : '') + percentage + '%' + ')</span>',
+	                (jp_client ? format_money_jp(contract.currency, parseFloat(profit_loss).toFixed(2)) : format_money(contract.currency, parseFloat(profit_loss).toFixed(2))) + '<span>(' + (percentage > 0 ? '+' : '') + percentage + '%' + ')</span>',
 	                {'class': (profit_loss >= 0 ? 'profit' : 'loss')}
 	            );
 	        } else {
