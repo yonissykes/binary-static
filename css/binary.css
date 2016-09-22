@@ -1469,7 +1469,7 @@ a.close:hover {
   text-align: left;
 }
 .inpage_popup_container_ws .inpage_popup_content_box #sell_content_wrapper {
-  max-height: 90vh;
+  max-height: calc(100vh - 35px);
   overflow: auto;
   overflow-x: hidden;
   -ms-overflow-x: hidden;

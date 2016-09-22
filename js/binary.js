@@ -52104,7 +52104,7 @@
 	        this.contents.on_load();
 	        this.on_click_acc_transfer();
 	        this.show_authenticate_message();
-	        if (CommonData.getLoginToken()) {
+	        if (this.client.is_logged_in) {
 	            ViewBalance.init();
 	        } else {
 	            LocalStore.set('reality_check.ack', 0);
@@ -71498,20 +71498,18 @@
 	    }
 	
 	    function createStatementRow(transaction){
-	        var statement_data = Statement.getStatementData(transaction);
+	        var statement_data = Statement.getStatementData(transaction, TUser.get().currency, japanese_client());
 	        allData.push(statement_data);
 	        var creditDebitType = (parseFloat(statement_data.amount) >= 0) ? "profit" : "loss";
 	
-	        var jpClient = japanese_client();
-	
 	        var $statementRow = Table.createFlexTableRow([
-	                (jpClient ? toJapanTimeIfNeeded(transaction.transaction_time) : statement_data.date),
+	                statement_data.date,
 	                '<span' + showTooltip(statement_data.app_id, oauth_apps[statement_data.app_id]) + '>' + statement_data.ref + '</span>',
-	                isNaN(statement_data.payout) ? '-' : (jpClient ? format_money_jp(TUser.get().currency, statement_data.payout) : statement_data.payout ),
+	                statement_data.payout,
 	                page.text.localize(statement_data.action),
 	                '',
-	                jpClient ? format_money_jp(TUser.get().currency, statement_data.amount) : statement_data.amount,
-	                jpClient ? format_money_jp(TUser.get().currency, statement_data.balance) : statement_data.balance,
+	                statement_data.amount,
+	                statement_data.balance,
 	                ''
 	            ], columns, "data");
 	        
@@ -71627,20 +71625,26 @@
 	    'use strict';
 	    var moment = __webpack_require__(5);
 	    var StringUtil = __webpack_require__(153).StringUtil,
-	        addComma = __webpack_require__(93).addComma;
-	    var getStatementData = function(statement) {
+	        addComma = __webpack_require__(93).addComma,
+	        format_money_jp = __webpack_require__(60).format_money_jp,
+	        toJapanTimeIfNeeded = __webpack_require__(41).toJapanTimeIfNeeded;
+	
+	    var getStatementData = function(statement, currency, jpClient) {
 	        var dateObj = new Date(statement["transaction_time"] * 1000),
 	            momentObj = moment.utc(dateObj),
 	            dateStr = momentObj.format("YYYY-MM-DD"),
-	            timeStr = momentObj.format("HH:mm:ss") + ' GMT';
+	            timeStr = momentObj.format("HH:mm:ss") + ' GMT',
+	            payout  = parseFloat(statement["payout"]).toFixed(2),
+	            amount  = addComma(parseFloat(statement["amount"])),
+	            balance = addComma(parseFloat(statement["balance_after"]));
 	
 	        var statement_data = {
-	            'date'    : dateStr + "\n" + timeStr,
+	            'date'    : jpClient ? toJapanTimeIfNeeded(statement["transaction_time"]) : dateStr + "\n" + timeStr,
 	            'ref'     : statement["transaction_id"],
-	            'payout'  : parseFloat(statement["payout"]).toFixed(2),
+	            'payout'  : isNaN(payout) ? '-' : (jpClient ? format_money_jp(currency, payout) : payout),
 	            'action'  : StringUtil.toTitleCase(statement["action_type"]),
-	            'amount'  : addComma(parseFloat(statement["amount"])),
-	            'balance' : addComma(parseFloat(statement["balance_after"])),
+	            'amount'  : jpClient ? format_money_jp(currency, amount) : amount,
+	            'balance' : jpClient ? format_money_jp(currency, balance) : balance,
 	            'desc'    : statement["longcode"].replace(/\n/g, '<br />'),
 	            'id'      : statement["contract_id"],
 	            'app_id'  : statement["app_id"]
@@ -72783,7 +72787,7 @@
 	
 	    return {
 	        onLoad: function() {
-	            if (CommonData.getLoginToken()) {
+	            if (page.client.is_logged_in) {
 	                window.location.href = page.url.url_for('home');
 	                return;
 	            }
@@ -73564,6 +73568,7 @@
 	            this.clear_timer();
 	            this.close_container();
 	            this._init();
+	            $(window).off('resize', function(){ViewPopupUI.reposition_confirmation();});
 	        },
 	        forget_streams: function() {
 	            while(window.stream_ids && window.stream_ids.length > 0) {
@@ -73626,6 +73631,7 @@
 	            });
 	            $(dragHandle).disableSelection();
 	            this.reposition_confirmation();
+	            $(window).resize(function(){ViewPopupUI.reposition_confirmation();});
 	            return con;
 	        },
 	        reposition_confirmation_ondrag: function () {
