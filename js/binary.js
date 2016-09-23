@@ -51935,6 +51935,20 @@
 	            $('.unbind_later').off();
 	        }
 	    },
+	    has_gaming_financial_enabled: function() {
+	        var has_financial = false,
+	            has_gaming = false,
+	            user;
+	        for (var i = 0; i < page.user.loginid_array.length; i++) {
+	            user = page.user.loginid_array[i];
+	            if (user.financial && !user.disabled && !user.non_financial) {
+	                has_financial = true;
+	            } else if (!user.financial && !user.disabled && user.non_financial) {
+	                has_gaming = true;
+	            }
+	        }
+	        return has_gaming && has_financial;
+	    },
 	    activate_by_client_type: function() {
 	        $('.by_client_type').addClass('invisible');
 	        if(this.client.is_logged_in) {
@@ -51955,7 +51969,7 @@
 	                    $('#payment-agent-section').hide();
 	                }
 	
-	                if (/^MF|MLT/.test(this.client.loginid)) {
+	                if (this.has_gaming_financial_enabled()) {
 	                    $('#account-transfer-section').removeClass('invisible');
 	                }
 	            } else {
@@ -58709,6 +58723,9 @@
 	
 	                    if (company) {
 	                        page.client.set_storage_value('landing_company_name', company.name);
+	                        if (/tnc_approvalws/.test(window.location.pathname)) {
+	                            TNCApproval.showTNC();
+	                        }
 	                        if (company.has_reality_check) {
 	                            page.client.response_landing_company(company);
 	                            var currentData = TUser.get();
@@ -73435,7 +73452,7 @@
 	    };
 	
 	    var showTNC = function() {
-	        if(!terms_conditions_version || !client_tnc_status) {
+	        if(!terms_conditions_version || !client_tnc_status || !page.client.get_storage_value('landing_company_name')) {
 	            return;
 	        }
 	
@@ -73496,7 +73513,8 @@
 	
 	    return {
 	        init : init,
-	        apiResponse : apiResponse
+	        apiResponse : apiResponse,
+	        showTNC: showTNC
 	    };
 	}());
 	
