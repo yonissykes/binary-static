@@ -508,6 +508,12 @@ p.no-para-margin {
       -ms-flex-item-align: center;
           align-self: center;
 }
+#topbar #gmt-clock {
+  white-space: nowrap;
+}
+#topbar .upgrademessage {
+  text-align: center;
+}
 #topbar .upgrademessage a {
   color: #fff;
   text-decoration: none;
@@ -535,6 +541,7 @@ p.no-para-margin {
 #topbar #language_select select {
   padding: 0px;
   float: right;
+  max-width: 100%;
 }
 #topbar a {
   color: #fff;

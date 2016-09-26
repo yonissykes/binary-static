@@ -52047,7 +52047,7 @@
 	                        show_upgrade('new_account/realws', 'Upgrade to a Real Account');
 	                    }
 	                } else if (show_virtual_msg) {
-	                    $upgrade_msg.removeClass(hiddenClass).find('> span').removeClass(hiddenClass);
+	                    $upgrade_msg.removeClass(hiddenClass).find('> span').removeClass(hiddenClass + ' gr-hide-m');
 	                }
 	            } else {
 	                var show_financial = false;
