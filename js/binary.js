@@ -53749,7 +53749,7 @@
 	    window.chartAllowed = false;
 	    isJapan = false;
 	    JapanTrading.stop();
-	    PortfolioWS.onUnload();
+	    JapanPortfolio.hide();
 	  };
 	
 	  return {
@@ -53803,7 +53803,7 @@
 	  }
 	
 	  function isActive() {
-	    if (page.user.email && JPTradePage.isJapan()) {
+	    if (page.client.is_logged_in && JPTradePage.isJapan()) {
 	      return true;
 	    }
 	  }
@@ -56867,7 +56867,7 @@
 	
 	
 	function stripTrailing(name) {
-	    return name.replace(/\[\]$/, '');
+	    return (name || '').replace(/\[\]$/, '');
 	}
 	
 	/**
@@ -58739,11 +58739,14 @@
 	                } else if (type === 'payout_currencies' && response.hasOwnProperty('echo_req') && response.echo_req.hasOwnProperty('passthrough') && response.echo_req.passthrough.handler === 'page.client') {
 	                    page.client.response_payout_currencies(response);
 	                } else if (type === 'get_settings' && response.get_settings) {
-	                    if (!Cookies.get('residence') && response.get_settings.country_code) {
-	                      page.client.set_cookie('residence', response.get_settings.country_code);
-	                      page.client.residence = response.get_settings.country_code;
-	                      send({landing_company: Cookies.get('residence')});
-	                    } else if (response.get_settings.country_code === null && response.get_settings.country === null) {
+	                    var country_code = response.get_settings.country_code;
+	                    if (country_code) {
+	                        page.client.residence = country_code;
+	                        if (!Cookies.get('residence')) {
+	                            page.client.set_cookie('residence', country_code);
+	                            send({landing_company: country_code});
+	                        }
+	                    } else if (country_code === null && response.get_settings.country === null) {
 	                        page.contents.topbar_message_visibility('show_residence');
 	                    }
 	                    if (/realws|maltainvestws|japanws/.test(window.location.href)) {
@@ -61123,7 +61126,15 @@
 	    }
 	    else{
 	        $profit.html(Content.localize().textProfit + '<p>'+addComma(Math.round((final_price-pnl)*100)/100)+'</p>');
+	        updateContractBalance(TUser.get().balance);
 	    }
+	}
+	
+	function updateContractBalance(balance) {
+	    $('#contract_purchase_balance').text(
+	        Content.localize().textContractConfirmationBalance + ' ' +
+	        format_money(TUser.get().currency, addComma(parseFloat(balance)))
+	    );
 	}
 	
 	function updateWarmChart(){
@@ -61415,6 +61426,7 @@
 	    countDecimalPlaces: countDecimalPlaces,
 	    selectOption: selectOption,
 	    updatePurchaseStatus: updatePurchaseStatus,
+	    updateContractBalance: updateContractBalance,
 	    updateWarmChart: updateWarmChart,
 	    reloadPage: reloadPage,
 	    addComma: addComma,
@@ -63491,7 +63503,6 @@
 	            barrier_element = document.getElementById('contract_purchase_barrier'),
 	            reference = document.getElementById('contract_purchase_reference'),
 	            chart = document.getElementById('tick_chart'),
-	            balance = document.getElementById('contract_purchase_balance'),
 	            payout = document.getElementById('contract_purchase_payout'),
 	            cost = document.getElementById('contract_purchase_cost'),
 	            profit = document.getElementById('contract_purchase_profit'),
@@ -63547,7 +63558,7 @@
 	                profit.innerHTML = Content.localize().textContractConfirmationProfit + ' <p>' + profit_value + '</p>';
 	            }
 	
-	            balance.textContent = Content.localize().textContractConfirmationBalance + ' ' + format_money(TUser.get().currency, Math.round(receipt['balance_after']*100)/100);
+	            updateContractBalance(receipt['balance_after']);
 	
 	            if(show_chart){
 	                chart.show();
@@ -68779,13 +68790,16 @@
 	        }
 	
 	        var proposal = Portfolio.getProposalOpenContract(data.proposal_open_contract);
+	        if(!values.hasOwnProperty(proposal.contract_id)) { // avoid updating 'values' before the new contract row added to the table
+	            return;
+	        }
+	
 	        // force to sell the expired contract, in order to remove from portfolio
 	        if(proposal.is_expired == 1 && !proposal.is_sold) {
 	            BinarySocket.send({"sell_expired": 1});
 	        }
 	        var $td = $("#" + proposal.contract_id + " td.indicative");
 	
-	        if(!values.hasOwnProperty(proposal.contract_id)) values[proposal.contract_id] = {};
 	        var old_indicative = values[proposal.contract_id].indicative || 0.00;
 	        values[proposal.contract_id].indicative = proposal.bid_price;
 	
@@ -70732,22 +70746,34 @@
 	var SettingsDetailsWS = (function() {
 	    "use strict";
 	
-	    var formID = '#frmPersonalDetails';
-	    var RealAccElements = '.RealAcc';
-	    var changed = false;
-	    var fieldIDs = {
-	        address1 : '#Address1',
-	        address2 : '#Address2',
-	        city     : '#City',
-	        state    : '#State',
-	        postcode : '#Postcode',
-	        phone    : '#Phone'
-	    };
-	
+	    var formID = '#frmPersonalDetails',
+	        RealAccElements = '.RealAcc',
+	        changed = false,
+	        isInitialized,
+	        fieldIDs = {
+	            address1 : '#Address1',
+	            address2 : '#Address2',
+	            city     : '#City',
+	            state    : '#State',
+	            postcode : '#Postcode',
+	            phone    : '#Phone'
+	        };
 	
 	    function init() {
+	        Content.populate();
+	
+	        if (page.client.is_virtual() || page.client.residence) {
+	            initOk();
+	        } else {
+	            isInitialized = false;
+	        }
+	
+	        BinarySocket.send({"get_settings": "1", "req_id": 1});
+	    }
+	
+	    function initOk() {
+	        isInitialized = true;
 	        var isJP = page.client.residence === 'jp';
-	        BinarySocket.send({"get_settings": "1"});
 	        bind_validation.simple($(formID)[0], {
 	            schema: isJP ? getJPSchema() : getNonJPSchema(),
 	            submit: function(ev, info) {
@@ -70768,6 +70794,9 @@
 	    }
 	
 	    function getDetailsResponse(response) {
+	        if (!isInitialized) {
+	            initOk();
+	        }
 	        var data = response.get_settings;
 	
 	        $('#lblCountry').text(data.country || '-');
@@ -70915,7 +70944,7 @@
 	                ]
 	            };
 	        } else {
-	            return true;
+	            return {}; // nothing to validate
 	        }
 	    }
 	
@@ -71000,8 +71029,13 @@
 	                    }
 	                    var type = response.msg_type;
 	                    switch(type){
+	                        case "authorize":
+	                            SettingsDetailsWS.init();
+	                            break;
 	                        case "get_settings":
-	                            SettingsDetailsWS.getDetailsResponse(response);
+	                            if (response.req_id == 1) {
+	                                SettingsDetailsWS.getDetailsResponse(response);
+	                            }
 	                            break;
 	                        case "set_settings":
 	                            SettingsDetailsWS.setDetailsResponse(response);
@@ -71017,9 +71051,9 @@
 	                    }
 	                }
 	            });
-	
-	            Content.populate();
-	            SettingsDetailsWS.init();
+	            if (TUser.get().loginid) {
+	                SettingsDetailsWS.init();
+	            }
 	        }
 	    };
 	});
@@ -71516,6 +71550,7 @@
 	
 	    function createStatementRow(transaction){
 	        var statement_data = Statement.getStatementData(transaction, TUser.get().currency, japanese_client());
+	        statement_data.action = page.text.localize(statement_data.action);
 	        allData.push(statement_data);
 	        var creditDebitType = (parseFloat(statement_data.amount) >= 0) ? "profit" : "loss";
 	
@@ -71523,7 +71558,7 @@
 	                statement_data.date,
 	                '<span' + showTooltip(statement_data.app_id, oauth_apps[statement_data.app_id]) + '>' + statement_data.ref + '</span>',
 	                statement_data.payout,
-	                page.text.localize(statement_data.action),
+	                statement_data.action,
 	                '',
 	                statement_data.amount,
 	                statement_data.balance,
@@ -73476,7 +73511,7 @@
 	
 	    var responseTNCApproval = function(response) {
 	        if(!response.hasOwnProperty('error')) {
-	            sessionStorage.setItem('check_tnc', sessionStorage.getItem('check_tnc').split(page.client.loginid).join());
+	            sessionStorage.setItem('check_tnc', (sessionStorage.getItem('check_tnc') || '').split(page.client.loginid).join());
 	            redirectBack();
 	        }
 	        else {
@@ -73666,7 +73701,7 @@
 	        reposition_confirmation: function (x, y) {
 	            var con = this.container();
 	            var win_ = $(window);
-	            var x_min = 50;
+	            var x_min = 0;
 	            var y_min = 500;
 	            if(win_.width() < 767) { //To be responsive, on mobiles and phablets we show popup as full screen.
 	                x_min = 0;
