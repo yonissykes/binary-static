@@ -720,6 +720,19 @@ p.no-para-margin {
   color: #fff;
   line-height: 110%;
 }
+#footer #end-note {
+  line-height: 25px;
+  text-align: center;
+  background: #c03;
+  color: #fff;
+  font-size: 0.86957rem;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+}
+#footer #end-note a {
+  color: #fff;
+}
 
 #main-menu {
   background-color: #F2F2F2;
