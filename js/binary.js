@@ -69962,9 +69962,9 @@
 	
 	  var onUnload = function() {
 	    window.chartAllowed = false;
+	    JapanPortfolio.hide();
 	    isJapan = false;
 	    JapanTrading.stop();
-	    JapanPortfolio.hide();
 	  };
 	
 	  return {
@@ -84899,6 +84899,7 @@
 	        currency = '';
 	        oauth_apps = {};
 	        hidden_class = 'invisible';
+	        $("#portfolio-loading").show();
 	        showLoadingImage($("#portfolio-loading"));
 	        if (TUser.get().balance) {
 	            updateBalance();
@@ -85106,6 +85107,7 @@
 	        BinarySocket.send({"forget_all": "proposal_open_contract"});
 	        BinarySocket.send({"forget_all": "transaction"});
 	        $('#portfolio-body').empty();
+	        $("#portfolio-content").addClass(hidden_class);
 	        is_initialized = false;
 	    };
 	
@@ -87615,6 +87617,7 @@
 	
 	        if (!tableExist()) {
 	            StatementUI.createEmptyStatementTable().appendTo("#statement-ws-container");
+	            $('.act').addClass('nowrap');
 	            StatementUI.updateStatementTable(getNextChunkStatement());
 	
 	            // Show a message when the table is empty
@@ -90326,7 +90329,7 @@
 	    var normalMakeTemplate = function() {
 	        $Container = $('<div/>').append($('<div/>', {id: wrapperID}));
 	
-	        var longcode = japanese_client() ? toJapanTimeIfNeeded(contract.expiry_date, '', contract.longcode) : contract.longcode;
+	        var longcode = contract.longcode;
 	
 	        $Container.prepend($('<div/>', {id: 'sell_bet_desc', class: 'popup_bet_desc drag-handle', text: longcode}));
 	        var $sections = $('<div/>').append($('<div class="gr-row container"><div id="sell_details_chart_wrapper" class="gr-8 gr-12-m"></div><div id="sell_details_table" class="gr-4 gr-12-m"></div></div>'));
