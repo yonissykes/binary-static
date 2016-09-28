@@ -67087,14 +67087,19 @@
 	}
 	
 	function downloadCSV(csvContents, filename) {
-	    var csv = 'data:text/csv;charset=utf-8,' + csvContents;
-	    var downloadLink = document.createElement('a');
-	    downloadLink.href = encodeURI(csv);
-	    downloadLink.download = filename || 'data.csv';
+	    filename = filename || 'data.csv';
+	    if (navigator.msSaveBlob) { // IE 10+
+	        navigator.msSaveBlob(new Blob([csvContents], {type: 'text/csv;charset=utf-8;'}), filename);
+	    } else { // Other browsers
+	        var csv = 'data:text/csv;charset=utf-8,' + csvContents;
+	        var downloadLink = document.createElement('a');
+	        downloadLink.href = encodeURI(csv);
+	        downloadLink.download = filename;
 	
-	    document.body.appendChild(downloadLink);
-	    downloadLink.click();
-	    document.body.removeChild(downloadLink);
+	        document.body.appendChild(downloadLink);
+	        downloadLink.click();
+	        document.body.removeChild(downloadLink);
+	    }
 	}
 	
 	function template(string, content) {
@@ -68289,7 +68294,7 @@
 	
 	Page.prototype = {
 	    all_languages: function() {
-	        return ['EN', 'DE', 'ES', 'FR', 'ID', 'IT', 'PL', 'PT', 'RU', 'VI', 'JA', 'ZH_CN', 'ZH_TW'];
+	        return ['EN', 'DE', 'ES', 'FR', 'ID', 'IT', 'PL', 'PT', 'RU', 'TH', 'VI', 'JA', 'ZH_CN', 'ZH_TW'];
 	    },
 	    language_from_url: function() {
 	        var regex = new RegExp('^(' + this.all_languages().join('|') + ')$', 'i');
@@ -87760,7 +87765,7 @@
 	
 	    function createStatementRow(transaction){
 	        var statement_data = Statement.getStatementData(transaction, TUser.get().currency, japanese_client());
-	        allData.push(statement_data);
+	        allData.push($.extend({}, statement_data, {action: page.text.localize(statement_data.action)}));
 	        var creditDebitType = (parseFloat(statement_data.amount) >= 0) ? "profit" : "loss";
 	
 	        var $statementRow = Table.createFlexTableRow([
@@ -88524,7 +88529,8 @@
 	        sellback: document.getElementById('sellback-loss'),
 	        shortsell: document.getElementById('shortsell-loss'),
 	        profit: document.getElementById('company-profit'),
-	        knowledge: document.getElementById('expert-knowledge')
+	        knowledge: document.getElementById('expert-knowledge'),
+	        pep: document.getElementById('not-pep')
 	    };
 	
 	    var errorObj = {
@@ -88566,7 +88572,8 @@
 	        sellback: document.getElementById('error-sellback-loss'),
 	        shortsell: document.getElementById('error-shortsell-loss'),
 	        profit: document.getElementById('error-company-profit'),
-	        knowledge: document.getElementById('error-expert-knowledge')
+	        knowledge: document.getElementById('error-expert-knowledge'),
+	        pep: document.getElementById('error-not-pep')
 	    };
 	    var key;
 	    for (key in errorObj) {
