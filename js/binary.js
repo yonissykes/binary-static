@@ -73582,6 +73582,7 @@
 	  function getCashierURL(verification_token) {
 	    var req = {'cashier':getCashierType()};
 	    if (verification_token) req.verification_code = verification_token;
+	    if (/epg/.test(window.location.pathname)) req.provider = 'epg';
 	    BinarySocket.send(req);
 	  }
 	  function hideAll() {
@@ -73615,7 +73616,7 @@
 	  };
 	})();
 	
-	pjax_config_page_require_auth("cashier/forwardws", function() {
+	pjax_config_page_require_auth("cashier/forwardws|cashier/epg_forwardws", function() {
 	    return {
 	        onLoad: function() {
 	          function check_virtual() {
@@ -90587,10 +90588,12 @@
 	                }
 	                break;
 	        }
-	        showLocalTimeOnHover('#trade_details_start_date');
-	        showLocalTimeOnHover('#trade_details_end_date');
-	        showLocalTimeOnHover('#trade_details_current_date');
-	        showLocalTimeOnHover('#trade_details_live_date');
+	        var i,
+	            dates = ['#trade_details_start_date', '#trade_details_end_date', '#trade_details_current_date', '#trade_details_live_date'];
+	        for (i = 0; i < dates.length; i++) {
+	            showLocalTimeOnHover(dates[i]);
+	            if ($(dates[i]).width() < 150) $(dates[i]).attr('data-balloon-pos', 'left');
+	        }
 	    };
 	
 	    return {
