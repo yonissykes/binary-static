@@ -406,6 +406,10 @@ p.no-para-margin {
   border-top: 1px solid #DEDEDE;
 }
 
+.border-dark-gray {
+  border: 1px solid #C2C2C2;
+}
+
 .vertical-align-middle {
   vertical-align: middle;
 }
@@ -2373,24 +2377,24 @@ ol.start {
     font-size: 80% !important;
   }
 }
-.career .xquote, .user_testing .xquote {
+.career .xquote, .user_testing .xquote, .regulation-content .xquote {
   background-color: #F2F2F2;
   padding: 20px;
   margin: 30px 0;
 }
-.career .xquote div, .user_testing .xquote div {
+.career .xquote div, .user_testing .xquote div, .regulation-content .xquote div {
   overflow: hidden;
   display: table;
 }
-.career .xquote div .picture, .user_testing .xquote div .picture {
+.career .xquote div .picture, .user_testing .xquote div .picture, .regulation-content .xquote div .picture {
   float: left;
   padding-left: 20px;
 }
-.career .xquote div .text, .user_testing .xquote div .text {
+.career .xquote div .text, .user_testing .xquote div .text, .regulation-content .xquote div .text {
   display: table-cell;
   vertical-align: middle;
 }
-.career .xquote div .text span, .user_testing .xquote div .text span {
+.career .xquote div .text span, .user_testing .xquote div .text span, .regulation-content .xquote div .text span {
   color: #44484C;
   font-size: 12px;
 }
@@ -3031,6 +3035,38 @@ div.kineticjs-content {
     width: 40%;
   }
 }
+.regulation-content .gray-line {
+  border: 1px solid #F2F2F2;
+  background-color: #F2F2F2;
+  width: 2px;
+  height: 80px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.regulation-content h1.margin-top {
+  margin-top: 30px;
+}
+.regulation-content .timeline {
+  width: 6%;
+  position: absolute;
+  margin: -3% 0 0 -3%;
+  padding: 0;
+}
+.regulation-content .xquote div {
+  display: flex;
+}
+.regulation-content .xquote div .quote-text {
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-left: 0 !important;
+}
+@media screen and (max-width: 768px) {
+  .regulation-content .timeline {
+    width: 15%;
+    margin: -7% 0 0 -7%;
+  }
+}
+
 .platforms-content img.responsive {
   max-height: 150px;
 }
