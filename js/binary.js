@@ -119,12 +119,12 @@
 	exportAllFunctions(__webpack_require__(74));
 	exportAllFunctions(__webpack_require__(75));
 	exportAllFunctions(__webpack_require__(76));
-	
 	exportAllFunctions(__webpack_require__(77));
+	
 	exportAllFunctions(__webpack_require__(78));
 	exportAllFunctions(__webpack_require__(79));
-	
 	exportAllFunctions(__webpack_require__(80));
+	
 	exportAllFunctions(__webpack_require__(81));
 	exportAllFunctions(__webpack_require__(82));
 	exportAllFunctions(__webpack_require__(83));
@@ -201,11 +201,11 @@
 	exportAllFunctions(__webpack_require__(154));
 	exportAllFunctions(__webpack_require__(155));
 	exportAllFunctions(__webpack_require__(156));
-	
 	exportAllFunctions(__webpack_require__(157));
-	exportAllFunctions(__webpack_require__(158));
 	
+	exportAllFunctions(__webpack_require__(158));
 	exportAllFunctions(__webpack_require__(159));
+	
 	exportAllFunctions(__webpack_require__(160));
 	exportAllFunctions(__webpack_require__(161));
 	exportAllFunctions(__webpack_require__(162));
@@ -230,10 +230,11 @@
 	exportAllFunctions(__webpack_require__(181));
 	exportAllFunctions(__webpack_require__(182));
 	exportAllFunctions(__webpack_require__(183));
+	exportAllFunctions(__webpack_require__(184));
 	exportAllFunctions(__webpack_require__(52));
 	exportAllFunctions(__webpack_require__(53));
 	exportAllFunctions(__webpack_require__(54));
-	exportAllFunctions(__webpack_require__(184));
+	exportAllFunctions(__webpack_require__(185));
 	exportAllFunctions(__webpack_require__(55));
 	exportAllFunctions(__webpack_require__(56));
 	exportAllFunctions(__webpack_require__(57));
@@ -68475,6 +68476,7 @@
 	                page.text.localize('This is a staging server - For testing purposes only') + ' - ') +
 	                page.text.localize('The server <a href="[_1]">endpoint</a> is: [_2]', [page.url.url_for('endpoint'), server]);
 	            $('#end-note').html(message).removeClass('invisible');
+	            $('#footer').css('padding-bottom', $('#end-note').height());
 	        }
 	    },
 	    // type can take one or more params, separated by comma
@@ -71882,7 +71884,7 @@
 	    return;
 	  };
 	  var checkPostcode = function(postcode, errorPostcode) {
-	    if (postcode.value !== '' && !/^[a-zA-Z\d-]+$/.test(postcode.value)){
+	    if ((postcode.value !== '' || page.client.residence === 'gb') && !/^[a-zA-Z\d-]+$/.test(postcode.value)){
 	      initializeValues();
 	      errorPostcode.innerHTML = Content.errorMessage('reg', [letters, numbers, hyphen]);
 	      Validate.displayErrorMessage(errorPostcode);
@@ -71911,6 +71913,15 @@
 	    }
 	    return;
 	  };
+	  var checkCity = function(city, errorCity) {
+	    if (/[`~!@#$%^&*)(_=+\[}{\]\\\/";:\?><,|\d]+/.test(city.value)) {
+	        initializeValues();
+	        errorCity.innerHTML = Content.errorMessage('reg', [letters, space, hyphen, period, apost]);
+	        Validate.displayErrorMessage(errorCity);
+	        window.accountErrorCounter++;
+	    }
+	    return;
+	  };
 	  return {
 	    redirectCookie: redirectCookie,
 	    handler: handler,
@@ -71919,7 +71930,8 @@
 	    checkDate: checkDate,
 	    checkPostcode: checkPostcode,
 	    checkTel: checkTel,
-	    checkAnswer: checkAnswer
+	    checkAnswer: checkAnswer,
+	    checkCity: checkCity
 	  };
 	}());
 	
@@ -72454,6 +72466,63 @@
 /* 77 */
 /***/ function(module, exports) {
 
+	var Platforms = (function () {
+	    var sections = [];
+	    function showLoadingImage(container) {
+	        container.append('<div id="std_loading_img"><p>' + page.text.localize('loading...') + '</p>' +
+	            '<img src="' + page.url.url_for_static('images/common/hourglass_1.gif') + '" /></div>');
+	    }
+	    function hideLoadingImg() {
+	        $('#std_loading_img').remove();
+	    }
+	    function init() {
+	        showLoadingImage($('.platforms-section'));
+	        checkWidth();
+	        $(window).resize(checkWidth);
+	    }
+	    function checkWidth() {
+	        if ($('.sidebar-left').is(':visible')) {
+	            sections = ['more-tools', 'trading-platforms', 'platforms-comparison'];
+	            var sidebarListItem = $('.sidebar-nav li');
+	            sidebarListItem.click(function(e) {
+	                sidebarListItem.removeClass('selected');
+	                $(this).addClass('selected');
+	            });
+	            $(window).on('hashchange', function(){
+	                showSelectedDiv();
+	            });
+	            showSelectedDiv();
+	        } else {
+	            hideLoadingImg();
+	            $('.sections').removeClass('invisible');
+	        }
+	    }
+	    function get_hash() {
+	        return (
+	            page.url.location.hash && $.inArray(page.url.location.hash.substring(1), sections) !== -1 ?
+	            page.url.location.hash : '#trading-platforms'
+	        );
+	    }
+	    function showSelectedDiv() {
+	        $('.sections').addClass('invisible');
+	        hideLoadingImg();
+	        $('.sections[id="' + get_hash().substring(1) + '"]').removeClass('invisible');
+	        $('.sidebar-nav a[href="' + get_hash() + '"]').parent().addClass('selected');
+	    }
+	    return {
+	        init: init
+	    };
+	})();
+	
+	module.exports = {
+	    Platforms: Platforms,
+	};
+
+
+/***/ },
+/* 78 */
+/***/ function(module, exports) {
+
 	var Content = (function() {
 	    'use strict';
 	
@@ -72776,7 +72845,7 @@
 
 
 /***/ },
-/* 78 */
+/* 79 */
 /***/ function(module, exports) {
 
 	function submit_email() {
@@ -72833,7 +72902,7 @@
 
 
 /***/ },
-/* 79 */
+/* 80 */
 /***/ function(module, exports) {
 
 	pjax_config_page('/home', function() {
@@ -73007,10 +73076,21 @@
 	        }
 	    };
 	});
+	
+	pjax_config_page('/platforms', function() {
+	    return {
+	        onLoad: function() {
+	            if (japanese_client()) {
+	                window.location.href = page.url.url_for('/');
+	            }
+	            Platforms.init();
+	        }
+	    };
+	});
 
 
 /***/ },
-/* 80 */
+/* 81 */
 /***/ function(module, exports) {
 
 	var ValidationUI = {
@@ -73176,7 +73256,7 @@
 
 
 /***/ },
-/* 81 */
+/* 82 */
 /***/ function(module, exports) {
 
 	var account_transferws = (function(){
@@ -73464,7 +73544,7 @@
 
 
 /***/ },
-/* 82 */
+/* 83 */
 /***/ function(module, exports) {
 
 	var Cashier = (function() {
@@ -73550,7 +73630,7 @@
 
 
 /***/ },
-/* 83 */
+/* 84 */
 /***/ function(module, exports) {
 
 	var ForwardWS = (function() {
@@ -73724,7 +73804,7 @@
 
 
 /***/ },
-/* 84 */
+/* 85 */
 /***/ function(module, exports) {
 
 	var PaymentAgentListWS = (function() {
@@ -73896,7 +73976,7 @@
 
 
 /***/ },
-/* 85 */
+/* 86 */
 /***/ function(module, exports) {
 
 	var PaymentAgentWithdrawWS = (function() {
@@ -74227,7 +74307,7 @@
 
 
 /***/ },
-/* 86 */
+/* 87 */
 /***/ function(module, exports) {
 
 	var AssetIndexData = (function() {
@@ -74276,7 +74356,7 @@
 
 
 /***/ },
-/* 87 */
+/* 88 */
 /***/ function(module, exports) {
 
 	var AssetIndexUI = (function() {
@@ -74417,7 +74497,7 @@
 
 
 /***/ },
-/* 88 */
+/* 89 */
 /***/ function(module, exports) {
 
 	var AssetIndex = (function() {
@@ -74506,7 +74586,7 @@
 
 
 /***/ },
-/* 89 */
+/* 90 */
 /***/ function(module, exports) {
 
 	var MarketTimesData = (function() {
@@ -74555,7 +74635,7 @@
 
 
 /***/ },
-/* 90 */
+/* 91 */
 /***/ function(module, exports) {
 
 	var MarketTimesUI = (function() {
@@ -74733,7 +74813,7 @@
 
 
 /***/ },
-/* 91 */
+/* 92 */
 /***/ function(module, exports) {
 
 	var MarketTimes = (function() {
@@ -74757,7 +74837,7 @@
 
 
 /***/ },
-/* 92 */
+/* 93 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var getSocketURL = __webpack_require__(48).getSocketURL;
@@ -75128,7 +75208,7 @@
 
 
 /***/ },
-/* 93 */
+/* 94 */
 /***/ function(module, exports) {
 
 	/*
@@ -75374,7 +75454,7 @@
 
 
 /***/ },
-/* 94 */
+/* 95 */
 /***/ function(module, exports) {
 
 	/*
@@ -75549,7 +75629,7 @@
 
 
 /***/ },
-/* 95 */
+/* 96 */
 /***/ function(module, exports) {
 
 	TradingAnalysis.DigitInfoWS = function() {
@@ -75833,7 +75913,7 @@
 
 
 /***/ },
-/* 96 */
+/* 97 */
 /***/ function(module, exports) {
 
 	var Highchart = (function() {
@@ -76487,7 +76567,7 @@
 
 
 /***/ },
-/* 97 */
+/* 98 */
 /***/ function(module, exports) {
 
 	/*
@@ -77666,7 +77746,7 @@
 
 
 /***/ },
-/* 98 */
+/* 99 */
 /***/ function(module, exports) {
 
 	/*
@@ -77870,7 +77950,7 @@
 
 
 /***/ },
-/* 99 */
+/* 100 */
 /***/ function(module, exports) {
 
 	/*
@@ -77917,7 +77997,7 @@
 
 
 /***/ },
-/* 100 */
+/* 101 */
 /***/ function(module, exports) {
 
 	/*
@@ -78002,7 +78082,7 @@
 
 
 /***/ },
-/* 101 */
+/* 102 */
 /***/ function(module, exports) {
 
 	/*
@@ -78407,7 +78487,7 @@
 
 
 /***/ },
-/* 102 */
+/* 103 */
 /***/ function(module, exports) {
 
 	/*
@@ -78949,7 +79029,7 @@
 
 
 /***/ },
-/* 103 */
+/* 104 */
 /***/ function(module, exports) {
 
 	/*
@@ -79024,7 +79104,7 @@
 
 
 /***/ },
-/* 104 */
+/* 105 */
 /***/ function(module, exports) {
 
 	/*
@@ -79315,7 +79395,7 @@
 
 
 /***/ },
-/* 105 */
+/* 106 */
 /***/ function(module, exports) {
 
 	/*
@@ -79699,7 +79779,7 @@
 
 
 /***/ },
-/* 106 */
+/* 107 */
 /***/ function(module, exports) {
 
 	/*
@@ -79951,7 +80031,7 @@
 
 
 /***/ },
-/* 107 */
+/* 108 */
 /***/ function(module, exports) {
 
 	/*
@@ -80079,7 +80159,7 @@
 
 
 /***/ },
-/* 108 */
+/* 109 */
 /***/ function(module, exports) {
 
 	/*
@@ -80137,7 +80217,7 @@
 
 
 /***/ },
-/* 109 */
+/* 110 */
 /***/ function(module, exports) {
 
 	/*
@@ -80274,7 +80354,7 @@
 
 
 /***/ },
-/* 110 */
+/* 111 */
 /***/ function(module, exports) {
 
 	var TickDisplay = function() {
@@ -80672,7 +80752,7 @@
 
 
 /***/ },
-/* 111 */
+/* 112 */
 /***/ function(module, exports) {
 
 	var TradePage = (function(){
@@ -80753,7 +80833,7 @@
 
 
 /***/ },
-/* 112 */
+/* 113 */
 /***/ function(module, exports) {
 
 	/*
@@ -81001,7 +81081,7 @@
 
 
 /***/ },
-/* 113 */
+/* 114 */
 /***/ function(module, exports) {
 
 	/*
@@ -81176,7 +81256,7 @@
 
 
 /***/ },
-/* 114 */
+/* 115 */
 /***/ function(module, exports) {
 
 	TradingAnalysis_Beta.DigitInfoWS = function() {
@@ -81462,7 +81542,7 @@
 
 
 /***/ },
-/* 115 */
+/* 116 */
 /***/ function(module, exports) {
 
 	/*
@@ -81666,7 +81746,7 @@
 
 
 /***/ },
-/* 116 */
+/* 117 */
 /***/ function(module, exports) {
 
 	/*
@@ -82071,7 +82151,7 @@
 
 
 /***/ },
-/* 117 */
+/* 118 */
 /***/ function(module, exports) {
 
 	/*
@@ -82613,7 +82693,7 @@
 
 
 /***/ },
-/* 118 */
+/* 119 */
 /***/ function(module, exports) {
 
 	/*
@@ -82695,7 +82775,7 @@
 
 
 /***/ },
-/* 119 */
+/* 120 */
 /***/ function(module, exports) {
 
 	/*
@@ -82986,7 +83066,7 @@
 
 
 /***/ },
-/* 120 */
+/* 121 */
 /***/ function(module, exports) {
 
 	/*
@@ -83371,7 +83451,7 @@
 
 
 /***/ },
-/* 121 */
+/* 122 */
 /***/ function(module, exports) {
 
 	/*
@@ -83654,7 +83734,7 @@
 
 
 /***/ },
-/* 122 */
+/* 123 */
 /***/ function(module, exports) {
 
 	/*
@@ -83782,7 +83862,7 @@
 
 
 /***/ },
-/* 123 */
+/* 124 */
 /***/ function(module, exports) {
 
 	var TickDisplay_Beta = function() {
@@ -84298,7 +84378,7 @@
 
 
 /***/ },
-/* 124 */
+/* 125 */
 /***/ function(module, exports) {
 
 	var TradePage_Beta = (function(){
@@ -84381,7 +84461,7 @@
 
 
 /***/ },
-/* 125 */
+/* 126 */
 /***/ function(module, exports) {
 
 	pjax_config_page_require_auth("user/authenticatews", function(){
@@ -84427,7 +84507,7 @@
 
 
 /***/ },
-/* 126 */
+/* 127 */
 /***/ function(module, exports) {
 
 	var PasswordWS = (function(){
@@ -84549,7 +84629,7 @@
 
 
 /***/ },
-/* 127 */
+/* 128 */
 /***/ function(module, exports) {
 
 	var PaymentAgentTransferData = (function () {
@@ -84576,7 +84656,7 @@
 
 
 /***/ },
-/* 128 */
+/* 129 */
 /***/ function(module, exports) {
 
 	var PaymentAgentTransfer = (function () {
@@ -84772,7 +84852,7 @@
 
 
 /***/ },
-/* 129 */
+/* 130 */
 /***/ function(module, exports) {
 
 	var PaymentAgentTransferUI = (function () {
@@ -84858,7 +84938,7 @@
 
 
 /***/ },
-/* 130 */
+/* 131 */
 /***/ function(module, exports) {
 
 	pjax_config_page_require_auth("paymentagent/transferws", function(){
@@ -84884,7 +84964,7 @@
 
 
 /***/ },
-/* 131 */
+/* 132 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var PortfolioWS =  (function() {
@@ -85135,13 +85215,13 @@
 
 
 /***/ },
-/* 132 */
+/* 133 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var Portfolio = (function(){
 	    'use strict';
 	
-	    var addComma = __webpack_require__(97).addComma,
+	    var addComma = __webpack_require__(98).addComma,
 	        toJapanTimeIfNeeded = __webpack_require__(45).toJapanTimeIfNeeded,
 	        format_money = __webpack_require__(64).format_money;
 	
@@ -85208,7 +85288,7 @@
 
 
 /***/ },
-/* 133 */
+/* 134 */
 /***/ function(module, exports) {
 
 	var ProfitTableData = (function(){
@@ -85253,7 +85333,7 @@
 
 
 /***/ },
-/* 134 */
+/* 135 */
 /***/ function(module, exports) {
 
 	var ProfitTableWS = (function () {
@@ -85384,7 +85464,7 @@
 
 
 /***/ },
-/* 135 */
+/* 136 */
 /***/ function(module, exports) {
 
 	var ProfitTableUI = (function(){
@@ -85525,7 +85605,7 @@
 
 
 /***/ },
-/* 136 */
+/* 137 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var ProfitTable = (function(){
@@ -85566,7 +85646,7 @@
 
 
 /***/ },
-/* 137 */
+/* 138 */
 /***/ function(module, exports) {
 
 	var APITokenWS = (function() {
@@ -85803,7 +85883,7 @@
 
 
 /***/ },
-/* 138 */
+/* 139 */
 /***/ function(module, exports) {
 
 	var ApplicationsData = (function(){
@@ -85852,7 +85932,7 @@
 
 
 /***/ },
-/* 139 */
+/* 140 */
 /***/ function(module, exports) {
 
 	var Applications = (function() {
@@ -85890,7 +85970,7 @@
 
 
 /***/ },
-/* 140 */
+/* 141 */
 /***/ function(module, exports) {
 
 	var ApplicationsUI = (function(){
@@ -85988,7 +86068,7 @@
 
 
 /***/ },
-/* 141 */
+/* 142 */
 /***/ function(module, exports) {
 
 	pjax_config_page_require_auth("user/security/authorised_appsws", function(){
@@ -86008,7 +86088,7 @@
 
 
 /***/ },
-/* 142 */
+/* 143 */
 /***/ function(module, exports) {
 
 	var FinancialAssessmentws = (function(){
@@ -86180,7 +86260,7 @@
 
 
 /***/ },
-/* 143 */
+/* 144 */
 /***/ function(module, exports) {
 
 	var IPHistoryData = (function() {
@@ -86256,7 +86336,7 @@
 
 
 /***/ },
-/* 144 */
+/* 145 */
 /***/ function(module, exports) {
 
 	var IPHistory = (function() {
@@ -86294,7 +86374,7 @@
 
 
 /***/ },
-/* 145 */
+/* 146 */
 /***/ function(module, exports) {
 
 	var IPHistoryUI = (function() {
@@ -86372,7 +86452,7 @@
 
 
 /***/ },
-/* 146 */
+/* 147 */
 /***/ function(module, exports) {
 
 	pjax_config_page_require_auth("user/security/iphistoryws", function(){
@@ -86392,7 +86472,7 @@
 
 
 /***/ },
-/* 147 */
+/* 148 */
 /***/ function(module, exports) {
 
 	var LimitsWS = (function(){
@@ -86469,7 +86549,7 @@
 
 
 /***/ },
-/* 148 */
+/* 149 */
 /***/ function(module, exports) {
 
 	var LimitsUI = (function(){
@@ -86567,7 +86647,7 @@
 
 
 /***/ },
-/* 149 */
+/* 150 */
 /***/ function(module, exports) {
 
 	pjax_config_page_require_auth("limitsws", function(){
@@ -86609,7 +86689,7 @@
 
 
 /***/ },
-/* 150 */
+/* 151 */
 /***/ function(module, exports) {
 
 	var SelfExclusionWS = (function() {
@@ -86963,7 +87043,7 @@
 
 
 /***/ },
-/* 151 */
+/* 152 */
 /***/ function(module, exports) {
 
 	var SettingsDetailsWS = (function() {
@@ -87287,7 +87367,7 @@
 
 
 /***/ },
-/* 152 */
+/* 153 */
 /***/ function(module, exports) {
 
 	var SecurityWS = (function() {
@@ -87479,7 +87559,7 @@
 
 
 /***/ },
-/* 153 */
+/* 154 */
 /***/ function(module, exports) {
 
 	var SettingsWS = (function() {
@@ -87532,7 +87612,7 @@
 
 
 /***/ },
-/* 154 */
+/* 155 */
 /***/ function(module, exports) {
 
 	var StatementData = (function(){
@@ -87577,7 +87657,7 @@
 
 
 /***/ },
-/* 155 */
+/* 156 */
 /***/ function(module, exports) {
 
 	var StatementWS = (function(){
@@ -87727,7 +87807,7 @@
 
 
 /***/ },
-/* 156 */
+/* 157 */
 /***/ function(module, exports) {
 
 	var StatementUI = (function(){
@@ -87841,7 +87921,7 @@
 
 
 /***/ },
-/* 157 */
+/* 158 */
 /***/ function(module, exports) {
 
 	var StringUtil = (function(){
@@ -87893,14 +87973,14 @@
 
 
 /***/ },
-/* 158 */
+/* 159 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var Statement = (function(){
 	    'use strict';
 	    var moment = __webpack_require__(9);
-	    var StringUtil = __webpack_require__(157).StringUtil,
-	        addComma = __webpack_require__(97).addComma,
+	    var StringUtil = __webpack_require__(158).StringUtil,
+	        addComma = __webpack_require__(98).addComma,
 	        format_money_jp = __webpack_require__(64).format_money_jp,
 	        toJapanTimeIfNeeded = __webpack_require__(45).toJapanTimeIfNeeded;
 	
@@ -87960,7 +88040,7 @@
 
 
 /***/ },
-/* 159 */
+/* 160 */
 /***/ function(module, exports) {
 
 	var TopUpVirtualWS = (function() {
@@ -88060,7 +88140,7 @@
 
 
 /***/ },
-/* 160 */
+/* 161 */
 /***/ function(module, exports) {
 
 	var LostPassword = (function() {
@@ -88128,7 +88208,7 @@
 
 
 /***/ },
-/* 161 */
+/* 162 */
 /***/ function(module, exports) {
 
 	pjax_config_page('user/lost_passwordws', function() {
@@ -88147,7 +88227,7 @@
 
 
 /***/ },
-/* 162 */
+/* 163 */
 /***/ function(module, exports) {
 
 	var FinancialAccOpeningData = (function(){
@@ -88213,7 +88293,7 @@
 
 
 /***/ },
-/* 163 */
+/* 164 */
 /***/ function(module, exports) {
 
 	var FinancialAccOpeningUI = (function(){
@@ -88323,6 +88403,7 @@
 	    if (elementObj['answer'].offsetParent !== null) {
 	      ValidAccountOpening.checkAnswer(elementObj['answer'], errorObj['answer']);
 	    }
+	    ValidAccountOpening.checkCity(elementObj['town'], errorObj['town']);
 	
 	    for (key in elementObj){
 	      if (elementObj[key].offsetParent !== null && key !== 'address2' && key !== 'postcode' && key !== 'state') {
@@ -88362,7 +88443,7 @@
 
 
 /***/ },
-/* 164 */
+/* 165 */
 /***/ function(module, exports) {
 
 	pjax_config_page_require_auth("new_account/maltainvestws", function(){
@@ -88418,7 +88499,7 @@
 
 
 /***/ },
-/* 165 */
+/* 166 */
 /***/ function(module, exports) {
 
 	var JapanAccOpeningData = (function(){
@@ -88482,7 +88563,7 @@
 
 
 /***/ },
-/* 166 */
+/* 167 */
 /***/ function(module, exports) {
 
 	var JapanAccOpeningUI = function () {
@@ -88675,7 +88756,7 @@
 
 
 /***/ },
-/* 167 */
+/* 168 */
 /***/ function(module, exports) {
 
 	pjax_config_page("new_account/japanws", function(){
@@ -88714,7 +88795,7 @@
 
 
 /***/ },
-/* 168 */
+/* 169 */
 /***/ function(module, exports) {
 
 	var RealAccOpeningData = (function(){
@@ -88754,7 +88835,7 @@
 
 
 /***/ },
-/* 169 */
+/* 170 */
 /***/ function(module, exports) {
 
 	var RealAccOpeningUI = (function(){
@@ -88828,6 +88909,7 @@
 	
 	    ValidAccountOpening.checkTel(elementObj['tel'], errorObj['tel']);
 	    ValidAccountOpening.checkAnswer(elementObj['answer'], errorObj['answer']);
+	    ValidAccountOpening.checkCity(elementObj['town'], errorObj['town']);
 	
 	    for (key in elementObj){
 	      if (elementObj[key].offsetParent !== null && key !== 'address2' && key !== 'postcode' && key !== 'state') {
@@ -88868,7 +88950,7 @@
 
 
 /***/ },
-/* 170 */
+/* 171 */
 /***/ function(module, exports) {
 
 	pjax_config_page("new_account/realws", function(){
@@ -88906,7 +88988,7 @@
 
 
 /***/ },
-/* 171 */
+/* 172 */
 /***/ function(module, exports) {
 
 	var VirtualAccOpeningData = (function(){
@@ -88980,7 +89062,7 @@
 
 
 /***/ },
-/* 172 */
+/* 173 */
 /***/ function(module, exports) {
 
 	pjax_config_page("new_account/virtualws", function() {
@@ -89075,7 +89157,7 @@
 
 
 /***/ },
-/* 173 */
+/* 174 */
 /***/ function(module, exports) {
 
 	var RealityCheckData = (function () {
@@ -89201,7 +89283,7 @@
 
 
 /***/ },
-/* 174 */
+/* 175 */
 /***/ function(module, exports) {
 
 	var RealityCheck = (function () {
@@ -89338,7 +89420,7 @@
 
 
 /***/ },
-/* 175 */
+/* 176 */
 /***/ function(module, exports) {
 
 	var RealityCheckUI = (function () {
@@ -89466,7 +89548,7 @@
 
 
 /***/ },
-/* 176 */
+/* 177 */
 /***/ function(module, exports) {
 
 	var ResetPassword = (function () {
@@ -89662,7 +89744,7 @@
 
 
 /***/ },
-/* 177 */
+/* 178 */
 /***/ function(module, exports) {
 
 	pjax_config_page('user/reset_passwordws', function() {
@@ -89681,7 +89763,7 @@
 
 
 /***/ },
-/* 178 */
+/* 179 */
 /***/ function(module, exports) {
 
 	var TNCApproval = (function() {
@@ -89804,7 +89886,7 @@
 
 
 /***/ },
-/* 179 */
+/* 180 */
 /***/ function(module, exports) {
 
 	var ViewPopupUI = (function() {
@@ -89878,6 +89960,9 @@
 	            }
 	        },
 	        disable_button: function (button) {
+	            $('.open_contract_detailsws[disabled]').each(function() {
+	                ViewPopupUI.enable_button($(this));
+	            });
 	            button.attr('disabled', 'disabled');
 	            button.fadeTo(0, 0.5);
 	        },
@@ -89950,7 +90035,7 @@
 
 
 /***/ },
-/* 180 */
+/* 181 */
 /***/ function(module, exports) {
 
 	var ViewPopupWS = (function() {
@@ -90574,10 +90659,14 @@
 	    var dispatch = function(response) {
 	        switch(response.msg_type) {
 	            case 'proposal_open_contract':
-	                if(response.proposal_open_contract && response.proposal_open_contract.contract_id == contractID) {
-	                    storeSubscriptionID(response.proposal_open_contract.id);
-	                    responseContract(response);
-	                } else if (!response.proposal_open_contract && response.echo_req.contract_id == contractID && response.error) {
+	                if(response.proposal_open_contract) {
+	                    if(response.proposal_open_contract.contract_id == contractID) {
+	                        storeSubscriptionID(response.proposal_open_contract.id);
+	                        responseContract(response);
+	                    } else {
+	                        BinarySocket.send({"forget": response.proposal_open_contract.id});
+	                    }
+	                } else if (response.echo_req.contract_id == contractID && response.error && response.error.code !== 'AlreadySubscribed') {
 	                    showErrorPopup(response, response.error.message);
 	                }
 	                break;
@@ -90632,7 +90721,7 @@
 
 
 /***/ },
-/* 181 */
+/* 182 */
 /***/ function(module, exports) {
 
 	var ViewBalance = (function () {
@@ -90651,7 +90740,7 @@
 
 
 /***/ },
-/* 182 */
+/* 183 */
 /***/ function(module, exports) {
 
 	var ViewBalanceUI = (function(){
@@ -90687,7 +90776,7 @@
 
 
 /***/ },
-/* 183 */
+/* 184 */
 /***/ function(module, exports) {
 
 	pjax_config_page_require_auth("user/profit_table", function(){
@@ -90765,7 +90854,7 @@
 
 
 /***/ },
-/* 184 */
+/* 185 */
 /***/ function(module, exports) {
 
 	pjax_config_page_require_auth("new_account/knowledge_testws", function(){

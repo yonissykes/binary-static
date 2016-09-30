@@ -412,6 +412,10 @@ p.no-para-margin {
   border-top: 1px solid #DEDEDE;
 }
 
+.vertical-align-middle {
+  vertical-align: middle;
+}
+
 *, *:after, *:before {
   transition: opacity 0.2s, color 0.2s, background 0.2s;
 }
@@ -2998,6 +3002,50 @@ div.kineticjs-content {
     width: 40%;
   }
 }
+.platforms-content img.responsive {
+  max-height: 150px;
+}
+.platforms-content table {
+  table-layout: fixed;
+  width: 100%;
+}
+.platforms-content td, .platforms-content th {
+  vertical-align: top;
+  padding: 10px;
+  width: 100px;
+}
+.platforms-content th {
+  position: absolute;
+  left: 0;
+  width: 90px;
+  height: 200px;
+  text-align: left;
+}
+.platforms-content .outer {
+  position: relative;
+}
+.platforms-content .inner {
+  overflow-x: scroll;
+  overflow-y: visible;
+  margin-left: 110px;
+}
+.platforms-content .auto-height {
+  height: 32px;
+}
+.platforms-content tr:first-child td {
+  line-height: 1.1em;
+  font-weight: bold;
+  background: #F2F2F2;
+  border-bottom: 1px solid #F2F2F2;
+}
+.platforms-content ul.checked li {
+  background-position: center;
+  margin: 0;
+}
+.platforms-content .small-padding-top {
+  padding-top: 4px;
+}
+
 /* static pages */
 @keyframes spinning {
   from {
@@ -4968,9 +5016,20 @@ body ul.checked li {
   background-position: left;
   padding-left: 35px;
 }
+body .app-store-badge, body .google-play-badge {
+  background-repeat: no-repeat;
+  width: 140px;
+  height: 40px;
+}
 
 body.EN .calls_recording {
   display: inline !important;
+}
+body.EN .app-store-badge {
+  background-image: url("../images/pages/applications/appstore_en.svg");
+}
+body.EN .google-play-badge {
+  background-image: url("../images/pages/applications/googleplay_en.svg");
 }
 
 body.JA .ja-hide {
@@ -5015,6 +5074,9 @@ body.JA #header #menu-top li {
 body.JA #profit-table .buy-price, body.JA #profit-table .sell-price, body.JA #profit-table .payout, body.JA #profit-table .pl.loss, body.JA #profit-table .act, body.JA #statement-table .buy-price, body.JA #statement-table .sell-price, body.JA #statement-table .payout, body.JA #statement-table .pl.loss, body.JA #statement-table .act {
   white-space: nowrap;
 }
+body.JA #main-menu {
+  margin-bottom: 30px;
+}
 
 /*Vietnamese Language */
 body.VI #legal-tab li.tm-li-2 {
@@ -5026,6 +5088,12 @@ body.VI #trading_socket_container #contract_form_name_nav {
 }
 body.VI #trading_socket_container_beta #contract_symbol_container {
   font-size: 90%;
+}
+body.VI .app-store-badge {
+  background-image: url("../images/pages/applications/appstore_vi.svg");
+}
+body.VI .google-play-badge {
+  background-image: url("../images/pages/applications/googleplay_vi.svg");
 }
 
 /*French Language */
@@ -5041,6 +5109,12 @@ body.FR #trading_socket_container #contract_form_name_nav {
 body.FR #header .account-type {
   font-size: 85%;
 }
+body.FR .app-store-badge {
+  background-image: url("../images/pages/applications/appstore_fr.svg");
+}
+body.FR .google-play-badge {
+  background-image: url("../images/pages/applications/googleplay_fr.svg");
+}
 
 /*Arabic Language */
 body.AR .regulatory-logo {
@@ -5048,6 +5122,12 @@ body.AR .regulatory-logo {
 }
 body.AR .ar-hide {
   display: none;
+}
+body.AR .app-store-badge {
+  background-image: url("../images/pages/applications/appstore_ar.svg");
+}
+body.AR .google-play-badge {
+  background-image: url("../images/pages/applications/googleplay_ar.svg");
 }
 
 /*Indonesian Language */
@@ -5073,6 +5153,12 @@ body.ID .extra-space {
 body.ID #language_select {
   display: none;
 }
+body.ID .app-store-badge {
+  background-image: url("../images/pages/applications/appstore_id.svg");
+}
+body.ID .google-play-badge {
+  background-image: url("../images/pages/applications/googleplay_id.svg");
+}
 @media screen and (max-width: 480px) {
   body.ID .empty-space {
     margin-top: 0 !important;
@@ -5096,6 +5182,12 @@ body.IT h1, body.IT h2, body.IT h3, body.IT h4, body.IT h5, body.IT h6, body.DE 
 body.ES #trading_socket_container #contract_form_name_nav {
   font-size: 80%;
 }
+body.ES .app-store-badge {
+  background-image: url("../images/pages/applications/appstore_es.svg");
+}
+body.ES .google-play-badge {
+  background-image: url("../images/pages/applications/googleplay_es.svg");
+}
 
 body.RU #trading_socket_container #contract_form_name_nav {
   font-size: 80%;
@@ -5113,12 +5205,60 @@ body.RU .ru-hide {
 body.RU #header .account-type {
   font-size: 90%;
 }
+body.RU .app-store-badge {
+  background-image: url("../images/pages/applications/appstore_ru.svg");
+}
+body.RU .google-play-badge {
+  background-image: url("../images/pages/applications/googleplay_ru.svg");
+}
 
 body.PT a, body.PT button, body.PT .button, body.PT span, body.PT input, body.RU a, body.RU button, body.RU .button, body.RU span, body.RU input {
   text-transform: initial !important;
 }
 body.PT h1, body.PT h2, body.PT h3, body.PT h4, body.PT h5, body.PT h6, body.RU h1, body.RU h2, body.RU h3, body.RU h4, body.RU h5, body.RU h6 {
   text-transform: initial !important;
+}
+
+body.DE .app-store-badge {
+  background-image: url("../images/pages/applications/appstore_de.svg");
+}
+body.DE .google-play-badge {
+  background-image: url("../images/pages/applications/googleplay_de.svg");
+}
+
+body.IT .app-store-badge {
+  background-image: url("../images/pages/applications/appstore_it.svg");
+}
+body.IT .google-play-badge {
+  background-image: url("../images/pages/applications/googleplay_it.svg");
+}
+
+body.ZH_CN .app-store-badge {
+  background-image: url("../images/pages/applications/appstore_zh_cn.svg");
+}
+body.ZH_CN .google-play-badge {
+  background-image: url("../images/pages/applications/googleplay_zh_cn.svg");
+}
+
+body.ZH_TW .app-store-badge {
+  background-image: url("../images/pages/applications/appstore_zh_tw.svg");
+}
+body.ZH_TW .google-play-badge {
+  background-image: url("../images/pages/applications/googleplay_zh_tw.svg");
+}
+
+body.PT .app-store-badge {
+  background-image: url("../images/pages/applications/appstore_pt.svg");
+}
+body.PT .google-play-badge {
+  background-image: url("../images/pages/applications/googleplay_pt.svg");
+}
+
+body.PL .app-store-badge {
+  background-image: url("../images/pages/applications/appstore_pl.svg");
+}
+body.PL .google-play-badge {
+  background-image: url("../images/pages/applications/googleplay_pl.svg");
 }
 
 /* media queries */
