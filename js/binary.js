@@ -87691,6 +87691,10 @@
 	        if(opts){
 	            $.extend(true, req, opts);
 	        }
+	        if ($('#jump-to').val() !== '') {
+	            req.date_to = (moment.utc($('#jump-to').val()).valueOf() / 1000) + (24*60*60);
+	            req.date_from = 0;
+	        }
 	
 	        BinarySocket.send(req);
 	    }
@@ -87754,6 +87758,7 @@
 	        if (!tableExist()) {
 	            StatementUI.createEmptyStatementTable().appendTo("#statement-ws-container");
 	            $('.act').addClass('nowrap');
+	            Statement.attachDatePicker();
 	            StatementUI.updateStatementTable(getNextChunkStatement());
 	
 	            // Show a message when the table is empty
@@ -87765,8 +87770,11 @@
 	                            )
 	                        )
 	                    );
-	            } else if(page.language().toLowerCase() === 'ja') {
-	                $('#download_csv').removeClass('invisible').find('a').click(function(){StatementUI.exportCSV();});
+	            } else {
+	                $('#jump-to').parent().parent().removeClass('invisible');
+	                if(page.language().toLowerCase() === 'ja') {
+	                    $('#download_csv').removeClass('invisible').find('a').click(function(){StatementUI.exportCSV();});
+	                }
 	            }
 	        }
 	        showLocalTimeOnHover('td.date');
@@ -88077,9 +88085,21 @@
 	        return csv.join('\r\n');
 	    };
 	
+	    var attachDatePicker = function() {
+	        $('#jump-to').datepicker({
+	            dateFormat: 'yy-mm-dd',
+	            maxDate   : moment().toDate(),
+	            onSelect  : function() {
+	                $('.table-container').remove();
+	                StatementWS.init();
+	            }
+	        });
+	    };
+	
 	    var external = {
 	        getStatementData: getStatementData,
-	        generateCSV: generateCSV
+	        generateCSV: generateCSV,
+	        attachDatePicker: attachDatePicker
 	    };
 	
 	    return external;
