@@ -68464,7 +68464,8 @@
 	        if (japanese_client()) {
 	            $('.ja-hide').addClass('invisible');
 	            $('.ja-show').attr('style', 'display: inline !important; visibility: visible;');
-	            $('.ja-show-block').attr('style', 'display: inline-block !important; visibility: visible;');
+	            $('.ja-show-block').attr('style', 'display: block !important; visibility: visible;');
+	            $('.ja-show-inline-block').attr('style', 'display: inline-block !important; visibility: visible;');
 	            $('.ja-no-padding').attr('style', 'padding-top: 0; padding-bottom: 0;');
 	            $('#regulatory-text').removeClass('gr-9 gr-7-p')
 	                                 .addClass('gr-12 gr-12-p');
