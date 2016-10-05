@@ -1346,7 +1346,7 @@ meter#password-meter::-webkit-meter-bar {
 .get-started-jp .link-size-box {
   display: table-cell;
   vertical-align: middle;
-  height: 35px;
+  height: 36px;
   min-width: 198px;
   padding: 10px;
 }
