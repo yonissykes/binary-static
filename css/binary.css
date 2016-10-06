@@ -4868,6 +4868,9 @@ div.kineticjs-content {
       -ms-flex-align: stretch;
           align-items: stretch;
 }
+#statement-ws-container #download_csv {
+  line-height: 28px;
+}
 #statement-ws-container .desc {
   -webkit-flex: 2 1 100px;
       -ms-flex: 2 1 100px;
