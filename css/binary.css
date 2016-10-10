@@ -2156,6 +2156,15 @@ ol.start {
   counter-reset: mycounter;
 }
 
+.deposit-jp-content #name_id_width {
+  max-width: 90px;
+}
+.deposit-jp-content img.responsive {
+  width: 50%;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
 .live_chart_wrapper {
   margin: 0 auto;
 }
@@ -5364,6 +5373,11 @@ body.TH .google-play-badge {
 @media screen and (max-width: 480px) {
   .empty-space {
     margin-top: 0;
+  }
+}
+@media print {
+  .no-print, .no-print * {
+    display: none !important;
   }
 }
 /* external stylesheets
