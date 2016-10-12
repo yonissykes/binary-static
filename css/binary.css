@@ -3098,6 +3098,15 @@ div.kineticjs-content {
 .platforms-content .small-padding-top {
   padding-top: 4px;
 }
+.platforms-content .fade-to-right {
+  position: absolute;
+  z-index: 2;
+  left: 85%;
+  right: 0;
+  top: 0;
+  height: 100%;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, white 70%);
+}
 
 /* static pages */
 @keyframes spinning {
@@ -5346,6 +5355,10 @@ body.TH .google-play-badge {
 
   .table-container {
     overflow-x: auto;
+  }
+
+  .hide-tablet-mobile {
+    display: none;
   }
 }
 @media screen and (max-width: 640px) {
