@@ -73597,8 +73597,12 @@
 	
 	    var sendRequest = function(date, shouldRequestActiveSymbols) {
 	        initSocket();
+	        var req = {"active_symbols": "brief"};
+	        if (japanese_client()) {
+	            req.landing_company = 'japan';
+	        }
 	        if(shouldRequestActiveSymbols) {
-	            BinarySocket.send({"active_symbols": "brief"});
+	            BinarySocket.send(req);
 	        }
 	
 	        BinarySocket.send({"trading_times": date || 'today'});
@@ -73721,11 +73725,13 @@
 	            var $submarketTable = createEmptyTable(market.name + '-' + s);
 	
 	            // submarket name
-	            $submarketTable.find('thead').prepend(createSubmarketHeader(submarkets[s].name));
+	            $submarketTable.find('thead').prepend(createSubmarketHeader(submarkets[s].name))
+	                           .find('th.opens, th.closes').addClass('nowrap');
 	
 	            // symbols of this submarket
 	            var symbols = submarkets[s].symbols;
 	            for(var sy = 0; sy < symbols.length; sy++) {
+	                if (Object.keys(MarketTimes.getSymbolInfo(symbols[sy].symbol, activeSymbols)).length === 0) continue;
 	                $submarketTable.find('tbody').append(createSubmarketTableRow(market.name, submarkets[s].name, symbols[sy]));
 	            }
 	
@@ -73752,7 +73758,6 @@
 	            columns,
 	            "data"
 	        );
-	
 	        $tableRow.children('.opens').html(symbol.times.open.join('<br />'));
 	        $tableRow.children('.closes').html(symbol.times.close.join('<br />'));
 	        $tableRow.children('.upcomingevents').html(createEventsText(symbol.events));
@@ -73816,8 +73821,17 @@
 	        });
 	    };
 	
+	    var getSymbolInfo = function(qSymbol, activeSymbols) {
+	        return activeSymbols.filter(function(sy, id) {
+	            if(sy.symbol === qSymbol) {
+	                return true;
+	            }
+	        });
+	    };
+	
 	    var external = {
 	        getSubmarketInfo: getSubmarketInfo,
+	        getSymbolInfo: getSymbolInfo
 	    };
 	    return external;
 	}());
@@ -76481,7 +76495,10 @@
 	    /*
 	     * Prevent IE memory leak (http://stackoverflow.com/questions/8407946).
 	     */
-	    document.getElementById('chart_frame').src = 'about:blank';
+	    var chart_frame = document.getElementById('chart_frame');
+	    if (chart_frame) {
+	        chart_frame.src = 'about:blank';
+	    }
 	}
 	
 	function chartFrameSource() {
