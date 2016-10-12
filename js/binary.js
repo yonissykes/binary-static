@@ -68222,12 +68222,13 @@
 	            if (page.client.is_virtual()) {
 	                var show_upgrade_msg = true;
 	                var show_virtual_msg = true;
+	                var show_activation_msg = false;
 	                if (localStorage.getItem('jp_test_allowed') === "1") {
-	                    hide_upgrade();
 	                    show_virtual_msg = false;
 	                    show_upgrade_msg = false; // do not show upgrade for user that filled up form
 	                } else if ($('.jp_activation_pending').length !== 0) {
 	                    show_upgrade_msg = false;
+	                    show_activation_msg = true;
 	                }
 	                for (var i = 0; i < loginid_array.length; i++) {
 	                    if (loginid_array[i].real) {
@@ -68247,6 +68248,9 @@
 	                    }
 	                } else if (show_virtual_msg) {
 	                    $upgrade_msg.removeClass(hiddenClass).find('> span').removeClass(hiddenClass + ' gr-hide-m');
+	                    if (show_activation_msg && $('activation-message').length === 0) {
+	                        $('#virtual-text').append(' ' + '<div class="activation-message">' + page.text.localize('Your Application is Being Processed.') + '</div>' );
+	                    }
 	                }
 	            } else {
 	                var show_financial = false;
@@ -73978,10 +73982,10 @@
 	                        if(!Login.is_login_pages()) {
 	                            page.client.response_authorize(response);
 	                            send({balance:1, subscribe: 1});
-	                            if (Cookies.get('residence')) send({landing_company: Cookies.get('residence')});
 	                            send({get_settings: 1});
 	                            send({get_account_status: 1});
 	                            send({website_status: 1});
+	                            if (Cookies.get('residence')) send({landing_company: Cookies.get('residence')});
 	                            if(!page.client.is_virtual()) {
 	                                send({get_self_exclusion: 1});
 	                            } else {
@@ -74046,14 +74050,9 @@
 	                    var jpStatus = response.get_settings.jp_account_status;
 	                    if (jpStatus) {
 	                        switch (jpStatus.status) {
-	                            case 'jp_knowledge_test_pending': localStorage.setItem('jp_test_allowed', 1);
-	                                break;
+	                            case 'jp_knowledge_test_pending':
 	                            case 'jp_knowledge_test_fail':
-	                                if (Date.now() >= (jpStatus.next_test_epoch * 1000)) {
-	                                    localStorage.setItem('jp_test_allowed', 1);
-	                                } else {
-	                                    localStorage.setItem('jp_test_allowed', 0);
-	                                }
+	                                localStorage.setItem('jp_test_allowed', 1);
 	                                break;
 	                            default: localStorage.setItem('jp_test_allowed', 0);
 	                        }
@@ -90577,7 +90576,9 @@
 	                            showDisallowedMsg(jpStatus);
 	                        }
 	                            break;
-	                        case 'jp_activation_pending': showCompletedMsg();
+	                        case 'jp_activation_pending':
+	                            showCompletedMsg();
+	                            showActivationPending();
 	                            break;
 	                        default: {
 	                            console.warn('Unexpected jp status');
@@ -90590,7 +90591,6 @@
 	                        $("html, body").animate({ scrollTop: 0 }, "slow");
 	
 	                        $('#knowledgetest-link').addClass(hiddenClass);     // hide it anyway
-	                        localStorage.setItem('jp_test_allowed', 0);
 	                    } else if (response.error.code === 'TestUnavailableNow') {
 	                        showMsgOnly('{JAPAN ONLY}The test is unavailable now, test can only be taken again on next business day with respect of most recent test.');
 	                    }
@@ -90599,6 +90599,13 @@
 	        });
 	
 	        BinarySocket.send({get_settings: 1, passthrough: {key: 'knowledgetest'}});
+	    }
+	
+	    function showActivationPending() {
+	        $('#topbar-msg').children('a').addClass(hiddenClass + ' jp_activation_pending');
+	        if ($('activation-message').length === 0) {
+	            $('#virtual-text').append(' ' + '<div class="activation-message">' + page.text.localize('Your Application is Being Processed.') + '</div>' );
+	        }
 	    }
 	
 	    function showKnowledgeTestTopBarIfValid(jpStatus) {
@@ -90611,7 +90618,7 @@
 	                KnowledgeTestUI.createKnowledgeTestLink();
 	                break;
 	            case 'jp_activation_pending':
-	                $('#topbar-msg').children('a').addClass(hiddenClass + ' jp_activation_pending');
+	                showActivationPending();
 	                break;
 	            default: return;
 	        }
@@ -90736,13 +90743,10 @@
 	    function createKnowledgeTestLink() {
 	        // change topbar to knowledge test link
 	        var $topbarmsg = $('#topbar-msg');
-	        if ($topbarmsg.length <= 0) {
-	            return;         // topbar not exist, do nothing
-	        }
 	
 	        $topbarmsg.find('> span').removeClass('invisible');
 	        $topbarmsg.removeClass('invisible')
-	            .find('a').removeClass('invisible').addClass('jp_activation_pending')
+	            .find('a').removeClass('invisible')
 	                .attr('href', page.url.url_for('/new_account/knowledge_testws')).html($('<span/>', {text: page.text.localize('{JAPAN ONLY}Take knowledge test')}));
 	    }
 	

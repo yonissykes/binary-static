@@ -3073,6 +3073,8 @@ div.kineticjs-content {
   width: 90px;
   height: 200px;
   text-align: left;
+  overflow-y: hidden;
+  overflow-x: auto;
 }
 .platforms-content .outer {
   position: relative;
@@ -5149,6 +5151,9 @@ body.JA #profit-table .buy-price, body.JA #profit-table .sell-price, body.JA #pr
 }
 body.JA #main-menu {
   margin-bottom: 30px;
+}
+body.JA #email_consent_label {
+  font-size: 0.75614rem;
 }
 
 /*Vietnamese Language */
