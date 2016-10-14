@@ -4918,6 +4918,9 @@ div.kineticjs-content {
   max-width: 100%;
   margin-left: 10px;
 }
+#statement-ws-container .padding-left {
+  padding-left: 10px !important;
+}
 
 .table-container th {
   text-align: left !important;
