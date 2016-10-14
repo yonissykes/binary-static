@@ -71452,7 +71452,7 @@
 	        var newScrollLeft = $elem.scrollLeft(),
 	            width = $elem.width(),
 	            scrollWidth = $elem.get(0).scrollWidth;
-	        if (scrollWidth - newScrollLeft - width === 0) {
+	        if (scrollWidth - newScrollLeft - width < 90) {
 	            $fade.css('opacity', '0');
 	        }
 	    }
@@ -71470,7 +71470,8 @@
 	        );
 	    }
 	    function showSelectedDiv() {
-	        if ($('.sections[id="' + get_hash().substring(1) + '"]').is(':visible')) return;
+	        if ($('.sections[id="' + get_hash().substring(1) + '"]').is(':visible') &&
+	            $('.sections:visible').length === 1) return;
 	        $('.sections').addClass('invisible');
 	        $('.sections[id="' + get_hash().substring(1) + '"]').removeClass('invisible');
 	        $('.sidebar-nav a[href="' + get_hash() + '"]').parent().addClass('selected');
@@ -90804,7 +90805,7 @@
 	var CashierJP = (function() {
 	    function set_name_id() {
 	        if (/deposit-jp/.test(window.location.pathname)) {
-	            $('#name_id').text((page.user.first_name || 'Joe Bloggs') + ' ' + (page.user.loginid || 'JP12345'));
+	            $('#name_id').text((page.user.loginid || 'JP12345') + ' ' + (page.user.first_name || 'Joe Bloggs'));
 	        }
 	    }
 	    function set_email_id() {

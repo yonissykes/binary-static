@@ -3065,7 +3065,7 @@ div.kineticjs-content {
 .platforms-content td, .platforms-content th {
   vertical-align: top;
   padding: 10px;
-  width: 100px;
+  width: 120px;
 }
 .platforms-content th {
   position: absolute;
@@ -3073,7 +3073,7 @@ div.kineticjs-content {
   width: 90px;
   height: 200px;
   text-align: left;
-  overflow-y: hidden;
+  overflow-y: visible;
   overflow-x: auto;
 }
 .platforms-content .outer {
@@ -4905,6 +4905,7 @@ div.kineticjs-content {
           flex: 2 1 100px;
   padding-right: 20px;
   word-break: break-word;
+  min-width: 130px;
 }
 #statement-ws-container .act {
   -webkit-flex: 0.8 1 35px;
