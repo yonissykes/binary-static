@@ -54,68 +54,50 @@
 	};
 	
 	window.$ = window.jQuery = __webpack_require__(1);
-	window.EnjoyHint = __webpack_require__(2);
-	__webpack_require__(6);
-	__webpack_require__(7);
-	__webpack_require__(8);
-	window.moment = __webpack_require__(9);
-	__webpack_require__(21);
-	__webpack_require__(22);
-	exportAllFunctions(__webpack_require__(23));
-	exportAllFunctions(__webpack_require__(24));
+	
+	// Polyfills
+	window.Promise = window.Promise || __webpack_require__(2);
+	window.Symbol = window.Symbol || __webpack_require__(5);
+	__webpack_require__(23);
+	__webpack_require__(24);
 	__webpack_require__(25);
-	__webpack_require__(26);
-	__webpack_require__(27);
-	__webpack_require__(28);
-	__webpack_require__(29);
-	window.Cookies = __webpack_require__(30);
-	exportAllFunctions(__webpack_require__(31));
-	exportAllFunctions(__webpack_require__(32));
-	window.pjax = __webpack_require__(33);
-	window.ResizeSensor = __webpack_require__(34);
-	window.dv = __webpack_require__(35);
 	
-	__webpack_require__(36);
-	exportAllFunctions(__webpack_require__(37));
-	
-	exportAllFunctions(__webpack_require__(38));
-	exportAllFunctions(__webpack_require__(39));
-	exportAllFunctions(__webpack_require__(40));
-	
-	exportAllFunctions(__webpack_require__(41));
-	exportAllFunctions(__webpack_require__(42));
-	exportAllFunctions(__webpack_require__(43));
-	exportAllFunctions(__webpack_require__(44));
-	
-	exportAllFunctions(__webpack_require__(45));
-	exportAllFunctions(__webpack_require__(46));
+	window.EnjoyHint = __webpack_require__(26);
+	__webpack_require__(30);
+	__webpack_require__(31);
+	__webpack_require__(32);
+	window.moment = __webpack_require__(33);
+	__webpack_require__(45);
+	__webpack_require__(46);
 	exportAllFunctions(__webpack_require__(47));
-	exportAllFunctions(__webpack_require__(49));
-	exportAllFunctions(__webpack_require__(50));
-	exportAllFunctions(__webpack_require__(51));
-	
-	exportAllFunctions(__webpack_require__(52));
-	exportAllFunctions(__webpack_require__(53));
-	exportAllFunctions(__webpack_require__(54));
+	exportAllFunctions(__webpack_require__(48));
+	__webpack_require__(49);
+	__webpack_require__(50);
+	__webpack_require__(51);
+	__webpack_require__(52);
+	__webpack_require__(53);
+	window.Cookies = __webpack_require__(54);
 	exportAllFunctions(__webpack_require__(55));
 	exportAllFunctions(__webpack_require__(56));
-	exportAllFunctions(__webpack_require__(57));
-	exportAllFunctions(__webpack_require__(58));
-	exportAllFunctions(__webpack_require__(59));
-	exportAllFunctions(__webpack_require__(60));
+	window.pjax = __webpack_require__(57);
+	window.ResizeSensor = __webpack_require__(58);
+	window.dv = __webpack_require__(59);
+	
+	__webpack_require__(60);
 	exportAllFunctions(__webpack_require__(61));
+	
 	exportAllFunctions(__webpack_require__(62));
 	exportAllFunctions(__webpack_require__(63));
 	exportAllFunctions(__webpack_require__(64));
+	
 	exportAllFunctions(__webpack_require__(65));
 	exportAllFunctions(__webpack_require__(66));
 	exportAllFunctions(__webpack_require__(67));
 	exportAllFunctions(__webpack_require__(68));
+	
 	exportAllFunctions(__webpack_require__(69));
 	exportAllFunctions(__webpack_require__(70));
 	exportAllFunctions(__webpack_require__(71));
-	
-	exportAllFunctions(__webpack_require__(72));
 	exportAllFunctions(__webpack_require__(73));
 	exportAllFunctions(__webpack_require__(74));
 	exportAllFunctions(__webpack_require__(75));
@@ -140,10 +122,12 @@
 	exportAllFunctions(__webpack_require__(93));
 	exportAllFunctions(__webpack_require__(94));
 	exportAllFunctions(__webpack_require__(95));
+	
 	exportAllFunctions(__webpack_require__(96));
 	exportAllFunctions(__webpack_require__(97));
 	exportAllFunctions(__webpack_require__(98));
 	exportAllFunctions(__webpack_require__(99));
+	
 	exportAllFunctions(__webpack_require__(100));
 	exportAllFunctions(__webpack_require__(101));
 	exportAllFunctions(__webpack_require__(102));
@@ -197,10 +181,8 @@
 	exportAllFunctions(__webpack_require__(150));
 	exportAllFunctions(__webpack_require__(151));
 	exportAllFunctions(__webpack_require__(152));
-	
 	exportAllFunctions(__webpack_require__(153));
 	exportAllFunctions(__webpack_require__(154));
-	
 	exportAllFunctions(__webpack_require__(155));
 	exportAllFunctions(__webpack_require__(156));
 	exportAllFunctions(__webpack_require__(157));
@@ -223,8 +205,10 @@
 	exportAllFunctions(__webpack_require__(174));
 	exportAllFunctions(__webpack_require__(175));
 	exportAllFunctions(__webpack_require__(176));
+	
 	exportAllFunctions(__webpack_require__(177));
 	exportAllFunctions(__webpack_require__(178));
+	
 	exportAllFunctions(__webpack_require__(179));
 	exportAllFunctions(__webpack_require__(180));
 	exportAllFunctions(__webpack_require__(181));
@@ -234,7 +218,31 @@
 	exportAllFunctions(__webpack_require__(185));
 	exportAllFunctions(__webpack_require__(186));
 	exportAllFunctions(__webpack_require__(187));
-	exportAllFunctions(__webpack_require__(48));
+	exportAllFunctions(__webpack_require__(188));
+	exportAllFunctions(__webpack_require__(189));
+	exportAllFunctions(__webpack_require__(190));
+	exportAllFunctions(__webpack_require__(191));
+	exportAllFunctions(__webpack_require__(192));
+	exportAllFunctions(__webpack_require__(193));
+	exportAllFunctions(__webpack_require__(194));
+	exportAllFunctions(__webpack_require__(195));
+	exportAllFunctions(__webpack_require__(196));
+	exportAllFunctions(__webpack_require__(197));
+	exportAllFunctions(__webpack_require__(198));
+	exportAllFunctions(__webpack_require__(199));
+	exportAllFunctions(__webpack_require__(200));
+	exportAllFunctions(__webpack_require__(201));
+	exportAllFunctions(__webpack_require__(202));
+	exportAllFunctions(__webpack_require__(203));
+	exportAllFunctions(__webpack_require__(204));
+	exportAllFunctions(__webpack_require__(205));
+	exportAllFunctions(__webpack_require__(206));
+	exportAllFunctions(__webpack_require__(207));
+	exportAllFunctions(__webpack_require__(208));
+	exportAllFunctions(__webpack_require__(209));
+	exportAllFunctions(__webpack_require__(210));
+	exportAllFunctions(__webpack_require__(211));
+	exportAllFunctions(__webpack_require__(72));
 
 
 /***/ },
@@ -10061,12 +10069,1016 @@
 /* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
+	/* WEBPACK VAR INJECTION */(function(setImmediate) {(function (root) {
+	
+	  // Store setTimeout reference so promise-polyfill will be unaffected by
+	  // other code modifying setTimeout (like sinon.useFakeTimers())
+	  var setTimeoutFunc = setTimeout;
+	
+	  function noop() {}
+	  
+	  // Polyfill for Function.prototype.bind
+	  function bind(fn, thisArg) {
+	    return function () {
+	      fn.apply(thisArg, arguments);
+	    };
+	  }
+	
+	  function Promise(fn) {
+	    if (typeof this !== 'object') throw new TypeError('Promises must be constructed via new');
+	    if (typeof fn !== 'function') throw new TypeError('not a function');
+	    this._state = 0;
+	    this._handled = false;
+	    this._value = undefined;
+	    this._deferreds = [];
+	
+	    doResolve(fn, this);
+	  }
+	
+	  function handle(self, deferred) {
+	    while (self._state === 3) {
+	      self = self._value;
+	    }
+	    if (self._state === 0) {
+	      self._deferreds.push(deferred);
+	      return;
+	    }
+	    self._handled = true;
+	    Promise._immediateFn(function () {
+	      var cb = self._state === 1 ? deferred.onFulfilled : deferred.onRejected;
+	      if (cb === null) {
+	        (self._state === 1 ? resolve : reject)(deferred.promise, self._value);
+	        return;
+	      }
+	      var ret;
+	      try {
+	        ret = cb(self._value);
+	      } catch (e) {
+	        reject(deferred.promise, e);
+	        return;
+	      }
+	      resolve(deferred.promise, ret);
+	    });
+	  }
+	
+	  function resolve(self, newValue) {
+	    try {
+	      // Promise Resolution Procedure: https://github.com/promises-aplus/promises-spec#the-promise-resolution-procedure
+	      if (newValue === self) throw new TypeError('A promise cannot be resolved with itself.');
+	      if (newValue && (typeof newValue === 'object' || typeof newValue === 'function')) {
+	        var then = newValue.then;
+	        if (newValue instanceof Promise) {
+	          self._state = 3;
+	          self._value = newValue;
+	          finale(self);
+	          return;
+	        } else if (typeof then === 'function') {
+	          doResolve(bind(then, newValue), self);
+	          return;
+	        }
+	      }
+	      self._state = 1;
+	      self._value = newValue;
+	      finale(self);
+	    } catch (e) {
+	      reject(self, e);
+	    }
+	  }
+	
+	  function reject(self, newValue) {
+	    self._state = 2;
+	    self._value = newValue;
+	    finale(self);
+	  }
+	
+	  function finale(self) {
+	    if (self._state === 2 && self._deferreds.length === 0) {
+	      Promise._immediateFn(function() {
+	        if (!self._handled) {
+	          Promise._unhandledRejectionFn(self._value);
+	        }
+	      });
+	    }
+	
+	    for (var i = 0, len = self._deferreds.length; i < len; i++) {
+	      handle(self, self._deferreds[i]);
+	    }
+	    self._deferreds = null;
+	  }
+	
+	  function Handler(onFulfilled, onRejected, promise) {
+	    this.onFulfilled = typeof onFulfilled === 'function' ? onFulfilled : null;
+	    this.onRejected = typeof onRejected === 'function' ? onRejected : null;
+	    this.promise = promise;
+	  }
+	
+	  /**
+	   * Take a potentially misbehaving resolver function and make sure
+	   * onFulfilled and onRejected are only called once.
+	   *
+	   * Makes no guarantees about asynchrony.
+	   */
+	  function doResolve(fn, self) {
+	    var done = false;
+	    try {
+	      fn(function (value) {
+	        if (done) return;
+	        done = true;
+	        resolve(self, value);
+	      }, function (reason) {
+	        if (done) return;
+	        done = true;
+	        reject(self, reason);
+	      });
+	    } catch (ex) {
+	      if (done) return;
+	      done = true;
+	      reject(self, ex);
+	    }
+	  }
+	
+	  Promise.prototype['catch'] = function (onRejected) {
+	    return this.then(null, onRejected);
+	  };
+	
+	  Promise.prototype.then = function (onFulfilled, onRejected) {
+	    var prom = new (this.constructor)(noop);
+	
+	    handle(this, new Handler(onFulfilled, onRejected, prom));
+	    return prom;
+	  };
+	
+	  Promise.all = function (arr) {
+	    var args = Array.prototype.slice.call(arr);
+	
+	    return new Promise(function (resolve, reject) {
+	      if (args.length === 0) return resolve([]);
+	      var remaining = args.length;
+	
+	      function res(i, val) {
+	        try {
+	          if (val && (typeof val === 'object' || typeof val === 'function')) {
+	            var then = val.then;
+	            if (typeof then === 'function') {
+	              then.call(val, function (val) {
+	                res(i, val);
+	              }, reject);
+	              return;
+	            }
+	          }
+	          args[i] = val;
+	          if (--remaining === 0) {
+	            resolve(args);
+	          }
+	        } catch (ex) {
+	          reject(ex);
+	        }
+	      }
+	
+	      for (var i = 0; i < args.length; i++) {
+	        res(i, args[i]);
+	      }
+	    });
+	  };
+	
+	  Promise.resolve = function (value) {
+	    if (value && typeof value === 'object' && value.constructor === Promise) {
+	      return value;
+	    }
+	
+	    return new Promise(function (resolve) {
+	      resolve(value);
+	    });
+	  };
+	
+	  Promise.reject = function (value) {
+	    return new Promise(function (resolve, reject) {
+	      reject(value);
+	    });
+	  };
+	
+	  Promise.race = function (values) {
+	    return new Promise(function (resolve, reject) {
+	      for (var i = 0, len = values.length; i < len; i++) {
+	        values[i].then(resolve, reject);
+	      }
+	    });
+	  };
+	
+	  // Use polyfill for setImmediate for performance gains
+	  Promise._immediateFn = (typeof setImmediate === 'function' && function (fn) { setImmediate(fn); }) ||
+	    function (fn) {
+	      setTimeoutFunc(fn, 0);
+	    };
+	
+	  Promise._unhandledRejectionFn = function _unhandledRejectionFn(err) {
+	    if (typeof console !== 'undefined' && console) {
+	      console.warn('Possible Unhandled Promise Rejection:', err); // eslint-disable-line no-console
+	    }
+	  };
+	
+	  /**
+	   * Set the immediate function to execute callbacks
+	   * @param fn {function} Function to execute
+	   * @deprecated
+	   */
+	  Promise._setImmediateFn = function _setImmediateFn(fn) {
+	    Promise._immediateFn = fn;
+	  };
+	
+	  /**
+	   * Change the function to execute on unhandled rejection
+	   * @param {function} fn Function to execute on unhandled rejection
+	   * @deprecated
+	   */
+	  Promise._setUnhandledRejectionFn = function _setUnhandledRejectionFn(fn) {
+	    Promise._unhandledRejectionFn = fn;
+	  };
+	  
+	  if (typeof module !== 'undefined' && module.exports) {
+	    module.exports = Promise;
+	  } else if (!root.Promise) {
+	    root.Promise = Promise;
+	  }
+	
+	})(this);
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3).setImmediate))
+
+/***/ },
+/* 3 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(setImmediate, clearImmediate) {var nextTick = __webpack_require__(4).nextTick;
+	var apply = Function.prototype.apply;
+	var slice = Array.prototype.slice;
+	var immediateIds = {};
+	var nextImmediateId = 0;
+	
+	// DOM APIs, for completeness
+	
+	exports.setTimeout = function() {
+	  return new Timeout(apply.call(setTimeout, window, arguments), clearTimeout);
+	};
+	exports.setInterval = function() {
+	  return new Timeout(apply.call(setInterval, window, arguments), clearInterval);
+	};
+	exports.clearTimeout =
+	exports.clearInterval = function(timeout) { timeout.close(); };
+	
+	function Timeout(id, clearFn) {
+	  this._id = id;
+	  this._clearFn = clearFn;
+	}
+	Timeout.prototype.unref = Timeout.prototype.ref = function() {};
+	Timeout.prototype.close = function() {
+	  this._clearFn.call(window, this._id);
+	};
+	
+	// Does not start the time, just sets up the members needed.
+	exports.enroll = function(item, msecs) {
+	  clearTimeout(item._idleTimeoutId);
+	  item._idleTimeout = msecs;
+	};
+	
+	exports.unenroll = function(item) {
+	  clearTimeout(item._idleTimeoutId);
+	  item._idleTimeout = -1;
+	};
+	
+	exports._unrefActive = exports.active = function(item) {
+	  clearTimeout(item._idleTimeoutId);
+	
+	  var msecs = item._idleTimeout;
+	  if (msecs >= 0) {
+	    item._idleTimeoutId = setTimeout(function onTimeout() {
+	      if (item._onTimeout)
+	        item._onTimeout();
+	    }, msecs);
+	  }
+	};
+	
+	// That's not how node.js implements it but the exposed api is the same.
+	exports.setImmediate = typeof setImmediate === "function" ? setImmediate : function(fn) {
+	  var id = nextImmediateId++;
+	  var args = arguments.length < 2 ? false : slice.call(arguments, 1);
+	
+	  immediateIds[id] = true;
+	
+	  nextTick(function onNextTick() {
+	    if (immediateIds[id]) {
+	      // fn.call() is faster so we optimize for the common use-case
+	      // @see http://jsperf.com/call-apply-segu
+	      if (args) {
+	        fn.apply(null, args);
+	      } else {
+	        fn.call(null);
+	      }
+	      // Prevent ids from leaking
+	      exports.clearImmediate(id);
+	    }
+	  });
+	
+	  return id;
+	};
+	
+	exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate : function(id) {
+	  delete immediateIds[id];
+	};
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3).setImmediate, __webpack_require__(3).clearImmediate))
+
+/***/ },
+/* 4 */
+/***/ function(module, exports) {
+
+	// shim for using process in browser
+	var process = module.exports = {};
+	
+	// cached from whatever global is present so that test runners that stub it
+	// don't break things.  But we need to wrap it in a try catch in case it is
+	// wrapped in strict mode code which doesn't define any globals.  It's inside a
+	// function because try/catches deoptimize in certain engines.
+	
+	var cachedSetTimeout;
+	var cachedClearTimeout;
+	
+	function defaultSetTimout() {
+	    throw new Error('setTimeout has not been defined');
+	}
+	function defaultClearTimeout () {
+	    throw new Error('clearTimeout has not been defined');
+	}
+	(function () {
+	    try {
+	        if (typeof setTimeout === 'function') {
+	            cachedSetTimeout = setTimeout;
+	        } else {
+	            cachedSetTimeout = defaultSetTimout;
+	        }
+	    } catch (e) {
+	        cachedSetTimeout = defaultSetTimout;
+	    }
+	    try {
+	        if (typeof clearTimeout === 'function') {
+	            cachedClearTimeout = clearTimeout;
+	        } else {
+	            cachedClearTimeout = defaultClearTimeout;
+	        }
+	    } catch (e) {
+	        cachedClearTimeout = defaultClearTimeout;
+	    }
+	} ())
+	function runTimeout(fun) {
+	    if (cachedSetTimeout === setTimeout) {
+	        //normal enviroments in sane situations
+	        return setTimeout(fun, 0);
+	    }
+	    // if setTimeout wasn't available but was latter defined
+	    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+	        cachedSetTimeout = setTimeout;
+	        return setTimeout(fun, 0);
+	    }
+	    try {
+	        // when when somebody has screwed with setTimeout but no I.E. maddness
+	        return cachedSetTimeout(fun, 0);
+	    } catch(e){
+	        try {
+	            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+	            return cachedSetTimeout.call(null, fun, 0);
+	        } catch(e){
+	            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+	            return cachedSetTimeout.call(this, fun, 0);
+	        }
+	    }
+	
+	
+	}
+	function runClearTimeout(marker) {
+	    if (cachedClearTimeout === clearTimeout) {
+	        //normal enviroments in sane situations
+	        return clearTimeout(marker);
+	    }
+	    // if clearTimeout wasn't available but was latter defined
+	    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+	        cachedClearTimeout = clearTimeout;
+	        return clearTimeout(marker);
+	    }
+	    try {
+	        // when when somebody has screwed with setTimeout but no I.E. maddness
+	        return cachedClearTimeout(marker);
+	    } catch (e){
+	        try {
+	            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+	            return cachedClearTimeout.call(null, marker);
+	        } catch (e){
+	            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+	            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+	            return cachedClearTimeout.call(this, marker);
+	        }
+	    }
+	
+	
+	
+	}
+	var queue = [];
+	var draining = false;
+	var currentQueue;
+	var queueIndex = -1;
+	
+	function cleanUpNextTick() {
+	    if (!draining || !currentQueue) {
+	        return;
+	    }
+	    draining = false;
+	    if (currentQueue.length) {
+	        queue = currentQueue.concat(queue);
+	    } else {
+	        queueIndex = -1;
+	    }
+	    if (queue.length) {
+	        drainQueue();
+	    }
+	}
+	
+	function drainQueue() {
+	    if (draining) {
+	        return;
+	    }
+	    var timeout = runTimeout(cleanUpNextTick);
+	    draining = true;
+	
+	    var len = queue.length;
+	    while(len) {
+	        currentQueue = queue;
+	        queue = [];
+	        while (++queueIndex < len) {
+	            if (currentQueue) {
+	                currentQueue[queueIndex].run();
+	            }
+	        }
+	        queueIndex = -1;
+	        len = queue.length;
+	    }
+	    currentQueue = null;
+	    draining = false;
+	    runClearTimeout(timeout);
+	}
+	
+	process.nextTick = function (fun) {
+	    var args = new Array(arguments.length - 1);
+	    if (arguments.length > 1) {
+	        for (var i = 1; i < arguments.length; i++) {
+	            args[i - 1] = arguments[i];
+	        }
+	    }
+	    queue.push(new Item(fun, args));
+	    if (queue.length === 1 && !draining) {
+	        runTimeout(drainQueue);
+	    }
+	};
+	
+	// v8 likes predictible objects
+	function Item(fun, array) {
+	    this.fun = fun;
+	    this.array = array;
+	}
+	Item.prototype.run = function () {
+	    this.fun.apply(null, this.array);
+	};
+	process.title = 'browser';
+	process.browser = true;
+	process.env = {};
+	process.argv = [];
+	process.version = ''; // empty string to avoid regexp issues
+	process.versions = {};
+	
+	function noop() {}
+	
+	process.on = noop;
+	process.addListener = noop;
+	process.once = noop;
+	process.off = noop;
+	process.removeListener = noop;
+	process.removeAllListeners = noop;
+	process.emit = noop;
+	
+	process.binding = function (name) {
+	    throw new Error('process.binding is not supported');
+	};
+	
+	process.cwd = function () { return '/' };
+	process.chdir = function (dir) {
+	    throw new Error('process.chdir is not supported');
+	};
+	process.umask = function() { return 0; };
+
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	module.exports = __webpack_require__(6)() ? Symbol : __webpack_require__(7);
+
+
+/***/ },
+/* 6 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	var validTypes = { object: true, symbol: true };
+	
+	module.exports = function () {
+		var symbol;
+		if (typeof Symbol !== 'function') return false;
+		symbol = Symbol('test symbol');
+		try { String(symbol); } catch (e) { return false; }
+	
+		// Return 'true' also for polyfills
+		if (!validTypes[typeof Symbol.iterator]) return false;
+		if (!validTypes[typeof Symbol.toPrimitive]) return false;
+		if (!validTypes[typeof Symbol.toStringTag]) return false;
+	
+		return true;
+	};
+
+
+/***/ },
+/* 7 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// ES2015 Symbol polyfill for environments that do not support it (or partially support it)
+	
+	'use strict';
+	
+	var d              = __webpack_require__(8)
+	  , validateSymbol = __webpack_require__(21)
+	
+	  , create = Object.create, defineProperties = Object.defineProperties
+	  , defineProperty = Object.defineProperty, objPrototype = Object.prototype
+	  , NativeSymbol, SymbolPolyfill, HiddenSymbol, globalSymbols = create(null)
+	  , isNativeSafe;
+	
+	if (typeof Symbol === 'function') {
+		NativeSymbol = Symbol;
+		try {
+			String(NativeSymbol());
+			isNativeSafe = true;
+		} catch (ignore) {}
+	}
+	
+	var generateName = (function () {
+		var created = create(null);
+		return function (desc) {
+			var postfix = 0, name, ie11BugWorkaround;
+			while (created[desc + (postfix || '')]) ++postfix;
+			desc += (postfix || '');
+			created[desc] = true;
+			name = '@@' + desc;
+			defineProperty(objPrototype, name, d.gs(null, function (value) {
+				// For IE11 issue see:
+				// https://connect.microsoft.com/IE/feedbackdetail/view/1928508/
+				//    ie11-broken-getters-on-dom-objects
+				// https://github.com/medikoo/es6-symbol/issues/12
+				if (ie11BugWorkaround) return;
+				ie11BugWorkaround = true;
+				defineProperty(this, name, d(value));
+				ie11BugWorkaround = false;
+			}));
+			return name;
+		};
+	}());
+	
+	// Internal constructor (not one exposed) for creating Symbol instances.
+	// This one is used to ensure that `someSymbol instanceof Symbol` always return false
+	HiddenSymbol = function Symbol(description) {
+		if (this instanceof HiddenSymbol) throw new TypeError('TypeError: Symbol is not a constructor');
+		return SymbolPolyfill(description);
+	};
+	
+	// Exposed `Symbol` constructor
+	// (returns instances of HiddenSymbol)
+	module.exports = SymbolPolyfill = function Symbol(description) {
+		var symbol;
+		if (this instanceof Symbol) throw new TypeError('TypeError: Symbol is not a constructor');
+		if (isNativeSafe) return NativeSymbol(description);
+		symbol = create(HiddenSymbol.prototype);
+		description = (description === undefined ? '' : String(description));
+		return defineProperties(symbol, {
+			__description__: d('', description),
+			__name__: d('', generateName(description))
+		});
+	};
+	defineProperties(SymbolPolyfill, {
+		for: d(function (key) {
+			if (globalSymbols[key]) return globalSymbols[key];
+			return (globalSymbols[key] = SymbolPolyfill(String(key)));
+		}),
+		keyFor: d(function (s) {
+			var key;
+			validateSymbol(s);
+			for (key in globalSymbols) if (globalSymbols[key] === s) return key;
+		}),
+	
+		// If there's native implementation of given symbol, let's fallback to it
+		// to ensure proper interoperability with other native functions e.g. Array.from
+		hasInstance: d('', (NativeSymbol && NativeSymbol.hasInstance) || SymbolPolyfill('hasInstance')),
+		isConcatSpreadable: d('', (NativeSymbol && NativeSymbol.isConcatSpreadable) ||
+			SymbolPolyfill('isConcatSpreadable')),
+		iterator: d('', (NativeSymbol && NativeSymbol.iterator) || SymbolPolyfill('iterator')),
+		match: d('', (NativeSymbol && NativeSymbol.match) || SymbolPolyfill('match')),
+		replace: d('', (NativeSymbol && NativeSymbol.replace) || SymbolPolyfill('replace')),
+		search: d('', (NativeSymbol && NativeSymbol.search) || SymbolPolyfill('search')),
+		species: d('', (NativeSymbol && NativeSymbol.species) || SymbolPolyfill('species')),
+		split: d('', (NativeSymbol && NativeSymbol.split) || SymbolPolyfill('split')),
+		toPrimitive: d('', (NativeSymbol && NativeSymbol.toPrimitive) || SymbolPolyfill('toPrimitive')),
+		toStringTag: d('', (NativeSymbol && NativeSymbol.toStringTag) || SymbolPolyfill('toStringTag')),
+		unscopables: d('', (NativeSymbol && NativeSymbol.unscopables) || SymbolPolyfill('unscopables'))
+	});
+	
+	// Internal tweaks for real symbol producer
+	defineProperties(HiddenSymbol.prototype, {
+		constructor: d(SymbolPolyfill),
+		toString: d('', function () { return this.__name__; })
+	});
+	
+	// Proper implementation of methods exposed on Symbol.prototype
+	// They won't be accessible on produced symbol instances as they derive from HiddenSymbol.prototype
+	defineProperties(SymbolPolyfill.prototype, {
+		toString: d(function () { return 'Symbol (' + validateSymbol(this).__description__ + ')'; }),
+		valueOf: d(function () { return validateSymbol(this); })
+	});
+	defineProperty(SymbolPolyfill.prototype, SymbolPolyfill.toPrimitive, d('', function () {
+		var symbol = validateSymbol(this);
+		if (typeof symbol === 'symbol') return symbol;
+		return symbol.toString();
+	}));
+	defineProperty(SymbolPolyfill.prototype, SymbolPolyfill.toStringTag, d('c', 'Symbol'));
+	
+	// Proper implementaton of toPrimitive and toStringTag for returned symbol instances
+	defineProperty(HiddenSymbol.prototype, SymbolPolyfill.toStringTag,
+		d('c', SymbolPolyfill.prototype[SymbolPolyfill.toStringTag]));
+	
+	// Note: It's important to define `toPrimitive` as last one, as some implementations
+	// implement `toPrimitive` natively without implementing `toStringTag` (or other specified symbols)
+	// And that may invoke error in definition flow:
+	// See: https://github.com/medikoo/es6-symbol/issues/13#issuecomment-164146149
+	defineProperty(HiddenSymbol.prototype, SymbolPolyfill.toPrimitive,
+		d('c', SymbolPolyfill.prototype[SymbolPolyfill.toPrimitive]));
+
+
+/***/ },
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var assign        = __webpack_require__(9)
+	  , normalizeOpts = __webpack_require__(16)
+	  , isCallable    = __webpack_require__(17)
+	  , contains      = __webpack_require__(18)
+	
+	  , d;
+	
+	d = module.exports = function (dscr, value/*, options*/) {
+		var c, e, w, options, desc;
+		if ((arguments.length < 2) || (typeof dscr !== 'string')) {
+			options = value;
+			value = dscr;
+			dscr = null;
+		} else {
+			options = arguments[2];
+		}
+		if (dscr == null) {
+			c = w = true;
+			e = false;
+		} else {
+			c = contains.call(dscr, 'c');
+			e = contains.call(dscr, 'e');
+			w = contains.call(dscr, 'w');
+		}
+	
+		desc = { value: value, configurable: c, enumerable: e, writable: w };
+		return !options ? desc : assign(normalizeOpts(options), desc);
+	};
+	
+	d.gs = function (dscr, get, set/*, options*/) {
+		var c, e, options, desc;
+		if (typeof dscr !== 'string') {
+			options = set;
+			set = get;
+			get = dscr;
+			dscr = null;
+		} else {
+			options = arguments[3];
+		}
+		if (get == null) {
+			get = undefined;
+		} else if (!isCallable(get)) {
+			options = get;
+			get = set = undefined;
+		} else if (set == null) {
+			set = undefined;
+		} else if (!isCallable(set)) {
+			options = set;
+			set = undefined;
+		}
+		if (dscr == null) {
+			c = true;
+			e = false;
+		} else {
+			c = contains.call(dscr, 'c');
+			e = contains.call(dscr, 'e');
+		}
+	
+		desc = { get: get, set: set, configurable: c, enumerable: e };
+		return !options ? desc : assign(normalizeOpts(options), desc);
+	};
+
+
+/***/ },
+/* 9 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	module.exports = __webpack_require__(10)()
+		? Object.assign
+		: __webpack_require__(11);
+
+
+/***/ },
+/* 10 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	module.exports = function () {
+		var assign = Object.assign, obj;
+		if (typeof assign !== 'function') return false;
+		obj = { foo: 'raz' };
+		assign(obj, { bar: 'dwa' }, { trzy: 'trzy' });
+		return (obj.foo + obj.bar + obj.trzy) === 'razdwatrzy';
+	};
+
+
+/***/ },
+/* 11 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var keys  = __webpack_require__(12)
+	  , value = __webpack_require__(15)
+	
+	  , max = Math.max;
+	
+	module.exports = function (dest, src/*, …srcn*/) {
+		var error, i, l = max(arguments.length, 2), assign;
+		dest = Object(value(dest));
+		assign = function (key) {
+			try { dest[key] = src[key]; } catch (e) {
+				if (!error) error = e;
+			}
+		};
+		for (i = 1; i < l; ++i) {
+			src = arguments[i];
+			keys(src).forEach(assign);
+		}
+		if (error !== undefined) throw error;
+		return dest;
+	};
+
+
+/***/ },
+/* 12 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	module.exports = __webpack_require__(13)()
+		? Object.keys
+		: __webpack_require__(14);
+
+
+/***/ },
+/* 13 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	module.exports = function () {
+		try {
+			Object.keys('primitive');
+			return true;
+		} catch (e) { return false; }
+	};
+
+
+/***/ },
+/* 14 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	var keys = Object.keys;
+	
+	module.exports = function (object) {
+		return keys(object == null ? object : Object(object));
+	};
+
+
+/***/ },
+/* 15 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	module.exports = function (value) {
+		if (value == null) throw new TypeError("Cannot use null or undefined");
+		return value;
+	};
+
+
+/***/ },
+/* 16 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	var forEach = Array.prototype.forEach, create = Object.create;
+	
+	var process = function (src, obj) {
+		var key;
+		for (key in src) obj[key] = src[key];
+	};
+	
+	module.exports = function (options/*, …options*/) {
+		var result = create(null);
+		forEach.call(arguments, function (options) {
+			if (options == null) return;
+			process(Object(options), result);
+		});
+		return result;
+	};
+
+
+/***/ },
+/* 17 */
+/***/ function(module, exports) {
+
+	// Deprecated
+	
+	'use strict';
+	
+	module.exports = function (obj) { return typeof obj === 'function'; };
+
+
+/***/ },
+/* 18 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	module.exports = __webpack_require__(19)()
+		? String.prototype.contains
+		: __webpack_require__(20);
+
+
+/***/ },
+/* 19 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	var str = 'razdwatrzy';
+	
+	module.exports = function () {
+		if (typeof str.contains !== 'function') return false;
+		return ((str.contains('dwa') === true) && (str.contains('foo') === false));
+	};
+
+
+/***/ },
+/* 20 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	var indexOf = String.prototype.indexOf;
+	
+	module.exports = function (searchString/*, position*/) {
+		return indexOf.call(this, searchString, arguments[1]) > -1;
+	};
+
+
+/***/ },
+/* 21 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var isSymbol = __webpack_require__(22);
+	
+	module.exports = function (value) {
+		if (!isSymbol(value)) throw new TypeError(value + " is not a symbol");
+		return value;
+	};
+
+
+/***/ },
+/* 22 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	module.exports = function (x) {
+		if (!x) return false;
+		if (typeof x === 'symbol') return true;
+		if (!x.constructor) return false;
+		if (x.constructor.name !== 'Symbol') return false;
+		return (x[x.constructor.toStringTag] === 'Symbol');
+	};
+
+
+/***/ },
+/* 23 */
+/***/ function(module, exports) {
+
+	if (!('includes' in Array.prototype)) {
+	    Array.prototype.includes = function includes(searchElement /*, fromIndex*/ ) {
+	        'use strict';
+	        var O = Object(this);
+	        var len = parseInt(O.length) || 0;
+	        if (len === 0) {
+	            return false;
+	        }
+	        var n = parseInt(arguments[1]) || 0;
+	        var k;
+	        if (n >= 0) {
+	            k = n;
+	        } else {
+	            k = len + n;
+	            if (k < 0) {k = 0;}
+	        }
+	        var currentElement;
+	        while (k < len) {
+	            currentElement = O[k];
+	            if (searchElement === currentElement ||
+	               (searchElement !== searchElement && currentElement !== currentElement)) {
+	                return true;
+	            }
+	            k++;
+	        }
+	        return false;
+	    };
+	}
+
+
+/***/ },
+/* 24 */
+/***/ function(module, exports) {
+
+	if (!('includes' in String.prototype)) {
+	    String.prototype.includes = function (string, index) {
+	        if (typeof string === 'object' && string instanceof RegExp) throw new TypeError("First argument to String.prototype.includes must not be a regular expression");
+	        return this.indexOf(string, index) !== -1;
+	    };
+	}
+
+
+/***/ },
+/* 25 */
+/***/ function(module, exports) {
+
+	if (!('assign' in Object)) {
+	    Object.assign = function assign(target, source) {
+	        for (var index = 1, key, src; index < arguments.length; ++index) {
+	            src = arguments[index];
+	
+	            for (key in src) {
+	                if (Object.prototype.hasOwnProperty.call(src, key)) {
+	                    target[key] = src[key];
+	                }
+	            }
+	        }
+	        return target;
+	    };
+	}
+
+
+/***/ },
+/* 26 */
+/***/ function(module, exports, __webpack_require__) {
+
 	/* WEBPACK VAR INJECTION */(function(global) {// https://github.com/xbsoftware/enjoyhint
 	// (+ some custom changes for binary.com)
 	
 	global.window = global;
 	var $ = __webpack_require__(1);
-	var Kinetic = __webpack_require__(3);
+	var Kinetic = __webpack_require__(27);
 	
 	module.exports = function (_options) {
 	    var that = this;
@@ -11100,7 +12112,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 3 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {
@@ -11706,8 +12718,8 @@
 	            // Node. Does not work with strict CommonJS, but
 	            // only CommonJS-like enviroments that support module.exports,
 	            // like Node.
-	            var Canvas = __webpack_require__(4);
-	            var jsdom = __webpack_require__(5).jsdom;
+	            var Canvas = __webpack_require__(28);
+	            var jsdom = __webpack_require__(29).jsdom;
 	
 	            Kinetic.document = jsdom('<!DOCTYPE html><html><head></head><body></body></html>');
 	            Kinetic.window = Kinetic.document.createWindow();
@@ -26245,19 +27257,19 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 4 */
+/* 28 */
 /***/ function(module, exports) {
 
 	/* (ignored) */
 
 /***/ },
-/* 5 */
+/* 29 */
 /***/ function(module, exports) {
 
 	/* (ignored) */
 
 /***/ },
-/* 6 */
+/* 30 */
 /***/ function(module, exports) {
 
 	// ==ClosureCompiler==
@@ -49412,7 +50424,7 @@
 
 
 /***/ },
-/* 7 */
+/* 31 */
 /***/ function(module, exports) {
 
 	/**
@@ -50182,7 +51194,7 @@
 
 
 /***/ },
-/* 8 */
+/* 32 */
 /***/ function(module, exports) {
 
 	/**
@@ -50283,7 +51295,7 @@
 
 
 /***/ },
-/* 9 */
+/* 33 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(global, module) {//! moment.js
@@ -51050,7 +52062,7 @@
 	        if (!locales[name] && hasModule) {
 	            try {
 	                oldLocale = moment.locale();
-	                __webpack_require__(11)("./" + name);
+	                __webpack_require__(35)("./" + name);
 	                // because defineLocale currently also sets the global locale, we want to undo that for lazy loaded locales
 	                moment.locale(oldLocale);
 	            } catch (e) { }
@@ -53095,10 +54107,10 @@
 	    }
 	}).call(this);
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(10)(module)))
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(34)(module)))
 
 /***/ },
-/* 10 */
+/* 34 */
 /***/ function(module, exports) {
 
 	module.exports = function(module) {
@@ -53114,28 +54126,28 @@
 
 
 /***/ },
-/* 11 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var map = {
-		"./ar": 12,
-		"./ar.js": 12,
-		"./de": 13,
-		"./de.js": 13,
-		"./es": 14,
-		"./es.js": 14,
-		"./fr": 15,
-		"./fr.js": 15,
-		"./id": 16,
-		"./id.js": 16,
-		"./pl": 17,
-		"./pl.js": 17,
-		"./pt": 18,
-		"./pt.js": 18,
-		"./ru": 19,
-		"./ru.js": 19,
-		"./zh-cn": 20,
-		"./zh-cn.js": 20
+		"./ar": 36,
+		"./ar.js": 36,
+		"./de": 37,
+		"./de.js": 37,
+		"./es": 38,
+		"./es.js": 38,
+		"./fr": 39,
+		"./fr.js": 39,
+		"./id": 40,
+		"./id.js": 40,
+		"./pl": 41,
+		"./pl.js": 41,
+		"./pt": 42,
+		"./pt.js": 42,
+		"./ru": 43,
+		"./ru.js": 43,
+		"./zh-cn": 44,
+		"./zh-cn.js": 44
 	};
 	function webpackContext(req) {
 		return __webpack_require__(webpackContextResolve(req));
@@ -53148,11 +54160,11 @@
 	};
 	webpackContext.resolve = webpackContextResolve;
 	module.exports = webpackContext;
-	webpackContext.id = 11;
+	webpackContext.id = 35;
 
 
 /***/ },
-/* 12 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// moment.js locale configuration
@@ -53163,7 +54175,7 @@
 	
 	(function (factory) {
 	    if (true) {
-	        module.exports = factory(__webpack_require__(9)); // Node
+	        module.exports = factory(__webpack_require__(33)); // Node
 	    } else {
 	        factory(window.moment); // Browser global
 	    }
@@ -53285,7 +54297,7 @@
 
 
 /***/ },
-/* 13 */
+/* 37 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// moment.js locale configuration
@@ -53295,7 +54307,7 @@
 	
 	(function (factory) {
 	    if (true) {
-	        module.exports = factory(__webpack_require__(9)); // Node
+	        module.exports = factory(__webpack_require__(33)); // Node
 	    } else {
 	        factory(window.moment); // Browser global
 	    }
@@ -53360,7 +54372,7 @@
 
 
 /***/ },
-/* 14 */
+/* 38 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// moment.js locale configuration
@@ -53369,7 +54381,7 @@
 	
 	(function (factory) {
 	    if (true) {
-	        module.exports = factory(__webpack_require__(9)); // Node
+	        module.exports = factory(__webpack_require__(33)); // Node
 	    } else {
 	        factory(window.moment); // Browser global
 	    }
@@ -53439,7 +54451,7 @@
 
 
 /***/ },
-/* 15 */
+/* 39 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// moment.js locale configuration
@@ -53448,7 +54460,7 @@
 	
 	(function (factory) {
 	    if (true) {
-	        module.exports = factory(__webpack_require__(9)); // Node
+	        module.exports = factory(__webpack_require__(33)); // Node
 	    } else {
 	        factory(window.moment); // Browser global
 	    }
@@ -53501,7 +54513,7 @@
 
 
 /***/ },
-/* 16 */
+/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// moment.js locale configuration
@@ -53511,7 +54523,7 @@
 	
 	(function (factory) {
 	    if (true) {
-	        module.exports = factory(__webpack_require__(9)); // Node
+	        module.exports = factory(__webpack_require__(33)); // Node
 	    } else {
 	        factory(window.moment); // Browser global
 	    }
@@ -53572,7 +54584,7 @@
 
 
 /***/ },
-/* 17 */
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// moment.js locale configuration
@@ -53581,7 +54593,7 @@
 	
 	(function (factory) {
 	    if (true) {
-	        module.exports = factory(__webpack_require__(9)); // Node
+	        module.exports = factory(__webpack_require__(33)); // Node
 	    } else {
 	        factory(window.moment); // Browser global
 	    }
@@ -53674,7 +54686,7 @@
 
 
 /***/ },
-/* 18 */
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// moment.js locale configuration
@@ -53683,7 +54695,7 @@
 	
 	(function (factory) {
 	    if (true) {
-	        module.exports = factory(__webpack_require__(9)); // Node
+	        module.exports = factory(__webpack_require__(33)); // Node
 	    } else {
 	        factory(window.moment); // Browser global
 	    }
@@ -53738,7 +54750,7 @@
 
 
 /***/ },
-/* 19 */
+/* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// moment.js locale configuration
@@ -53748,7 +54760,7 @@
 	
 	(function (factory) {
 	    if (true) {
-	        module.exports = factory(__webpack_require__(9)); // Node
+	        module.exports = factory(__webpack_require__(33)); // Node
 	    } else {
 	        factory(window.moment); // Browser global
 	    }
@@ -53908,7 +54920,7 @@
 
 
 /***/ },
-/* 20 */
+/* 44 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// moment.js locale configuration
@@ -53918,7 +54930,7 @@
 	
 	(function (factory) {
 	    if (true) {
-	        module.exports = factory(__webpack_require__(9)); // Node
+	        module.exports = factory(__webpack_require__(33)); // Node
 	    } else {
 	        factory(window.moment); // Browser global
 	    }
@@ -54020,7 +55032,7 @@
 
 
 /***/ },
-/* 21 */
+/* 45 */
 /***/ function(module, exports) {
 
 	/*	
@@ -54109,7 +55121,7 @@
 	!function(e){function s(e){switch(e){case 9:case 16:case 17:case 18:case 37:case 38:case 39:case 40:return!0}return!1}var n="mmenu",t="searchfield";e[n].prototype["_addon_"+t]=function(){var a=this,r=this.opts[t],o=e[n]._c,l=e[n]._d,d=e[n]._e;if(o.add("search hassearch noresults nosubresults counter"),d.add("search reset change"),"boolean"==typeof r&&(r={add:r,search:r}),"object"!=typeof r&&(r={}),r=e.extend(!0,{},e[n].defaults[t],r),r.add&&(e('<div class="'+o.search+'" />').prependTo(this.$menu).append('<input placeholder="'+r.placeholder+'" type="text" autocomplete="off" />'),r.noResults&&e("ul, ol",this.$menu).first().append('<li class="'+o.noresults+'">'+r.noResults+"</li>")),e("div."+o.search,this.$menu).length&&this.$menu.addClass(o.hassearch),r.search){var i=e("div."+o.search,this.$menu).find("input");if(i.length){var u=e("."+o.panel,this.$menu),h=e("."+o.list+"> li."+o.label,this.$menu),c=e("."+o.list+"> li",this.$menu).not("."+o.subtitle).not("."+o.label).not("."+o.noresults),f="> a";r.showLinksOnly||(f+=", > span"),i.off(d.keyup+" "+d.change).on(d.keyup,function(e){s(e.keyCode)||a.$menu.trigger(d.search)}).on(d.change,function(){a.$menu.trigger(d.search)}),this.$menu.off(d.reset+" "+d.search).on(d.reset+" "+d.search,function(e){e.stopPropagation()}).on(d.reset,function(){a.$menu.trigger(d.search,[""])}).on(d.search,function(s,n){"string"==typeof n?i.val(n):n=i.val(),n=n.toLowerCase(),u.scrollTop(0),c.add(h).addClass(o.hidden),c.each(function(){var s=e(this);e(f,s).text().toLowerCase().indexOf(n)>-1&&s.add(s.prevAll("."+o.label).first()).removeClass(o.hidden)}),e(u.get().reverse()).each(function(){var s=e(this),n=s.data(l.parent);if(n){var t=s.add(s.find("> ."+o.list)).find("> li").not("."+o.subtitle).not("."+o.label).not("."+o.hidden);t.length?n.removeClass(o.hidden).removeClass(o.nosubresults).prevAll("."+o.label).first().removeClass(o.hidden):(s.hasClass(o.current)&&n.trigger(d.open),n.addClass(o.nosubresults))}}),a.$menu[c.not("."+o.hidden).length?"removeClass":"addClass"](o.noresults),a.$menu.trigger(d.update)})}}},e[n].defaults[t]={add:!1,search:!1,showLinksOnly:!0,placeholder:"Search",noResults:"No results found."},e[n].addons=e[n].addons||[],e[n].addons.push(t)}(jQuery);
 
 /***/ },
-/* 22 */
+/* 46 */
 /***/ function(module, exports) {
 
 	/*
@@ -55611,7 +56623,7 @@
 
 
 /***/ },
-/* 23 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
 	function done_typing(elem, config) {
@@ -55650,7 +56662,7 @@
 
 
 /***/ },
-/* 24 */
+/* 48 */
 /***/ function(module, exports) {
 
 	function formToObj(form) {
@@ -55738,7 +56750,7 @@
 
 
 /***/ },
-/* 25 */
+/* 49 */
 /***/ function(module, exports) {
 
 	/** @license
@@ -56285,7 +57297,7 @@
 
 
 /***/ },
-/* 26 */
+/* 50 */
 /***/ function(module, exports) {
 
 	// jQuery.XDomainRequest.js
@@ -56384,7 +57396,7 @@
 	})(jQuery);
 
 /***/ },
-/* 27 */
+/* 51 */
 /***/ function(module, exports) {
 
 	/**
@@ -56396,7 +57408,7 @@
 	;(function($){var h=$.scrollTo=function(a,b,c){$(window).scrollTo(a,b,c)};h.defaults={axis:'xy',duration:parseFloat($.fn.jquery)>=1.3?0:1,limit:true};h.window=function(a){return $(window)._scrollable()};$.fn._scrollable=function(){return this.map(function(){var a=this,isWin=!a.nodeName||$.inArray(a.nodeName.toLowerCase(),['iframe','#document','html','body'])!=-1;if(!isWin)return a;var b=(a.contentWindow||a).document||a.ownerDocument||a;return/webkit/i.test(navigator.userAgent)||b.compatMode=='BackCompat'?b.body:b.documentElement})};$.fn.scrollTo=function(e,f,g){if(typeof f=='object'){g=f;f=0}if(typeof g=='function')g={onAfter:g};if(e=='max')e=9e9;g=$.extend({},h.defaults,g);f=f||g.duration;g.queue=g.queue&&g.axis.length>1;if(g.queue)f/=2;g.offset=both(g.offset);g.over=both(g.over);return this._scrollable().each(function(){if(e==null)return;var d=this,$elem=$(d),targ=e,toff,attr={},win=$elem.is('html,body');switch(typeof targ){case'number':case'string':if(/^([+-]=)?\d+(\.\d+)?(px|%)?$/.test(targ)){targ=both(targ);break}targ=$(targ,this);if(!targ.length)return;case'object':if(targ.is||targ.style)toff=(targ=$(targ)).offset()}$.each(g.axis.split(''),function(i,a){var b=a=='x'?'Left':'Top',pos=b.toLowerCase(),key='scroll'+b,old=d[key],max=h.max(d,a);if(toff){attr[key]=toff[pos]+(win?0:old-$elem.offset()[pos]);if(g.margin){attr[key]-=parseInt(targ.css('margin'+b))||0;attr[key]-=parseInt(targ.css('border'+b+'Width'))||0}attr[key]+=g.offset[pos]||0;if(g.over[pos])attr[key]+=targ[a=='x'?'width':'height']()*g.over[pos]}else{var c=targ[pos];attr[key]=c.slice&&c.slice(-1)=='%'?parseFloat(c)/100*max:c}if(g.limit&&/^\d+$/.test(attr[key]))attr[key]=attr[key]<=0?0:Math.min(attr[key],max);if(!i&&g.queue){if(old!=attr[key])animate(g.onAfterFirst);delete attr[key]}});animate(g.onAfter);function animate(a){$elem.animate(attr,f,g.easing,a&&function(){a.call(this,e,g)})}}).end()};h.max=function(a,b){var c=b=='x'?'Width':'Height',scroll='scroll'+c;if(!$(a).is('html,body'))return a[scroll]-$(a)[c.toLowerCase()]();var d='client'+c,html=a.ownerDocument.documentElement,body=a.ownerDocument.body;return Math.max(html[scroll],body[scroll])-Math.min(html[d],body[d])};function both(a){return typeof a=='object'?a:{top:a,left:a}}})(jQuery);
 
 /***/ },
-/* 28 */
+/* 52 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*! jQuery UI - v1.11.0 - 2014-08-11
@@ -61906,7 +62918,7 @@
 
 
 /***/ },
-/* 29 */
+/* 53 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
@@ -64997,7 +66009,7 @@
 
 
 /***/ },
-/* 30 */
+/* 54 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -65154,7 +66166,7 @@
 
 
 /***/ },
-/* 31 */
+/* 55 */
 /***/ function(module, exports) {
 
 	/*!
@@ -65192,7 +66204,7 @@
 
 
 /***/ },
-/* 32 */
+/* 56 */
 /***/ function(module, exports) {
 
 	/*! loadJS: load a JS file asynchronously. [c]2014 @scottjehl, Filament Group, Inc. (Based on http://goo.gl/REQGQ by Paul Irish). Licensed MIT */
@@ -65211,7 +66223,7 @@
 
 
 /***/ },
-/* 33 */
+/* 57 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;var __WEBPACK_AMD_DEFINE_RESULT__;/**!
@@ -65818,7 +66830,7 @@
 
 
 /***/ },
-/* 34 */
+/* 58 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
@@ -66044,7 +67056,7 @@
 
 
 /***/ },
-/* 35 */
+/* 59 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var dv = (function() {
@@ -66118,7 +67130,7 @@
 
 
 /***/ },
-/* 36 */
+/* 60 */
 /***/ function(module, exports) {
 
 	window._trackJs = {
@@ -66170,7 +67182,7 @@
 
 
 /***/ },
-/* 37 */
+/* 61 */
 /***/ function(module, exports) {
 
 	var texts_json = {};
@@ -66195,7 +67207,7 @@
 
 
 /***/ },
-/* 38 */
+/* 62 */
 /***/ function(module, exports) {
 
 	TimePicker = function(component_id) {
@@ -66285,7 +67297,7 @@
 
 
 /***/ },
-/* 39 */
+/* 63 */
 /***/ function(module, exports) {
 
 	DatePicker = function(component_id, select_type) {
@@ -66374,7 +67386,7 @@
 
 
 /***/ },
-/* 40 */
+/* 64 */
 /***/ function(module, exports) {
 
 	DatePicker.SelectedDates = function(component_id, select_type) {
@@ -66499,7 +67511,7 @@
 
 
 /***/ },
-/* 41 */
+/* 65 */
 /***/ function(module, exports) {
 
 	var LoggedInHandler = (function() {
@@ -66588,7 +67600,7 @@
 
 
 /***/ },
-/* 42 */
+/* 66 */
 /***/ function(module, exports) {
 
 	var Login = (function() {
@@ -66630,7 +67642,7 @@
 
 
 /***/ },
-/* 43 */
+/* 67 */
 /***/ function(module, exports) {
 
 	var MenuContent = (function () {
@@ -66799,7 +67811,7 @@
 
 
 /***/ },
-/* 44 */
+/* 68 */
 /***/ function(module, exports) {
 
 	(function () {
@@ -66820,7 +67832,7 @@
 
 
 /***/ },
-/* 45 */
+/* 69 */
 /***/ function(module, exports) {
 
 	//////////////////////////////////////////////////////////////////
@@ -67145,7 +68157,7 @@
 
 
 /***/ },
-/* 46 */
+/* 70 */
 /***/ function(module, exports) {
 
 	var isStorageSupported = function(storage) {
@@ -67278,10 +68290,10 @@
 
 
 /***/ },
-/* 47 */
+/* 71 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var getAppId = __webpack_require__(48).getAppId;
+	var getAppId = __webpack_require__(72).getAppId;
 	var clock_started = false;
 	
 	var SessionStore, LocalStore;
@@ -68652,7 +69664,7 @@
 
 
 /***/ },
-/* 48 */
+/* 72 */
 /***/ function(module, exports) {
 
 	/*
@@ -68705,7 +69717,7 @@
 
 
 /***/ },
-/* 49 */
+/* 73 */
 /***/ function(module, exports) {
 
 	//For object shape coherence we create named objects to be inserted into the queue.
@@ -68933,12 +69945,12 @@
 
 
 /***/ },
-/* 50 */
+/* 74 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var getAppId = __webpack_require__(48).getAppId;
-	var getSocketURL = __webpack_require__(48).getSocketURL;
-	var pjax_config_page = __webpack_require__(49).pjax_config_page;
+	var getAppId = __webpack_require__(72).getAppId;
+	var getSocketURL = __webpack_require__(72).getSocketURL;
+	var pjax_config_page = __webpack_require__(73).pjax_config_page;
 	
 	pjax_config_page("endpoint", function(){
 	    return {
@@ -68965,7 +69977,7 @@
 
 
 /***/ },
-/* 51 */
+/* 75 */
 /***/ function(module, exports) {
 
 	/*
@@ -69053,14 +70065,14 @@
 
 
 /***/ },
-/* 52 */
+/* 76 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var ActiveSymbols = (function () {
 	    'use strict';
 	
 	    var objectNotEmpty = typeof window === 'undefined' ?
-	        __webpack_require__(45).objectNotEmpty :
+	        __webpack_require__(69).objectNotEmpty :
 	        window.objectNotEmpty;
 	
 	    var groupBy = function(xs, key) {
@@ -69206,7 +70218,7 @@
 
 
 /***/ },
-/* 53 */
+/* 77 */
 /***/ function(module, exports) {
 
 	var Button = (function(){
@@ -69230,7 +70242,7 @@
 
 
 /***/ },
-/* 54 */
+/* 78 */
 /***/ function(module, exports) {
 
 	var FlexTableUI = function(config) {
@@ -69294,7 +70306,7 @@
 
 
 /***/ },
-/* 55 */
+/* 79 */
 /***/ function(module, exports) {
 
 	var PasswordMeter = (function(){
@@ -69336,7 +70348,7 @@
 
 
 /***/ },
-/* 56 */
+/* 80 */
 /***/ function(module, exports) {
 
 	var Table = (function(){
@@ -69478,7 +70490,7 @@
 
 
 /***/ },
-/* 57 */
+/* 81 */
 /***/ function(module, exports) {
 
 	var CommonData = {
@@ -69491,7 +70503,7 @@
 
 
 /***/ },
-/* 58 */
+/* 82 */
 /***/ function(module, exports) {
 
 	function format_money(currency, amount) {
@@ -69551,7 +70563,7 @@
 
 
 /***/ },
-/* 59 */
+/* 83 */
 /***/ function(module, exports) {
 
 	function onlyNumericOnKeypress(ev) {
@@ -69573,7 +70585,7 @@
 
 
 /***/ },
-/* 60 */
+/* 84 */
 /***/ function(module, exports) {
 
 	var sidebar_scroll = function(elm_selector) {
@@ -70207,7 +71219,7 @@
 
 
 /***/ },
-/* 61 */
+/* 85 */
 /***/ function(module, exports) {
 
 	var buildOauthApps = function(data) {
@@ -70258,7 +71270,7 @@
 
 
 /***/ },
-/* 62 */
+/* 86 */
 /***/ function(module, exports) {
 
 	/*
@@ -70426,7 +71438,7 @@
 
 
 /***/ },
-/* 63 */
+/* 87 */
 /***/ function(module, exports) {
 
 	/* ************************************************************
@@ -70611,7 +71623,7 @@
 
 
 /***/ },
-/* 64 */
+/* 88 */
 /***/ function(module, exports) {
 
 	RiskClassification = (function() {
@@ -70685,7 +71697,7 @@
 
 
 /***/ },
-/* 65 */
+/* 89 */
 /***/ function(module, exports) {
 
 	var SessionDurationLimit = (function() {
@@ -70761,7 +71773,7 @@
 
 
 /***/ },
-/* 66 */
+/* 90 */
 /***/ function(module, exports) {
 
 	var ValidAccountOpening = (function(){
@@ -70910,7 +71922,7 @@
 
 
 /***/ },
-/* 67 */
+/* 91 */
 /***/ function(module, exports) {
 
 	var Validate = (function(){
@@ -71143,7 +72155,7 @@
 
 
 /***/ },
-/* 68 */
+/* 92 */
 /***/ function(module, exports) {
 
 	var ValidateV2 = (function() {
@@ -71274,7 +72286,7 @@
 
 
 /***/ },
-/* 69 */
+/* 93 */
 /***/ function(module, exports) {
 
 	pjax_config_page('/get-started-jp', function() {
@@ -71319,7 +72331,7 @@
 
 
 /***/ },
-/* 70 */
+/* 94 */
 /***/ function(module, exports) {
 
 	var JobDetails = (function() {
@@ -71432,7 +72444,7 @@
 
 
 /***/ },
-/* 71 */
+/* 95 */
 /***/ function(module, exports) {
 
 	var Platforms = (function () {
@@ -71492,7 +72504,7 @@
 
 
 /***/ },
-/* 72 */
+/* 96 */
 /***/ function(module, exports) {
 
 	var Content = (function() {
@@ -71817,7 +72829,7 @@
 
 
 /***/ },
-/* 73 */
+/* 97 */
 /***/ function(module, exports) {
 
 	function submit_email() {
@@ -71874,7 +72886,7 @@
 
 
 /***/ },
-/* 74 */
+/* 98 */
 /***/ function(module, exports) {
 
 	pjax_config_page('/home', function() {
@@ -72041,7 +73053,7 @@
 
 
 /***/ },
-/* 75 */
+/* 99 */
 /***/ function(module, exports) {
 
 	pjax_config_page('/regulation', function() {
@@ -72079,7 +73091,7 @@
 
 
 /***/ },
-/* 76 */
+/* 100 */
 /***/ function(module, exports) {
 
 	var ValidationUI = {
@@ -72245,7 +73257,7 @@
 
 
 /***/ },
-/* 77 */
+/* 101 */
 /***/ function(module, exports) {
 
 	var account_transferws = (function(){
@@ -72533,7 +73545,7 @@
 
 
 /***/ },
-/* 78 */
+/* 102 */
 /***/ function(module, exports) {
 
 	var Cashier = (function() {
@@ -72565,7 +73577,8 @@
 	
 	    var check_virtual_top_up = function() {
 	        if (TUser.get().is_virtual || page.client.is_virtual()) {
-	            if ((TUser.get().residence !== 'jp' && TUser.get().balance > 1000) || (TUser.get().residence === 'jp' && TUser.get().balance > 100000)) {
+	            if ((TUser.get().currency !== 'JPY' && TUser.get().balance > 1000) ||
+	                (TUser.get().currency === 'JPY' && TUser.get().balance > 100000)) {
 	                replace_with_disabled_button('#VRT_topup_link');
 	            }
 	        }
@@ -72619,7 +73632,7 @@
 
 
 /***/ },
-/* 79 */
+/* 103 */
 /***/ function(module, exports) {
 
 	var ForwardWS = (function() {
@@ -72793,7 +73806,7 @@
 
 
 /***/ },
-/* 80 */
+/* 104 */
 /***/ function(module, exports) {
 
 	var PaymentAgentListWS = (function() {
@@ -72973,7 +73986,7 @@
 
 
 /***/ },
-/* 81 */
+/* 105 */
 /***/ function(module, exports) {
 
 	var PaymentAgentWithdrawWS = (function() {
@@ -73304,7 +74317,7 @@
 
 
 /***/ },
-/* 82 */
+/* 106 */
 /***/ function(module, exports) {
 
 	var AssetIndexData = (function() {
@@ -73353,7 +74366,7 @@
 
 
 /***/ },
-/* 83 */
+/* 107 */
 /***/ function(module, exports) {
 
 	var AssetIndexUI = (function() {
@@ -73494,7 +74507,7 @@
 
 
 /***/ },
-/* 84 */
+/* 108 */
 /***/ function(module, exports) {
 
 	var AssetIndex = (function() {
@@ -73583,7 +74596,7 @@
 
 
 /***/ },
-/* 85 */
+/* 109 */
 /***/ function(module, exports) {
 
 	var MarketTimesData = (function() {
@@ -73636,7 +74649,7 @@
 
 
 /***/ },
-/* 86 */
+/* 110 */
 /***/ function(module, exports) {
 
 	var MarketTimesUI = (function() {
@@ -73815,7 +74828,7 @@
 
 
 /***/ },
-/* 87 */
+/* 111 */
 /***/ function(module, exports) {
 
 	var MarketTimes = (function() {
@@ -73848,11 +74861,11 @@
 
 
 /***/ },
-/* 88 */
+/* 112 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var getSocketURL = __webpack_require__(48).getSocketURL;
-	var getAppId = __webpack_require__(48).getAppId;
+	var getSocketURL = __webpack_require__(72).getSocketURL;
+	var getAppId = __webpack_require__(72).getAppId;
 	/*
 	 * It provides a abstraction layer over native javascript Websocket.
 	 *
@@ -74214,7 +75227,7 @@
 
 
 /***/ },
-/* 89 */
+/* 113 */
 /***/ function(module, exports) {
 
 	/*
@@ -74460,7 +75473,7 @@
 
 
 /***/ },
-/* 90 */
+/* 114 */
 /***/ function(module, exports) {
 
 	/*
@@ -74635,7 +75648,7 @@
 
 
 /***/ },
-/* 91 */
+/* 115 */
 /***/ function(module, exports) {
 
 	TradingAnalysis.DigitInfoWS = function() {
@@ -74919,7 +75932,7 @@
 
 
 /***/ },
-/* 92 */
+/* 116 */
 /***/ function(module, exports) {
 
 	var Highchart = (function() {
@@ -75573,7 +76586,7 @@
 
 
 /***/ },
-/* 93 */
+/* 117 */
 /***/ function(module, exports) {
 
 	/*
@@ -76764,7 +77777,7 @@
 
 
 /***/ },
-/* 94 */
+/* 118 */
 /***/ function(module, exports) {
 
 	/*
@@ -76968,7 +77981,7 @@
 
 
 /***/ },
-/* 95 */
+/* 119 */
 /***/ function(module, exports) {
 
 	/*
@@ -77023,7 +78036,7 @@
 
 
 /***/ },
-/* 96 */
+/* 120 */
 /***/ function(module, exports) {
 
 	/*
@@ -77108,7 +78121,7 @@
 
 
 /***/ },
-/* 97 */
+/* 121 */
 /***/ function(module, exports) {
 
 	/*
@@ -77498,7 +78511,7 @@
 
 
 /***/ },
-/* 98 */
+/* 122 */
 /***/ function(module, exports) {
 
 	/*
@@ -78040,7 +79053,7 @@
 
 
 /***/ },
-/* 99 */
+/* 123 */
 /***/ function(module, exports) {
 
 	/*
@@ -78115,7 +79128,7 @@
 
 
 /***/ },
-/* 100 */
+/* 124 */
 /***/ function(module, exports) {
 
 	/*
@@ -78406,7 +79419,7 @@
 
 
 /***/ },
-/* 101 */
+/* 125 */
 /***/ function(module, exports) {
 
 	/*
@@ -78790,7 +79803,7 @@
 
 
 /***/ },
-/* 102 */
+/* 126 */
 /***/ function(module, exports) {
 
 	/*
@@ -79042,7 +80055,7 @@
 
 
 /***/ },
-/* 103 */
+/* 127 */
 /***/ function(module, exports) {
 
 	/*
@@ -79170,7 +80183,7 @@
 
 
 /***/ },
-/* 104 */
+/* 128 */
 /***/ function(module, exports) {
 
 	/*
@@ -79228,7 +80241,7 @@
 
 
 /***/ },
-/* 105 */
+/* 129 */
 /***/ function(module, exports) {
 
 	/*
@@ -79365,7 +80378,7 @@
 
 
 /***/ },
-/* 106 */
+/* 130 */
 /***/ function(module, exports) {
 
 	var TickDisplay = function() {
@@ -79763,7 +80776,7 @@
 
 
 /***/ },
-/* 107 */
+/* 131 */
 /***/ function(module, exports) {
 
 	var TradePage = (function(){
@@ -79845,7 +80858,7 @@
 
 
 /***/ },
-/* 108 */
+/* 132 */
 /***/ function(module, exports) {
 
 	/*
@@ -80093,7 +81106,7 @@
 
 
 /***/ },
-/* 109 */
+/* 133 */
 /***/ function(module, exports) {
 
 	/*
@@ -80268,7 +81281,7 @@
 
 
 /***/ },
-/* 110 */
+/* 134 */
 /***/ function(module, exports) {
 
 	TradingAnalysis_Beta.DigitInfoWS = function() {
@@ -80554,7 +81567,7 @@
 
 
 /***/ },
-/* 111 */
+/* 135 */
 /***/ function(module, exports) {
 
 	/*
@@ -80758,7 +81771,7 @@
 
 
 /***/ },
-/* 112 */
+/* 136 */
 /***/ function(module, exports) {
 
 	/*
@@ -81148,7 +82161,7 @@
 
 
 /***/ },
-/* 113 */
+/* 137 */
 /***/ function(module, exports) {
 
 	/*
@@ -81690,7 +82703,7 @@
 
 
 /***/ },
-/* 114 */
+/* 138 */
 /***/ function(module, exports) {
 
 	/*
@@ -81772,7 +82785,7 @@
 
 
 /***/ },
-/* 115 */
+/* 139 */
 /***/ function(module, exports) {
 
 	/*
@@ -82063,7 +83076,7 @@
 
 
 /***/ },
-/* 116 */
+/* 140 */
 /***/ function(module, exports) {
 
 	/*
@@ -82448,7 +83461,7 @@
 
 
 /***/ },
-/* 117 */
+/* 141 */
 /***/ function(module, exports) {
 
 	/*
@@ -82731,7 +83744,7 @@
 
 
 /***/ },
-/* 118 */
+/* 142 */
 /***/ function(module, exports) {
 
 	/*
@@ -82859,7 +83872,7 @@
 
 
 /***/ },
-/* 119 */
+/* 143 */
 /***/ function(module, exports) {
 
 	var TickDisplay_Beta = function() {
@@ -83375,7 +84388,7 @@
 
 
 /***/ },
-/* 120 */
+/* 144 */
 /***/ function(module, exports) {
 
 	var TradePage_Beta = (function(){
@@ -83459,7 +84472,7 @@
 
 
 /***/ },
-/* 121 */
+/* 145 */
 /***/ function(module, exports) {
 
 	pjax_config_page_require_auth("user/authenticatews", function(){
@@ -83505,7 +84518,7 @@
 
 
 /***/ },
-/* 122 */
+/* 146 */
 /***/ function(module, exports) {
 
 	var PasswordWS = (function(){
@@ -83627,7 +84640,7 @@
 
 
 /***/ },
-/* 123 */
+/* 147 */
 /***/ function(module, exports) {
 
 	var PaymentAgentTransferData = (function () {
@@ -83654,7 +84667,7 @@
 
 
 /***/ },
-/* 124 */
+/* 148 */
 /***/ function(module, exports) {
 
 	var PaymentAgentTransfer = (function () {
@@ -83850,7 +84863,7 @@
 
 
 /***/ },
-/* 125 */
+/* 149 */
 /***/ function(module, exports) {
 
 	var PaymentAgentTransferUI = (function () {
@@ -83936,7 +84949,7 @@
 
 
 /***/ },
-/* 126 */
+/* 150 */
 /***/ function(module, exports) {
 
 	pjax_config_page_require_auth("paymentagent/transferws", function(){
@@ -83962,7 +84975,7 @@
 
 
 /***/ },
-/* 127 */
+/* 151 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var PortfolioWS =  (function() {
@@ -84213,15 +85226,15 @@
 
 
 /***/ },
-/* 128 */
+/* 152 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var Portfolio = (function(){
 	    'use strict';
 	
-	    var addComma = __webpack_require__(93).addComma,
-	        toJapanTimeIfNeeded = __webpack_require__(45).toJapanTimeIfNeeded,
-	        format_money = __webpack_require__(58).format_money;
+	    var addComma = __webpack_require__(117).addComma,
+	        toJapanTimeIfNeeded = __webpack_require__(69).toJapanTimeIfNeeded,
+	        format_money = __webpack_require__(82).format_money;
 	
 	    function getBalance(balance, currency) {
 	        balance = parseFloat(balance);
@@ -84286,7 +85299,7 @@
 
 
 /***/ },
-/* 129 */
+/* 153 */
 /***/ function(module, exports) {
 
 	var ProfitTableData = (function(){
@@ -84331,7 +85344,7 @@
 
 
 /***/ },
-/* 130 */
+/* 154 */
 /***/ function(module, exports) {
 
 	var ProfitTableWS = (function () {
@@ -84462,7 +85475,7 @@
 
 
 /***/ },
-/* 131 */
+/* 155 */
 /***/ function(module, exports) {
 
 	var ProfitTableUI = (function(){
@@ -84603,13 +85616,13 @@
 
 
 /***/ },
-/* 132 */
+/* 156 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var ProfitTable = (function(){
 	    'use strict';
 	    var getProfitTabletData = function(transaction) {
-	        var moment = __webpack_require__(9);
+	        var moment = __webpack_require__(33);
 	        var buyMoment = moment.utc(transaction["purchase_time"] * 1000),
 	            sellMoment = moment.utc(transaction["sell_time"] * 1000),
 	            buyPrice = parseFloat(transaction["buy_price"]).toFixed(2),
@@ -84644,7 +85657,7 @@
 
 
 /***/ },
-/* 133 */
+/* 157 */
 /***/ function(module, exports) {
 
 	var APITokenWS = (function() {
@@ -84881,7 +85894,7 @@
 
 
 /***/ },
-/* 134 */
+/* 158 */
 /***/ function(module, exports) {
 
 	var ApplicationsData = (function(){
@@ -84930,7 +85943,7 @@
 
 
 /***/ },
-/* 135 */
+/* 159 */
 /***/ function(module, exports) {
 
 	var Applications = (function() {
@@ -84968,7 +85981,7 @@
 
 
 /***/ },
-/* 136 */
+/* 160 */
 /***/ function(module, exports) {
 
 	var ApplicationsUI = (function(){
@@ -85066,7 +86079,7 @@
 
 
 /***/ },
-/* 137 */
+/* 161 */
 /***/ function(module, exports) {
 
 	pjax_config_page_require_auth("user/security/authorised_appsws", function(){
@@ -85086,7 +86099,7 @@
 
 
 /***/ },
-/* 138 */
+/* 162 */
 /***/ function(module, exports) {
 
 	var FinancialAssessmentws = (function(){
@@ -85258,7 +86271,7 @@
 
 
 /***/ },
-/* 139 */
+/* 163 */
 /***/ function(module, exports) {
 
 	var IPHistoryData = (function() {
@@ -85334,7 +86347,7 @@
 
 
 /***/ },
-/* 140 */
+/* 164 */
 /***/ function(module, exports) {
 
 	var IPHistory = (function() {
@@ -85372,7 +86385,7 @@
 
 
 /***/ },
-/* 141 */
+/* 165 */
 /***/ function(module, exports) {
 
 	var IPHistoryUI = (function() {
@@ -85450,7 +86463,7 @@
 
 
 /***/ },
-/* 142 */
+/* 166 */
 /***/ function(module, exports) {
 
 	pjax_config_page_require_auth("user/security/iphistoryws", function(){
@@ -85470,7 +86483,7 @@
 
 
 /***/ },
-/* 143 */
+/* 167 */
 /***/ function(module, exports) {
 
 	var LimitsWS = (function(){
@@ -85547,7 +86560,7 @@
 
 
 /***/ },
-/* 144 */
+/* 168 */
 /***/ function(module, exports) {
 
 	var LimitsUI = (function(){
@@ -85645,7 +86658,7 @@
 
 
 /***/ },
-/* 145 */
+/* 169 */
 /***/ function(module, exports) {
 
 	pjax_config_page_require_auth("limitsws", function(){
@@ -85687,7 +86700,7 @@
 
 
 /***/ },
-/* 146 */
+/* 170 */
 /***/ function(module, exports) {
 
 	var SelfExclusionWS = (function() {
@@ -86041,7 +87054,7 @@
 
 
 /***/ },
-/* 147 */
+/* 171 */
 /***/ function(module, exports) {
 
 	var SettingsDetailsWS = (function() {
@@ -86380,7 +87393,7 @@
 
 
 /***/ },
-/* 148 */
+/* 172 */
 /***/ function(module, exports) {
 
 	var SecurityWS = (function() {
@@ -86572,7 +87585,7 @@
 
 
 /***/ },
-/* 149 */
+/* 173 */
 /***/ function(module, exports) {
 
 	var SettingsWS = (function() {
@@ -86625,7 +87638,7 @@
 
 
 /***/ },
-/* 150 */
+/* 174 */
 /***/ function(module, exports) {
 
 	var StatementData = (function(){
@@ -86673,7 +87686,7 @@
 
 
 /***/ },
-/* 151 */
+/* 175 */
 /***/ function(module, exports) {
 
 	var StatementWS = (function(){
@@ -86826,7 +87839,7 @@
 
 
 /***/ },
-/* 152 */
+/* 176 */
 /***/ function(module, exports) {
 
 	var StatementUI = (function(){
@@ -86940,7 +87953,7 @@
 
 
 /***/ },
-/* 153 */
+/* 177 */
 /***/ function(module, exports) {
 
 	var StringUtil = (function(){
@@ -86992,16 +88005,16 @@
 
 
 /***/ },
-/* 154 */
+/* 178 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var Statement = (function(){
 	    'use strict';
-	    var moment = __webpack_require__(9);
-	    var StringUtil = __webpack_require__(153).StringUtil,
-	        addComma = __webpack_require__(93).addComma,
-	        format_money_jp = __webpack_require__(58).format_money_jp,
-	        toJapanTimeIfNeeded = __webpack_require__(45).toJapanTimeIfNeeded;
+	    var moment = __webpack_require__(33);
+	    var StringUtil = __webpack_require__(177).StringUtil,
+	        addComma = __webpack_require__(117).addComma,
+	        format_money_jp = __webpack_require__(82).format_money_jp,
+	        toJapanTimeIfNeeded = __webpack_require__(69).toJapanTimeIfNeeded;
 	
 	    var getStatementData = function(statement, currency, jpClient) {
 	        var dateObj = new Date(statement["transaction_time"] * 1000),
@@ -87073,7 +88086,7 @@
 
 
 /***/ },
-/* 155 */
+/* 179 */
 /***/ function(module, exports) {
 
 	var TopUpVirtualWS = (function() {
@@ -87173,7 +88186,7 @@
 
 
 /***/ },
-/* 156 */
+/* 180 */
 /***/ function(module, exports) {
 
 	var LostPassword = (function() {
@@ -87241,7 +88254,7 @@
 
 
 /***/ },
-/* 157 */
+/* 181 */
 /***/ function(module, exports) {
 
 	pjax_config_page('user/lost_passwordws', function() {
@@ -87260,7 +88273,7 @@
 
 
 /***/ },
-/* 158 */
+/* 182 */
 /***/ function(module, exports) {
 
 	var FinancialAccOpeningData = (function(){
@@ -87326,7 +88339,7 @@
 
 
 /***/ },
-/* 159 */
+/* 183 */
 /***/ function(module, exports) {
 
 	var FinancialAccOpeningUI = (function(){
@@ -87476,7 +88489,7 @@
 
 
 /***/ },
-/* 160 */
+/* 184 */
 /***/ function(module, exports) {
 
 	pjax_config_page_require_auth("new_account/maltainvestws", function(){
@@ -87532,7 +88545,7 @@
 
 
 /***/ },
-/* 161 */
+/* 185 */
 /***/ function(module, exports) {
 
 	var JapanAccOpeningData = (function(){
@@ -87596,7 +88609,7 @@
 
 
 /***/ },
-/* 162 */
+/* 186 */
 /***/ function(module, exports) {
 
 	var JapanAccOpeningUI = function () {
@@ -87789,7 +88802,7 @@
 
 
 /***/ },
-/* 163 */
+/* 187 */
 /***/ function(module, exports) {
 
 	pjax_config_page("new_account/japanws", function(){
@@ -87828,7 +88841,7 @@
 
 
 /***/ },
-/* 164 */
+/* 188 */
 /***/ function(module, exports) {
 
 	var RealAccOpeningData = (function(){
@@ -87868,7 +88881,7 @@
 
 
 /***/ },
-/* 165 */
+/* 189 */
 /***/ function(module, exports) {
 
 	var RealAccOpeningUI = (function(){
@@ -87983,7 +88996,7 @@
 
 
 /***/ },
-/* 166 */
+/* 190 */
 /***/ function(module, exports) {
 
 	pjax_config_page("new_account/realws", function(){
@@ -88021,7 +89034,7 @@
 
 
 /***/ },
-/* 167 */
+/* 191 */
 /***/ function(module, exports) {
 
 	var VirtualAccOpeningData = (function(){
@@ -88101,7 +89114,7 @@
 
 
 /***/ },
-/* 168 */
+/* 192 */
 /***/ function(module, exports) {
 
 	pjax_config_page("new_account/virtualws", function() {
@@ -88196,7 +89209,7 @@
 
 
 /***/ },
-/* 169 */
+/* 193 */
 /***/ function(module, exports) {
 
 	var RealityCheckData = (function () {
@@ -88322,7 +89335,7 @@
 
 
 /***/ },
-/* 170 */
+/* 194 */
 /***/ function(module, exports) {
 
 	var RealityCheck = (function () {
@@ -88459,7 +89472,7 @@
 
 
 /***/ },
-/* 171 */
+/* 195 */
 /***/ function(module, exports) {
 
 	var RealityCheckUI = (function () {
@@ -88587,7 +89600,7 @@
 
 
 /***/ },
-/* 172 */
+/* 196 */
 /***/ function(module, exports) {
 
 	var ResetPassword = (function () {
@@ -88783,7 +89796,7 @@
 
 
 /***/ },
-/* 173 */
+/* 197 */
 /***/ function(module, exports) {
 
 	pjax_config_page('user/reset_passwordws', function() {
@@ -88802,7 +89815,7 @@
 
 
 /***/ },
-/* 174 */
+/* 198 */
 /***/ function(module, exports) {
 
 	var TNCApproval = (function() {
@@ -88925,7 +89938,7 @@
 
 
 /***/ },
-/* 175 */
+/* 199 */
 /***/ function(module, exports) {
 
 	var ViewPopupUI = (function() {
@@ -89074,7 +90087,7 @@
 
 
 /***/ },
-/* 176 */
+/* 200 */
 /***/ function(module, exports) {
 
 	var ViewPopupWS = (function() {
@@ -89768,7 +90781,7 @@
 
 
 /***/ },
-/* 177 */
+/* 201 */
 /***/ function(module, exports) {
 
 	var ViewBalance = (function () {
@@ -89787,7 +90800,7 @@
 
 
 /***/ },
-/* 178 */
+/* 202 */
 /***/ function(module, exports) {
 
 	var ViewBalanceUI = (function(){
@@ -89824,7 +90837,7 @@
 
 
 /***/ },
-/* 179 */
+/* 203 */
 /***/ function(module, exports) {
 
 	pjax_config_page_require_auth("user/profit_table", function(){
@@ -89903,7 +90916,7 @@
 
 
 /***/ },
-/* 180 */
+/* 204 */
 /***/ function(module, exports) {
 
 	var KnowledgeTestData = (function() {
@@ -90438,7 +91451,7 @@
 
 
 /***/ },
-/* 181 */
+/* 205 */
 /***/ function(module, exports) {
 
 	var KnowledgeTest = (function() {
@@ -90644,7 +91657,7 @@
 
 
 /***/ },
-/* 182 */
+/* 206 */
 /***/ function(module, exports) {
 
 	var KnowledgeTestUI = (function () {
@@ -90774,7 +91787,7 @@
 
 
 /***/ },
-/* 183 */
+/* 207 */
 /***/ function(module, exports) {
 
 	pjax_config_page_require_auth("new_account/knowledge_testws", function(){
@@ -90787,7 +91800,7 @@
 
 
 /***/ },
-/* 184 */
+/* 208 */
 /***/ function(module, exports) {
 
 	var CashierJP = (function() {
@@ -90823,7 +91836,7 @@
 
 
 /***/ },
-/* 185 */
+/* 209 */
 /***/ function(module, exports) {
 
 	var JPTradePage = (function() {
@@ -90887,7 +91900,7 @@
 
 
 /***/ },
-/* 186 */
+/* 210 */
 /***/ function(module, exports) {
 
 	var JapanPortfolio = (function() {
@@ -90950,7 +91963,7 @@
 
 
 /***/ },
-/* 187 */
+/* 211 */
 /***/ function(module, exports) {
 
 	var PricingDetails = function() {
