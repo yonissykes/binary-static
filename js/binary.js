@@ -69260,7 +69260,7 @@
 	                    }
 	                } else if (show_virtual_msg) {
 	                    $upgrade_msg.removeClass(hiddenClass).find('> span').removeClass(hiddenClass + ' gr-hide-m');
-	                    if (show_activation_msg && $('activation-message').length === 0) {
+	                    if (show_activation_msg && $('.activation-message').length === 0) {
 	                        $('#virtual-text').append(' ' + '<div class="activation-message">' + page.text.localize('Your Application is Being Processed.') + '</div>' );
 	                    }
 	                }
@@ -79641,7 +79641,7 @@
 	        amountPerPointLabel.show();
 	        amountPerPoint.show();
 	        spreadContainer.show();
-	        stopTypeDollarLabel.textContent = document.getElementById('currency').value;
+	        stopTypeDollarLabel.textContent = document.getElementById('currency').value || Defaults.get('currency');
 	        if (Defaults.get('stop_type')) {
 	            var el = document.querySelectorAll('input[name="stop_type"][value="' + Defaults.get('stop_type') + '"]');
 	            if (el) {
@@ -83299,7 +83299,7 @@
 	        amountPerPointLabel.show();
 	        amountPerPoint.show();
 	        spreadContainer.show();
-	        stopTypeDollarLabel.textContent = document.getElementById('currency').value;
+	        stopTypeDollarLabel.textContent = document.getElementById('currency').value || Defaults.get('currency');
 	        if (Defaults.get('stop_type')) {
 	            var el = document.querySelectorAll('input[name="stop_type"][value="' + Defaults.get('stop_type') + '"]');
 	            if (el) {
@@ -85016,7 +85016,7 @@
 	        var new_class = is_first ? '' : 'new';
 	        $('#portfolio-body').prepend(
 	            $('<tr class="tr-first ' + new_class + ' ' + data.contract_id + '" id="' + data.contract_id + '">' +
-	                '<td class="ref"><span' + showTooltip(data.app_id, oauth_apps[data.app_id]) + '>' + data.transaction_id + '</span></td>' +
+	                '<td class="ref"><span' + showTooltip(data.app_id, oauth_apps[data.app_id]) + ' data-balloon-pos="right">' + data.transaction_id + '</span></td>' +
 	                '<td class="payout"><strong>' + format_money(data.currency, data.payout) + '</strong></td>' +
 	                '<td class="details">' + longCode + '</td>' +
 	                '<td class="purchase"><strong>' + format_money(data.currency, data.buy_price) + '</strong></td>' +
@@ -91624,7 +91624,7 @@
 	
 	    function showActivationPending() {
 	        $('#topbar-msg').children('a').addClass(hiddenClass + ' jp_activation_pending');
-	        if ($('activation-message').length === 0) {
+	        if ($('.activation-message').length === 0) {
 	            $('#virtual-text').append(' ' + '<div class="activation-message">' + page.text.localize('Your Application is Being Processed.') + '</div>' );
 	        }
 	    }
