@@ -73035,8 +73035,7 @@
 	pjax_config_page_require_auth("/cashier/deposit-jp", function(){
 	    return {
 	        onLoad: function() {
-	            page.client.redirect_if_is_virtual();
-	            CashierJP.set_name_id();
+	            CashierJP.init('deposit');
 	        }
 	    };
 	});
@@ -73044,9 +73043,7 @@
 	pjax_config_page_require_auth("/cashier/withdraw-jp", function(){
 	    return {
 	        onLoad: function() {
-	            page.client.redirect_if_is_virtual();
-	            CashierJP.set_email_id();
-	            Content.populate();
+	            CashierJP.init('withdraw');
 	        }
 	    };
 	});
@@ -73606,6 +73603,7 @@
 	          } else {
 	              Cashier.check_locked();
 	              Cashier.check_virtual_top_up();
+	              page.contents.topbar_message_visibility(TUser.get().landing_company);
 	          }
 	        }
 	    };
@@ -75024,6 +75022,10 @@
 	                            } else {
 	                                Cashier.check_virtual_top_up();
 	                            }
+	                            page.client.set_storage_value('landing_company_name', response.authorize.landing_company_fullname);
+	                            if (/tnc_approvalws/.test(window.location.pathname)) {
+	                                TNCApproval.showTNC();
+	                            }
 	                        }
 	                        sendBufferedSends();
 	                    }
@@ -75039,6 +75041,7 @@
 	                    page.contents.topbar_message_visibility(response.landing_company);
 	                    var company;
 	                    if (response.hasOwnProperty('error')) return;
+	                    TUser.extend({'landing_company': response.landing_company});
 	                    for (var key in response.landing_company) {
 	                        if (TUser.get().landing_company_name === response.landing_company[key].shortcode) {
 	                            company = response.landing_company[key];
@@ -75047,10 +75050,6 @@
 	                    }
 	
 	                    if (company) {
-	                        page.client.set_storage_value('landing_company_name', company.name);
-	                        if (/tnc_approvalws/.test(window.location.pathname)) {
-	                            TNCApproval.showTNC();
-	                        }
 	                        if (company.has_reality_check) {
 	                            page.client.response_landing_company(company);
 	                            var currentData = TUser.get();
@@ -87665,8 +87664,9 @@
 	        if(opts){
 	            $.extend(true, req, opts);
 	        }
-	        if ($('#jump-to').val() !== '' && $('#jump-to').val() !== 'Today') {
-	            req.date_to = Math.floor((moment.utc($('#jump-to').val()).valueOf() / 1000)) +
+	        var jump_to = $('#jump-to').val();
+	        if (jump_to !== '' && jump_to !== page.text.localize('Today')) {
+	            req.date_to = Math.floor((moment.utc(jump_to).valueOf() / 1000)) +
 	                          ((japanese_client() ? 15 : 24) * (60*60));
 	            req.date_from = 0;
 	        }
@@ -90367,6 +90367,10 @@
 	            if (!contract.tick_count) Highchart.show_chart(contract, 'update');
 	        }
 	
+	        if (!contract.is_valid_to_sell) {
+	            $Container.find('#errMsg').addClass(hiddenClass);
+	        }
+	
 	        sellSetVisibility(!isSellClicked && !isSold && !is_ended && +contract.is_valid_to_sell === 1);
 	        contract.chart_validation_error = contract.validation_error;
 	        contract.validation_error = '';
@@ -90412,6 +90416,7 @@
 	        if (!(contract.is_settleable && !contract.is_sold)) {
 	            containerSetText('trade_details_message'         , '&nbsp;');
 	        }
+	        $Container.find('#errMsg').addClass(hiddenClass);
 	        sellSetVisibility(false);
 	        // showWinLossStatus(is_win);
 	    };
@@ -90613,7 +90618,6 @@
 	            $Container.find('#' + sellButtonID).unbind('click').click(function(e) {
 	                e.preventDefault();
 	                e.stopPropagation();
-	                ViewPopupUI.forget_streams();
 	                isSellClicked = true;
 	                sellSetVisibility(false);
 	                sellContract();
@@ -90663,7 +90667,7 @@
 	
 	    // ----- Sell Contract -----
 	    var sellContract = function() {
-	        socketSend({"sell": contractID, "price": 0, passthrough: {}});
+	        socketSend({"sell": contractID, "price": contract.bid_price, passthrough: {}});
 	    };
 	
 	    var responseSell = function(response) {
@@ -90674,14 +90678,17 @@
 	            else {
 	                $Container.find('#errMsg').text(response.error.message).removeClass(hiddenClass);
 	            }
+	            sellSetVisibility(true);
+	            isSellClicked = false;
 	            return;
 	        }
+	        ViewPopupUI.forget_streams();
+	        $Container.find('#errMsg').addClass(hiddenClass);
+	        sellSetVisibility(false);
 	        if(contractType === 'spread') {
-	            sellSetVisibility(false);
 	            getContract();
 	        }
 	        else if(contractType === 'normal') {
-	            sellSetVisibility(false);
 	            if(isSellClicked) {
 	                containerSetText('contract_sell_message',
 	                    page.text.localize('You have sold this contract at [_1] [_2]', [contract.currency, response.sell.sold_for]) +
@@ -91804,6 +91811,32 @@
 /***/ function(module, exports) {
 
 	var CashierJP = (function() {
+	    function init(action) {
+	        if (objectNotEmpty(TUser.get())) {
+	            var $container = $('#japan_cashier_container');
+	            if (page.client.is_virtual()) {
+	                $container.addClass('center-text').removeClass('invisible')
+	                    .html($('<p/>', {class: 'notice-msg', html: page.text.localize('This feature is not relevant to virtual-money accounts.')}));
+	                return;
+	            }
+	            $container.removeClass('invisible');
+	            if (action === 'deposit') {
+	                set_name_id();
+	            } else if (action === 'withdraw') {
+	                set_email_id();
+	                Content.populate();
+	            }
+	        } else {
+	            BinarySocket.init({
+	                onmessage: function(msg){
+	                    var response = JSON.parse(msg.data);
+	                    if (response && response.msg_type === 'authorize') {
+	                        CashierJP.init(action);
+	                    }
+	                }
+	            });
+	        }
+	    }
 	    function set_name_id() {
 	        if (/deposit-jp/.test(window.location.pathname)) {
 	            $('#name_id').text((page.user.loginid || 'JP12345') + ' ' + (page.user.first_name || 'Joe Bloggs'));
@@ -91824,6 +91857,7 @@
 	        return true;
 	    }
 	    return {
+	        init: init,
 	        set_name_id: set_name_id,
 	        set_email_id: set_email_id,
 	        error_handler: error_handler
