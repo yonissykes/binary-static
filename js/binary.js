@@ -72462,16 +72462,25 @@
 	        checkWidth();
 	        $(window).resize(checkWidth);
 	        $('.inner').scroll(checkScroll);
+	        setHeights();
+	    }
+	    function setHeights() {
+	        $('.inner tr').each(function() {
+	            var $td = $(this).find('td:first'), $th = $(this).find('th');
+	            if ($th.height() > $td.height()) {
+	                $(this).find('td').height($th.height());
+	            }
+	        });
 	    }
 	    function checkScroll() {
 	        var $elem = $('.inner'),
-	            $fade = $('.fade-to-right');
+	            $fadeL = $('.fade-to-left'),
+	            $fadeR = $('.fade-to-right');
 	        var newScrollLeft = $elem.scrollLeft(),
 	            width = $elem.width(),
 	            scrollWidth = $elem.get(0).scrollWidth;
-	        if (scrollWidth - newScrollLeft - width < 90) {
-	            $fade.css('opacity', '0');
-	        }
+	        $fadeL.css('opacity', newScrollLeft === 0 ? '0' : '100');
+	        $fadeR.css('opacity', scrollWidth === newScrollLeft + width ? '0' : '100');
 	    }
 	    function checkWidth() {
 	        if ($('.sidebar-left').is(':visible')) {
@@ -72479,6 +72488,7 @@
 	        } else {
 	            $('.sections').removeClass('invisible');
 	        }
+	        $('.inner th').hide().fadeIn(1); // force to refresh in order to maintain correct positions
 	    }
 	    function get_hash() {
 	        return (
@@ -77470,7 +77480,7 @@
 	        highlightLineColor: '#000000',
 	        spotRadius: 1.25
 	    };
-	    if($chart){
+	    if ($chart && typeof $chart.sparkline === 'function') {
 	        $chart.sparkline(spots, chart_config);
 	        if(spots.length){
 	            $chart.show();
@@ -87863,7 +87873,7 @@
 	
 	        var jpClient = japanese_client();
 	
-	        header[6] = header[6] + (jpClient ? "" : (TUser.get().currency ? " (" + TUser.get().currency + ")" : ""));
+	        header[6] = header[6] + (jpClient || !TUser.get().currency ? '' : ' (' + TUser.get().currency + ')');
 	
 	        var metadata = {
 	            id: tableID,
@@ -87886,7 +87896,10 @@
 	
 	    function createStatementRow(transaction){
 	        var statement_data = Statement.getStatementData(transaction, TUser.get().currency, japanese_client());
-	        allData.push($.extend({}, statement_data, {action: page.text.localize(statement_data.action)}));
+	        allData.push($.extend({}, statement_data, {
+	            action: page.text.localize(statement_data.action),
+	            desc  : page.text.localize(statement_data.desc),
+	        }));
 	        var creditDebitType = (parseFloat(statement_data.amount) >= 0) ? "profit" : "loss";
 	
 	        var $statementRow = Table.createFlexTableRow([
@@ -87929,7 +87942,7 @@
 	
 	    function exportCSV() {
 	        downloadCSV(
-	            Statement.generateCSV(allData),
+	            Statement.generateCSV(allData, japanese_client()),
 	            'Statement_' + page.client.loginid + '_latest' + $('#rows_count').text() + '_' +
 	                toJapanTimeIfNeeded(window.time).replace(/\s/g, '_').replace(/:/g, '') + '.csv'
 	        );
@@ -88040,10 +88053,10 @@
 	        return statement_data;
 	    };
 	
-	    var generateCSV = function(allData){
+	    var generateCSV = function(allData, jpClient){
 	        var columns = ['date', 'ref', 'payout', 'action', 'desc', 'amount', 'balance'],
 	            header  = ['Date', 'Reference ID', 'Potential Payout', 'Action', 'Description', 'Credit/Debit'].map(function(str){return page.text.localize(str);});
-	        header.push(page.text.localize('Balance') + (TUser.get().currency ? ' (' + TUser.get().currency + ')' : ''));
+	        header.push(page.text.localize('Balance') + (jpClient || !TUser.get().currency ? '' : ' (' + TUser.get().currency + ')'));
 	        var sep = ',',
 	            csv = [header.join(sep)];
 	        if (allData && allData.length > 0) {
@@ -90036,7 +90049,7 @@
 	            body.append(con);
 	            con.show();
 	            $(document.body).append($('<div/>', {class: 'popup_page_overlay'}));
-	            $('.popup_page_overlay').click(function(){con.find('a.close').click();});
+	            $('.popup_page_overlay').click(function(){ViewPopupUI.container().find('a.close').click();});
 	            con.draggable({
 	                stop: function() {
 	                    that.reposition_confirmation_ondrag();
