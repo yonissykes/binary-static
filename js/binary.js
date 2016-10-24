@@ -77738,6 +77738,25 @@
 	    });
 	}
 	
+	function timeIsValid($element) {
+	    var endDateValue = document.getElementById('expiry_date').value,
+	        startDateValue = document.getElementById('date_start').value,
+	        endTimeValue = document.getElementById('expiry_time').value || "23:59:59";
+	
+	    startDateValue = startDateValue === 'now' ? Math.floor(window.time._i/1000) : startDateValue;
+	    if (moment.utc(endDateValue + " " + endTimeValue).unix() <= startDateValue) {
+	        $element.addClass('error-field');
+	        if (!document.getElementById('end_time_validation')) {
+	            $('#expiry_type_endtime').append('<p class="error-msg" id="end_time_validation">' + page.text.localize('End time must be after start time.') + '</p>');
+	        }
+	        return false;
+	    } else {
+	        $element.removeClass('error-field');
+	        $('#end_time_validation').remove();
+	        return true;
+	    }
+	}
+	
 	module.exports = {
 	    displayUnderlyings: displayUnderlyings,
 	    getFormNameBarrierCategory: getFormNameBarrierCategory,
@@ -77782,6 +77801,7 @@
 	    label_value: label_value,
 	    adjustAnalysisColumnHeight: adjustAnalysisColumnHeight,
 	    moreTabsHandler: moreTabsHandler,
+	    timeIsValid: timeIsValid
 	};
 
 
@@ -78295,9 +78315,17 @@
 	    };
 	
 	    var displayEndTime = function(){
-	        var current_moment = moment(window.time).add(5, 'minutes').utc();
+	        var date_start = document.getElementById('date_start').value;
+	        var now = date_start === 'now';
+	        var current_moment = moment((now ? window.time : parseInt(date_start) * 1000)).add(5, 'minutes').utc();
 	        var expiry_date = Defaults.get('expiry_date') || current_moment.format('YYYY-MM-DD'),
 	            expiry_time = Defaults.get('expiry_time') || current_moment.format('HH:mm');
+	
+	        if (moment(expiry_date + " " + expiry_time).valueOf() < current_moment.valueOf()) {
+	            expiry_date = current_moment.format('YYYY-MM-DD');
+	            expiry_time = current_moment.format('HH:mm');
+	        }
+	
 	        document.getElementById('expiry_date').value = expiry_date;
 	        document.getElementById('expiry_time').value = expiry_time;
 	        Defaults.set('expiry_date', expiry_date);
@@ -78550,12 +78578,15 @@
 	        $dateStartSelect.val(value);
 	
 	        var make_price_request = 1;
-	        if (value !== 'now' && $('expiry_type').val() === 'endtime') {
+	        if (value !== 'now' && Defaults.get('expiry_type') === 'endtime') {
 	            make_price_request = -1;
-	            var end_time = moment(value*1000).utc().add(15,'minutes');
-	            Durations.setTime(Defaults.get('expiry_time') || end_time.format("hh:mm"));
-	            Durations.selectEndDate(Defaults.get('expiry_date') || end_time.format("YYYY-MM-DD"));
+	            var end_time = moment(parseInt(value)*1000).add(5,'minutes').utc();
+	            Durations.setTime((timeIsValid($('#expiry_time')) && Defaults.get('expiry_time') ?
+	                               Defaults.get('expiry_time') : end_time.format("HH:mm")));
+	            Durations.selectEndDate((timeIsValid($('#expiry_time')) && Defaults.get('expiry_date') ?
+	                                    Defaults.get('expiry_date') : end_time.format("YYYY-MM-DD")));
 	        }
+	        timeIsValid($('#expiry_time'));
 	        Durations.display();
 	        return make_price_request;
 	    };
@@ -78897,7 +78928,7 @@
 	        /*
 	         * attach event to close icon for purchase container
 	         */
-	        $('#close_confirmation_container').on('click', function (e) {
+	        $('#close_confirmation_container, #contract_purchase_new_trade').on('click', function (e) {
 	            if (e.target) {
 	                e.preventDefault();
 	                document.getElementById('contract_confirmation_container').style.display = 'none';
@@ -79371,7 +79402,11 @@
 	            error.textContent = details['error']['message'];
 	        } else {
 	            setData(proposal);
-	            purchase.show();
+	            if ($('#websocket_form').find('.error-field').length > 0) {
+	                purchase.hide();
+	            } else {
+	                purchase.show();
+	            }
 	            comment.show();
 	            error.hide();
 	            if (is_spread) {
@@ -81945,9 +81980,17 @@
 	    };
 	
 	    var displayEndTime = function(){
-	        var current_moment = moment(window.time).add(5, 'minutes').utc();
+	        var date_start = document.getElementById('date_start').value;
+	        var now = date_start === 'now';
+	        var current_moment = moment((now ? window.time : parseInt(date_start) * 1000)).add(5, 'minutes').utc();
 	        var expiry_date = Defaults.get('expiry_date') || current_moment.format('YYYY-MM-DD'),
 	            expiry_time = Defaults.get('expiry_time') || current_moment.format('HH:mm');
+	
+	        if (moment(expiry_date + " " + expiry_time).valueOf() < current_moment.valueOf()) {
+	            expiry_date = current_moment.format('YYYY-MM-DD');
+	            expiry_time = current_moment.format('HH:mm');
+	        }
+	
 	        document.getElementById('expiry_date').value = expiry_date;
 	        document.getElementById('expiry_time').value = expiry_time;
 	        Defaults.set('expiry_date', expiry_date);
@@ -82200,12 +82243,15 @@
 	        $dateStartSelect.val(value);
 	
 	        var make_price_request = 1;
-	        if (value !== 'now' && $('expiry_type').val() === 'endtime') {
+	        if (value !== 'now' && Defaults.get('expiry_type') === 'endtime') {
 	            make_price_request = -1;
-	            var end_time = moment(value*1000).utc().add(15,'minutes');
-	            Durations_Beta.setTime(Defaults.get('expiry_time') || end_time.format("hh:mm"));
-	            Durations_Beta.selectEndDate(Defaults.get('expiry_date') || end_time.format("YYYY-MM-DD"));
+	            var end_time = moment(parseInt(value)*1000).add(5,'minutes').utc();
+	            Durations_Beta.setTime((timeIsValid($('#expiry_time')) && Defaults.get('expiry_time') ?
+	                               Defaults.get('expiry_time') : end_time.format("HH:mm")));
+	            Durations_Beta.selectEndDate((timeIsValid($('#expiry_time')) && Defaults.get('expiry_date') ?
+	                                    Defaults.get('expiry_date') : end_time.format("YYYY-MM-DD")));
 	        }
+	        timeIsValid($('#expiry_time'));
 	        Durations_Beta.display();
 	        return make_price_request;
 	    };
@@ -82411,15 +82457,21 @@
 	            // need to use jquery as datepicker is used, if we switch to some other
 	            // datepicker we can move back to javascript
 	            $('#expiry_date').on('change input', function () {
-	                Durations_Beta.selectEndDate(this.value);
+	                //if start time is less than end time
+	                if (timeIsValid($('#expiry_date'))) {
+	                    Durations_Beta.selectEndDate(this.value);
+	                }
 	            });
 	        }
 	
 	        var endTimeElement = document.getElementById('expiry_time');
 	        if (endTimeElement) {
 	            $('#expiry_time').on('change input', function () {
-	                Durations_Beta.setTime(endTimeElement.value);
-	                processPriceRequest_Beta();
+	                //if start time is less than end time
+	                if (timeIsValid($('#expiry_time'))) {
+	                    Durations_Beta.setTime(endTimeElement.value);
+	                    processPriceRequest_Beta();
+	                }
 	            });
 	        }
 	
@@ -82694,8 +82746,17 @@
 	            minDate: new Date(),
 	            dateFormat: "yy-mm-dd"
 	        });
-	        var date = new Date();
-	        $(".pickatime" ).timepicker({minTime:{hour: date.getUTCHours(), minute: date.getUTCMinutes()}});
+	        $(".pickatime" ).on('focus', function() {
+	            var date_start = document.getElementById('date_start').value;
+	            var now = date_start === 'now';
+	            var current_moment = moment((now ? window.time : parseInt(date_start) * 1000)).utc();
+	            $(this).timepicker('destroy').timepicker({
+	                minTime: {
+	                    hour: current_moment.format('HH'),
+	                    minute: current_moment.format('mm')
+	                }
+	            });
+	        });
 	    };
 	
 	    return {
@@ -83028,7 +83089,11 @@
 	            error.textContent = details['error']['message'];
 	        } else {
 	            setData(proposal);
-	            purchase.show();
+	            if ($('#websocket_form').find('.error-field').length > 0) {
+	                purchase.hide();
+	            } else {
+	                purchase.show();
+	            }
 	            comment.show();
 	            error.hide();
 	            if (is_spread) {
@@ -85171,7 +85236,7 @@
 	    };
 	
 	    var errorMessage = function(msg) {
-	        var $err = $('#portfolio #err-msg');
+	        var $err = $('#portfolio #error-msg');
 	        if(msg) {
 	            $err.removeClass(hidden_class).text(msg);
 	        } else {
@@ -85599,7 +85664,7 @@
 	    }
 	
 	    function errorMessage(msg) {
-	        var $err = $('#profit-table-ws-container #err-msg');
+	        var $err = $('#profit-table-ws-container #error-msg');
 	        if(msg) {
 	            $err.removeClass('invisible').text(msg);
 	        } else {
@@ -87932,7 +87997,7 @@
 	    }
 	
 	    function errorMessage(msg) {
-	        var $err = $('#statement-ws-container #err-msg');
+	        var $err = $('#statement-ws-container #error-msg');
 	        if(msg) {
 	            $err.removeClass('invisible').text(msg);
 	        } else {
@@ -88208,12 +88273,12 @@
 	    var hiddenClass = 'invisible';
 	
 	    function submitEmail() {
-	        var emailInput = $('#lp_email').val();
+	        var emailInput = ($('#lp_email').val() || '').trim();
 	
 	        if (emailInput === '') {
 	            $("#email_error").removeClass(hiddenClass).text(page.text.localize('This field is required.'));
 	        } else if (!validateEmail(emailInput)){
-	            $("#email_error").removeClass(hiddenClass).text(page.text.localize('Invalid email format'));
+	            $("#email_error").removeClass(hiddenClass).text(Content.errorMessage('valid', page.text.localize('email address')));
 	        }
 	        else {
 	            BinarySocket.send({verify_email: emailInput, type: 'reset_password'});
@@ -88226,22 +88291,23 @@
 	            $("#email_error").addClass(hiddenClass);
 	        }
 	    }
-	    
+	
 	    function lostPasswordWSHandler(msg) {
 	        var response = JSON.parse(msg.data);
 	        var type = response.msg_type;
 	
 	        if (type === 'verify_email') {
 	            if (response.verify_email === 1) {
-	                load_with_pjax('reset_passwordws');
+	                load_with_pjax(page.url.url_for('user/reset_passwordws'));
 	            } else if (response.error) {
-	                $("#email_error").removeClass(hiddenClass).text(page.text.localize('Invalid email format'));
+	                $("#email_error").removeClass(hiddenClass).text(Content.errorMessage('valid', page.text.localize('email address')));
 	                $('#submit').prop('disabled', false);
 	            }
 	        }
 	    }
 	
 	    function init() {
+	        Content.populate();
 	        $('#lost_passwordws').removeClass('invisible');
 	        $('#submit:enabled').click(function() {
 	            submitEmail();
@@ -91862,9 +91928,9 @@
 	        }
 	    }
 	    function error_handler() {
-	        $('.err-msg').remove();
+	        $('.error-msg').remove();
 	        if (!/^([1-9][0-9]{0,5}|1000000)$/.test($('#id123-control22598145').val())) {
-	            $('#id123-control22598145').parent().append('<p class="err-msg">' + Content.errorMessage('number_should_between', '¥1 - ¥1,000,000') + '</p>');
+	            $('#id123-control22598145').parent().append('<p class="error-msg">' + Content.errorMessage('number_should_between', '¥1 - ¥1,000,000') + '</p>');
 	            return false;
 	        }
 	        return true;
