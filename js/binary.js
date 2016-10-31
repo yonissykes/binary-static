@@ -75622,7 +75622,7 @@
 	        target.removeChild(target.firstChild);
 	    }
 	
-	    if (currencies.length > 1) {
+	    if (currencies.length > 1 && !japanese_client()) {
 	        currencies.forEach(function (currency) {
 	            var option = document.createElement('option'),
 	                content = document.createTextNode(currency);
@@ -76089,7 +76089,7 @@
 	    };
 	
 	    var getAskPrice = function(proposal) {
-	        return proposal.error || +proposal.proposal.ask_price === 0 ? proposal.echo_req.amount : Math.round(proposal.proposal.ask_price);
+	        return proposal.error || +proposal.proposal.ask_price === 0 ? proposal.echo_req.amount : proposal.proposal.ask_price;
 	    };
 	
 	    var getMovementDirection = function(prev, current) {
@@ -76102,16 +76102,20 @@
 	                '<div class="gr-4 buy-price">' +
 	                    '<button class="price-button' + (!values.is_active ? ' inactive' : '') + '"' +
 	                        (values.id ? ' onclick="MBProcess.processBuy(\'' + values.barrier + '\', \'' + values.contract_type + '\')"' : '') +
-	                        (values.message ? ' data-balloon="' + values.message + '"' : '') + '>' + values.ask_price +
+	                        (values.message ? ' data-balloon="' + values.message + '"' : '') + '>' + formatPrice(values.ask_price) +
 	                        '<span class="dynamics">' + (values.ask_price_movement || '') + '</span>' +
 	                    '</button>' +
 	                '</div>' +
 	                '<div class="gr-4 sell-price">' +
-	                    '<span class="price-wrapper' + (!values.sell_price ? ' inactive' : '') + '">' + values.sell_price +
+	                    '<span class="price-wrapper' + (!values.sell_price ? ' inactive' : '') + '">' + formatPrice(values.sell_price) +
 	                        '<span class="dynamics">' + (values.sell_price_movement || '') + '</span>' +
 	                    '</span>' +
 	                '</div>' +
 	            '</div>';
+	    };
+	
+	    var formatPrice = function(price) {
+	        return addComma(price, japanese_client() ? '0' : 2);
 	    };
 	
 	    var cleanup = function() {
@@ -76120,6 +76124,10 @@
 	        barriers       = [];
 	        res_count      = 0;
 	        is_displayed   = false;
+	        // display loading
+	        if ($(price_selector).html()) {
+	            $('#loading-overlay').height($(price_selector).height()).removeClass('invisible');
+	        }
 	        $(price_selector).html('');
 	    };
 	
@@ -76155,7 +76163,7 @@
 	    };
 	
 	    var hidePriceOverlay = function() {
-	        $('#disable-overlay').addClass('invisible');
+	        $('#disable-overlay, #loading-overlay').addClass('invisible');
 	    };
 	
 	    var hideSpinnerShowTrading = function() {
@@ -76360,6 +76368,7 @@
 	        }
 	        if (all_expired) {
 	            MBNotifications.show({text: page.text.localize('All barriers in this trading window are expired') + '.', uid: 'ALL_EXPIRED'});
+	            MBPrice.hidePriceOverlay();
 	        } else {
 	            MBNotifications.hide('ALL_EXPIRED');
 	        }
