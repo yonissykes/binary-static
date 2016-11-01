@@ -308,7 +308,6 @@ fieldset .error-msg {
 }
 
 .separator-line {
-  border-bottom: 1px solid #DEDEDE;
   margin-top: 10px;
   margin-bottom: 10px;
 }
@@ -386,10 +385,6 @@ img.responsive {
 
 .color-white {
   color: #fff;
-}
-
-.background-gray {
-  background-color: #F2F2F2;
 }
 
 button.blue-button {
@@ -569,10 +564,6 @@ input[type=checkbox] {
 #header {
   height: 75px;
 }
-#header a {
-  color: #fff;
-  text-decoration: none;
-}
 #header a img {
   height: 55px;
 }
@@ -621,15 +612,12 @@ input[type=checkbox] {
   display: table-cell;
   height: 50px;
   max-width: 110px;
-  color: #fff;
   text-decoration: none;
   letter-spacing: 0;
   text-transform: capitalize;
   padding: 0px 10px;
   word-wrap: break-word;
-}
-#header #menu-top li.active a {
-  color: #e98024;
+  color: #fff;
 }
 #header .main-nav > li > ul {
   margin: -20px -1px;
@@ -658,11 +646,6 @@ input[type=checkbox] {
   font-size: 13px;
   font-weight: bold;
 }
-#footer #footer-menu a {
-  font-size: 13px;
-  font-weight: normal;
-  color: #fff;
-}
 #footer #footer-menu li {
   line-height: 1;
 }
@@ -672,13 +655,11 @@ input[type=checkbox] {
 }
 #footer #footer-regulatory a {
   display: inline-block;
-  color: #fff;
   text-decoration: underline;
 }
 #footer #footer-regulatory #regulatory-text {
   line-height: 1.2em;
   text-align: justify;
-  color: #fff;
   font-size: 10px;
 }
 #footer #footer-regulatory #social-networks {
@@ -725,7 +706,6 @@ input[type=checkbox] {
   color: #2E8836;
 }
 #footer #footer-last a {
-  color: #fff;
   text-decoration: underline;
 }
 #footer #footer-last .gambling {
@@ -733,7 +713,6 @@ input[type=checkbox] {
   text-align: justify;
   font-size: 13px;
   font-weight: 400;
-  color: #fff;
   line-height: 110%;
 }
 #footer #end-note {
@@ -751,8 +730,6 @@ input[type=checkbox] {
 }
 
 #main-menu {
-  background-color: #F2F2F2;
-  border-bottom: 1px solid #DEDEDE;
   margin-bottom: 40px;
 }
 #main-menu ul ul {
@@ -765,7 +742,6 @@ input[type=checkbox] {
 .tab-menu-wrap ul, #content .tab-menu-wrap ul {
   margin: 0;
   font-size: 85%;
-  background-color: #F2F2F2;
   position: relative;
   display: block;
 }
@@ -1151,7 +1127,6 @@ meter#password-meter::-webkit-meter-bar {
   margin: 0 1em;
 }
 .home-content .xquote {
-  background-color: #F2F2F2;
   padding: 20px 40px;
 }
 .home-content .xquote p {
@@ -1234,7 +1209,6 @@ meter#password-meter::-webkit-meter-bar {
 }
 .get-started .sidebar-right div, .get-started-jp .sidebar-right div {
   background: #F2F2F2;
-  border-bottom: #DEDEDE;
   margin-bottom: 20px;
   padding: 20px;
   text-align: center;
@@ -1253,7 +1227,6 @@ meter#password-meter::-webkit-meter-bar {
 }
 .get-started dl .section, .get-started-jp dl .section {
   min-height: 224px;
-  background: #F2F2F2;
   margin: 0 10px 20px;
 }
 .get-started dl .section.section-jp, .get-started-jp dl .section.section-jp {
@@ -1363,9 +1336,6 @@ meter#password-meter::-webkit-meter-bar {
 
 .tour {
   margin-top: 40px;
-}
-.tour .section {
-  border-bottom: 1px solid #DEDEDE;
 }
 .tour .section:first-child {
   padding-bottom: 50px;
@@ -1529,7 +1499,7 @@ a.close:hover {
 }
 .inpage_popup_container_ws .inpage_popup_content_box #sell_content_wrapper #sell_details_table th {
   line-height: 24px;
-  border-bottom-color: #C2C2C2;
+  border-bottom: #C2C2C2;
   cursor: pointer;
 }
 .inpage_popup_container_ws .inpage_popup_content_box #sell_content_wrapper #sell_details_table td, .inpage_popup_container_ws .inpage_popup_content_box #sell_content_wrapper #sell_details_table td[data-balloon] {
@@ -2050,9 +2020,6 @@ table .loss, table .lower {
 
 .static_full {
   margin-top: 40px;
-}
-.static_full .section {
-  border-bottom: 1px solid #DEDEDE;
 }
 .static_full .section:first-child {
   padding-bottom: 50px;
@@ -3507,9 +3474,6 @@ div.kineticjs-content {
 #trading_socket_container #contract_prices_container #contract_purchase_profit {
   border-left: 1px solid #DEDEDE;
 }
-#trading_socket_container #contract_prices_container .contract_error {
-  background-color: #fef1cf;
-}
 #trading_socket_container #contract_prices_container .contract_amount, #trading_socket_container #contract_prices_container .contract_payout, #trading_socket_container #contract_prices_container .payout, #trading_socket_container #contract_prices_container .stake {
   padding: 3px;
   line-height: 1.5;
@@ -4002,8 +3966,9 @@ div.kineticjs-content {
 #mb_trading .prices-wrapper .price-row:nth-child(odd) {
   background: #F2F2F2;
 }
-#mb_trading .price-wrapper {
-  padding-right: 20px;
+#mb_trading .price-wrapper .dynamics {
+  display: inline-block;
+  width: 20px;
 }
 #mb_trading .price-button {
   width: 120px;
@@ -4017,6 +3982,10 @@ div.kineticjs-content {
   font-size: 14px;
   border: 0;
   min-height: 34px;
+  position: relative;
+}
+#mb_trading .price-button .dynamics {
+  position: absolute;
 }
 #mb_trading .price-button:hover {
   background-color: #14602B;
@@ -4041,16 +4010,14 @@ div.kineticjs-content {
 }
 #mb_trading .descr-wrapper > div {
   min-height: 88px;
+  padding-top: 10px;
+  padding-bottom: 10px;
 }
 #mb_trading .descr-wrapper .descr {
   padding: 0 16px 0 0;
   font-size: 16px;
   max-width: 420px;
   line-height: 1.4em;
-}
-#mb_trading .background-gray {
-  padding-top: 10px;
-  padding-bottom: 10px;
 }
 #mb_trading .details-heading {
   padding: 45px 16px 0;
@@ -4087,12 +4054,6 @@ div.kineticjs-content {
 }
 #mb_trading .details-heading.UPORDOWN {
   background-image: url("https://www.binary.com/images/pages/trade/stay-out_1.png");
-}
-#mb_trading .price-wrapper, #mb_trading .price-button {
-  position: relative;
-}
-#mb_trading .price-wrapper .dynamics, #mb_trading .price-button .dynamics {
-  position: absolute;
 }
 #mb_trading .select {
   margin-right: 10px;
