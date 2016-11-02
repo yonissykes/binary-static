@@ -3939,11 +3939,11 @@ div.kineticjs-content {
 }
 #mb_trading .japan-table #disable-overlay {
   position: absolute;
-  top: 108px;
+  top: 84px;
   left: 10px;
   z-index: 1;
   width: calc(100% - 20px);
-  height: calc(100% - 108px);
+  height: calc(100% - 84px);
   background-color: rgba(242, 242, 242, 0.5);
 }
 #mb_trading .japan-table #loading-overlay {
@@ -3966,9 +3966,16 @@ div.kineticjs-content {
 #mb_trading .prices-wrapper .price-row:nth-child(odd) {
   background: #F2F2F2;
 }
-#mb_trading .price-wrapper .dynamics {
+#mb_trading .base-value {
+  font-size: 9px;
+}
+#mb_trading .dynamics {
   display: inline-block;
   width: 20px;
+}
+#mb_trading .price-wrapper .base-value {
+  display: inline-block;
+  margin-left: 5px;
 }
 #mb_trading .price-button {
   width: 120px;
@@ -3984,8 +3991,13 @@ div.kineticjs-content {
   min-height: 34px;
   position: relative;
 }
-#mb_trading .price-button .dynamics {
+#mb_trading .price-button .value-wrapper {
+  margin-left: -15px;
+}
+#mb_trading .price-button .base-value {
   position: absolute;
+  bottom: 1px;
+  right: 3px;
 }
 #mb_trading .price-button:hover {
   background-color: #14602B;
@@ -4009,13 +4021,13 @@ div.kineticjs-content {
   font-weight: bold;
 }
 #mb_trading .descr-wrapper > div {
-  min-height: 88px;
+  min-height: 64px;
   padding-top: 10px;
   padding-bottom: 10px;
 }
 #mb_trading .descr-wrapper .descr {
   padding: 0 16px 0 0;
-  font-size: 16px;
+  font-size: 14px;
   max-width: 420px;
   line-height: 1.4em;
 }
@@ -4154,6 +4166,10 @@ div.kineticjs-content {
 }
 #mb_trading .spot div.spot-value {
   line-height: 30px;
+}
+#mb_trading .spot div #trading_worm_chart {
+  display: inline-block;
+  margin-top: 3px;
 }
 #mb_trading .countdown-timer {
   padding: 5px 0 5px 5px;
