@@ -1380,6 +1380,52 @@ meter#password-meter::-webkit-meter-bar {
   }
 }
 
+.charity {
+  margin-top: 40px;
+}
+.charity .section:first-child {
+  padding-bottom: 50px;
+}
+.charity .section:not(:first-child) {
+  padding: 50px 0;
+}
+.charity .section:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+.charity .section {
+  display: block;
+  overflow: hidden;
+}
+.charity .section-content:first-child {
+  text-align: center;
+}
+.charity .section-content h1, .charity .section-content .charity-country {
+  margin: 35px 0 25px;
+}
+.charity .section-content h3 {
+  text-align: center;
+  padding: 15px 0;
+  display: block;
+  background-color: #F2F2F2;
+}
+.charity .gallery {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+.charity .gallery img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  transition: opacity 2s ease;
+}
+.charity .gallery img:first-child {
+  position: relative;
+  opacity: 1;
+}
+
 .price_moved_up {
   background-color: #29abe2;
   color: #fff;
@@ -5543,12 +5589,18 @@ body.ES .google-play-badge {
   background-image: url("../images/pages/applications/googleplay_es.svg");
 }
 
+body.RU #verify-email-form button {
+  font-size: 80%;
+}
 body.RU #trading_socket_container #contract_form_name_nav {
   font-size: 80%;
 }
 body.RU #trading_socket_container .contract_heading {
   font-size: 95%;
   padding-top: 2.7em;
+}
+body.RU #trading_socket_container #expiry_type {
+  max-width: 185px;
 }
 body.RU .calls_recording {
   display: inline !important;
