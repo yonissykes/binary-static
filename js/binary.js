@@ -68137,7 +68137,7 @@
 	        this.hide_main_menu();
 	
 	        var active = this.active_menu_top();
-	        var trading = new RegExp('\/(jp|multi_barriers_|)trading\.html');
+	        var trading = new RegExp('\/(jp_|multi_barriers_|)trading\.html');
 	        var trading_is_active = trading.test(window.location.pathname);
 	        if (active) {
 	            active.addClass('active');
@@ -68268,20 +68268,19 @@
 	    },
 	    show_or_hide_login_form: function() {
 	        if (!this.user.is_logged_in || !this.client.is_logged_in) return;
-	        var all_accounts = $('#all-accounts');
-	        function openCloseMenu(event) {
+	        var all_accounts = $('#all-accounts'),
+	            that = this;
+	        $('.nav-menu').unbind('click').on('click', function(event) {
 	            event.stopPropagation();
 	            if (all_accounts.css('opacity') == 1 ) {
-	                page.header.animate_disappear(all_accounts);
+	                that.animate_disappear(all_accounts);
 	            } else {
-	                page.header.animate_appear(all_accounts);
+	                that.animate_appear(all_accounts);
 	            }
-	        }
-	        function closeMenu() {
-	            page.header.animate_disappear(all_accounts);
-	        }
-	        $('.nav-menu').unbind('click', openCloseMenu).on('click', openCloseMenu);
-	        $(document).unbind('click', closeMenu).on('click', closeMenu);
+	        });
+	        $(document).unbind('click').on('click', function() {
+	            that.animate_disappear(all_accounts);
+	        });
 	        var loginid_select = '';
 	        var loginid_array = this.user.loginid_array;
 	        for (var i=0; i < loginid_array.length; i++) {
@@ -71055,8 +71054,8 @@
 	
 	pjax_config_page('/trading', function () {
 	    return {
-	        onLoad: function(){if(/trading\.html/.test(window.location.pathname)) TradePage.onLoad();},
-	        onUnload: function(){if(/trading\.html/.test(window.location.pathname)) TradePage.onUnload();}
+	        onLoad: function(){if(/\/trading\.html/.test(window.location.pathname)) TradePage.onLoad();},
+	        onUnload: function(){if(/\/trading\.html/.test(window.location.pathname)) TradePage.onUnload();}
 	    };
 	});
 	
@@ -71074,7 +71073,7 @@
 	    };
 	});
 	
-	pjax_config_page('/jptrading', function () {
+	pjax_config_page('/jp_trading', function () {
 	    return {
 	        onLoad: function(){JPTradePage.onLoad();},
 	        onUnload: function(){JPTradePage.onUnload();}
@@ -71861,11 +71860,11 @@
 	  var onUnload = function() {
 	    chartFrameCleanup();
 	    window.chartAllowed = false;
+	    JapanPortfolio.hide();
 	    trading_page = 0;
 	    events_initialized = 0;
 	    MBContract.onUnload();
 	    MBPrice.onUnload();
-	    JapanPortfolio.hide();
 	    forgetTradingStreams();
 	    BinarySocket.clear();
 	  };
@@ -74109,12 +74108,14 @@
 	                        page.client.send_logout_request(isActiveTab);
 	                    } else if (response.authorize.loginid !== page.client.loginid) {
 	                        page.client.send_logout_request(true);
-	                    } else {
+	                    } else if (!(response.hasOwnProperty('echo_req') && response.echo_req.hasOwnProperty('passthrough') &&
+	                        response.echo_req.passthrough.hasOwnProperty('dispatch_to') &&
+	                        response.echo_req.passthrough.dispatch_to === 'cashier_password')) {
 	                        authorized = true;
 	                        if(typeof events.onauth === 'function'){
 	                            events.onauth();
 	                        }
-	                        if(!Login.is_login_pages()) {
+	                        if (!Login.is_login_pages()) {
 	                            page.client.response_authorize(response);
 	                            send({balance:1, subscribe: 1});
 	                            send({get_settings: 1});
@@ -74248,7 +74249,7 @@
 	                    if(response.error && response.error.code) {
 	                      if (response.error.code && (response.error.code === 'WrongResponse' || response.error.code === 'OutputValidationFailed')) {
 	                        $('#content').empty().html('<div class="container"><p class="notice-msg center-text">' + (response.error.code === 'WrongResponse' && response.error.message ? response.error.message : page.text.localize('Sorry, an error occurred while processing your request.') )+ '</p></div>');
-	                      } else if (response.error.code === 'RateLimit' && !/jptrading/i.test(window.location.pathname)) {
+	                      } else if (response.error.code === 'RateLimit' && !/jp_trading/i.test(window.location.pathname)) {
 	                        $('#ratelimit-error-message')
 	                            .css('display', 'block')
 	                            .on('click', '#ratelimit-refresh-link', function () {
@@ -77717,7 +77718,8 @@
 	    };
 	
 	    var updateURL = function() {
-	        window.history.replaceState(null, null, window.location.pathname + '?' + page.url.params_hash_to_string(params));
+	        var url = window.location.pathname + '?' + page.url.params_hash_to_string(params);
+	        window.history.replaceState({'url': url}, null, url);
 	    };
 	
 	    return {
@@ -78082,11 +78084,12 @@
 	            Durations.setTime('');
 	            Defaults.remove('expiry_time');
 	            StartDates.setNow();
+	            StartDates.disable();
 	            expiry_time.hide();
 	            var date_start = StartDates.node();
 	            processTradingTimesRequest(end_date);
-	        }
-	        else{
+	        } else {
+	            StartDates.enable();
 	            if(!expiry_time.value) {
 	                expiry_time.value = moment(window.time).add(5, 'minutes').utc().format('HH:mm');
 	            }
@@ -78192,8 +78195,8 @@
 	                make_price_request = -1;
 	            }
 	            Defaults.remove('duration_units', 'duration_amount');
-	        }
-	        else{
+	        } else {
+	            StartDates.enable();
 	            Durations.display();
 	            if(Defaults.get('duration_units')){
 	                TradingEvents.onDurationUnitChange(Defaults.get('duration_units'));
@@ -79837,10 +79840,12 @@
 	    } ;
 	
 	    return {
-	        display: displayStartDates,
-	        node: getElement,
-	        setNow: setNow,
-	        displayed: function(){ return displayed; }
+	        display  : displayStartDates,
+	        node     : getElement,
+	        setNow   : setNow,
+	        displayed: function() { return displayed; },
+	        disable  : function() { getElement().setAttribute('disabled', 'disabled'); },
+	        enable   : function() { getElement().removeAttribute('disabled'); },
 	    };
 	
 	})();
@@ -82660,11 +82665,12 @@
 	            Durations_Beta.setTime('');
 	            Defaults.remove('expiry_time');
 	            StartDates_Beta.setNow();
+	            StartDates.disable();
 	            expiry_time.hide();
 	            var date_start = StartDates_Beta.node();
 	            processTradingTimesRequest_Beta(end_date);
-	        }
-	        else{
+	        } else {
+	            StartDates.enable();
 	            if(!expiry_time.value) {
 	                expiry_time.value = moment(window.time).add(5, 'minutes').utc().format('HH:mm');
 	            }
@@ -82770,8 +82776,8 @@
 	                make_price_request = -1;
 	            }
 	            Defaults.remove('duration_units', 'duration_amount');
-	        }
-	        else{
+	        } else {
+	            StartDates.enable();
 	            Durations_Beta.display();
 	            if(Defaults.get('duration_units')){
 	                TradingEvents_Beta.onDurationUnitChange(Defaults.get('duration_units'));
@@ -84492,10 +84498,12 @@
 	    } ;
 	
 	    return {
-	        display: displayStartDates,
-	        node: getElement,
-	        setNow: setNow,
-	        displayed: function(){ return displayed; }
+	        display  : displayStartDates,
+	        node     : getElement,
+	        setNow   : setNow,
+	        displayed: function() { return displayed; },
+	        disable  : function() { getElement().setAttribute('disabled', 'disabled'); },
+	        enable   : function() { getElement().removeAttribute('disabled'); },
 	    };
 	
 	})();
@@ -87763,6 +87771,7 @@
 	    function makeAuthRequest() {
 	        BinarySocket.send({
 	            authorize: CommonData.getLoginToken(),
+	            passthrough: {dispatch_to: 'cashier_password'},
 	        });
 	    }
 	
