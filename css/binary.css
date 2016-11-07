@@ -447,11 +447,6 @@ input[type=checkbox] {
             transform: rotate(360deg);
   }
 }
-.spinner, #trading_init_progress, #statement-ws-container #loading_in_progress {
-  -webkit-animation: spinning 1s infinite linear;
-  animation: spinning 1s infinite linear;
-}
-
 @keyframes pulsing {
   0% {
     opacity: 1;
@@ -1717,11 +1712,6 @@ select[disabled=disabled] {
 
 #chrome {
   background-image: url("../images/pages/logintrouble/chromelogo-icon_1.png");
-}
-
-#std_loading_img {
-  margin: 0 auto;
-  text-align: center;
 }
 
 /* statement */
@@ -3158,11 +3148,6 @@ div.kineticjs-content {
     opacity: 1;
   }
 }
-.spinner, #trading_init_progress, #statement-ws-container #loading_in_progress {
-  -webkit-animation: spinning 1s infinite linear;
-          animation: spinning 1s infinite linear;
-}
-
 #trading_init_progress {
   cursor: pointer;
   /*background-image: url('../images/pages/binary-symbol-logo.png');
@@ -4264,11 +4249,6 @@ div.kineticjs-content {
   color: #e98024;
 }
 
-.center-text .spinner, .center-text #trading_init_progress, .center-text #statement-ws-container #loading_in_progress, #statement-ws-container .center-text #loading_in_progress {
-  width: 160px;
-  height: 160px;
-}
-
 #trading_bottom_content #tab_portfolio-content {
   overflow-x: auto;
 }
@@ -4291,11 +4271,6 @@ div.kineticjs-content {
     opacity: 1;
   }
 }
-.spinner, #trading_init_progress, #statement-ws-container #loading_in_progress {
-  -webkit-animation: spinning 1s infinite linear;
-          animation: spinning 1s infinite linear;
-}
-
 #trading_init_progress {
   cursor: pointer;
   /*background-image: url('../images/pages/binary-symbol-logo.png');
@@ -5196,42 +5171,6 @@ div.kineticjs-content {
 /*
  * DO NOT ADD ANY COMMON STYLING BELOW THIS. ALL OTHER STYLING GO ABOVE THIS
  */
-#statement-ws-container #overlay_background {
-  position: absolute;
-  display: none;
-  z-index: 10;
-  width: 100%;
-  min-height: 50%;
-  background-color: #fff;
-}
-#statement-ws-container #loading_in_progress {
-  cursor: pointer;
-  background-image: url("../images/pages/binary-symbol-logo.png");
-  background-image: url("../images/pages/binary-symbol-logo.svg"), none;
-  background-size: contain;
-  width: 10rem;
-  height: 10rem;
-  position: absolute;
-  left: 50%;
-  top: 350px;
-  margin-left: -5rem;
-  display: none;
-  z-index: 11;
-}
-#statement-ws-container #date-nav-panel {
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-justify-content: space-around;
-      -ms-flex-pack: distribute;
-          justify-content: space-around;
-  -webkit-flex-direction: row;
-      -ms-flex-direction: row;
-          flex-direction: row;
-  -webkit-align-items: stretch;
-      -ms-flex-align: stretch;
-          align-items: stretch;
-}
 #statement-ws-container #download_csv {
   line-height: 28px;
 }
