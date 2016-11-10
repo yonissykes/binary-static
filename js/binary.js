@@ -71949,7 +71949,7 @@
 	    };
 	
 	    var getMovementDirection = function(prev, current) {
-	        return current > prev ? '⬆' : current < prev ? '⬇' : '';
+	        return current > prev ? 'up' : current < prev ? 'down' : '';
 	    };
 	
 	    var makePriceRow = function(values, is_update) {
@@ -71962,7 +71962,7 @@
 	                        (values.id ? ' onclick="MBPrice.processBuy(\'' + values.barrier + '\', \'' + values.contract_type + '\')"' : '') +
 	                        (values.message ? ' data-balloon="' + values.message + '"' : '') + '>' +
 	                            '<span class="value-wrapper">' +
-	                                '<span class="dynamics">' + (values.ask_price_movement || '') + '</span>' +
+	                                '<span class="dynamics ' + (values.ask_price_movement || '') + '"></span>' +
 	                                formatPrice(values.ask_price) +
 	                            '</span>' +
 	                            (is_japan ? '<span class="base-value">(' + formatPrice(values.ask_price / payout) + ')</span>' : '') +
@@ -71970,7 +71970,7 @@
 	                '</div>' +
 	                '<div class="gr-4 sell-price">' +
 	                    '<span class="price-wrapper' + (!values.sell_price ? ' inactive' : '') + '">' +
-	                        '<span class="dynamics">' + (values.sell_price_movement || '') + '</span>' +
+	                        '<span class="dynamics ' + (values.sell_price_movement || '') + '"></span>' +
 	                        formatPrice(values.sell_price) +
 	                        (is_japan ? '<span class="base-value">(' + formatPrice(values.sell_price / payout) + ')</span>' : '') +
 	                    '</span>' +
@@ -72138,18 +72138,8 @@
 	     * Display price/spot movement variation to depict price moved up or down
 	     */
 	    function displayPriceMovement(oldValue, currentValue) {
-	        var dyn, className;
-	        if (currentValue > oldValue) {
-	            dyn = '⬆';
-	            className = 'up';
-	        } else if (currentValue < oldValue) {
-	            dyn = '⬇';
-	            className = 'down';
-	        } else {
-	            dyn = '●';
-	            className = 'still';
-	        }
-	        $('#spot-dyn').attr('class', className).text(dyn);
+	        var className = (currentValue > oldValue) ? 'up' : (currentValue < oldValue) ? 'down' : 'still';
+	        $('#spot-dyn').attr('class', 'dynamics ' + className);
 	    }
 	
 	    function updateWarmChart(){
