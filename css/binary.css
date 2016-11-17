@@ -1573,6 +1573,7 @@ a.close:hover {
 }
 .inpage_popup_container_ws .inpage_popup_content_box #sell_content_wrapper #sell_details_table td, .inpage_popup_container_ws .inpage_popup_content_box #sell_content_wrapper #sell_details_table td[data-balloon] {
   border-bottom: 1px solid #F2F2F2;
+  vertical-align: middle;
 }
 .inpage_popup_container_ws .inpage_popup_content_box #sell_content_wrapper #sell_details_table #trade_details_profit_loss {
   font-weight: bold;
@@ -4272,6 +4273,21 @@ div.kineticjs-content {
   }
   #mb_trading .padding-right-five, #mb_trading .no-padding-right {
     padding-right: 10px;
+  }
+}
+@media screen and (max-width: 480px) {
+  #mb_trading .japan-form .gr-row > div:first-child {
+    padding-bottom: 10px;
+  }
+  #mb_trading .japan-table .price-row .barrier, #mb_trading .japan-table .price-row .price-button .value-wrapper, #mb_trading .japan-table .price-row .sell-price {
+    font-size: 0.9em;
+  }
+  #mb_trading .japan-table .price-row .price-button {
+    width: 80%;
+    margin-left: 15px;
+  }
+  #mb_trading .japan-table .price-row .price-button .base-value {
+    bottom: 0px;
   }
 }
 #mb_trading #notifications_wrapper .notice-msg {
