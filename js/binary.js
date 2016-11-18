@@ -73270,6 +73270,7 @@
 	var showTooltip = __webpack_require__(99).showTooltip;
 	var japanese_client = __webpack_require__(63).japanese_client;
 	var Portfolio = __webpack_require__(100).Portfolio;
+	var ViewPopupWS = __webpack_require__(96).ViewPopupWS;
 	
 	var PortfolioWS =  (function() {
 	    'use strict';
@@ -73299,6 +73300,12 @@
 	        BinarySocket.send({'transaction': 1, 'subscribe': 1});
 	        BinarySocket.send({'oauth_apps': 1});
 	        is_initialized = true;
+	
+	        // Display ViewPopup according to contract_id in query string
+	        var contract_id = page.url.param('contract_id');
+	        if (contract_id) {
+	            ViewPopupWS.init($('<div />', { contract_id: contract_id }).get(0));
+	        }
 	    };
 	
 	    var createPortfolioRow = function(data, is_first) {
