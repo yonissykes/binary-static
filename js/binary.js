@@ -19608,19 +19608,6 @@
 	    };
 	}());
 	
-	
-	pjax_config_page("profit_tablews|statementws|portfoliows|trading", function() {
-	    return {
-	        onLoad: function() {
-	            $('#profit-table-ws-container, #statement-ws-container, #portfolio-table, #contract_confirmation_container')
-	                .on('click', '.open_contract_detailsws', function (e) {
-	                    e.preventDefault();
-	                    ViewPopupWS.init(this);
-	                });
-	        }
-	    };
-	});
-	
 	module.exports = {
 	    ViewPopupWS: ViewPopupWS,
 	};
@@ -87610,6 +87597,7 @@
 	var TradePage_Beta = __webpack_require__(150).TradePage_Beta;
 	var MBTradePage    = __webpack_require__(218).MBTradePage;
 	var JPTradePage    = __webpack_require__(225).JPTradePage;
+	var ViewPopupWS = __webpack_require__(56).ViewPopupWS;
 	
 	pjax_config_page('/trading', function () {
 	    return {
@@ -87902,6 +87890,18 @@
 	    return {
 	        onLoad: function() {
 	            TNCApproval.onLoad();
+	        }
+	    };
+	});
+	
+	pjax_config_page("profit_tablews|statementws|portfoliows|trading", function() {
+	    return {
+	        onLoad: function() {
+	            $('#profit-table-ws-container, #statement-ws-container, #portfolio-table, #contract_confirmation_container')
+	                .on('click', '.open_contract_detailsws', function (e) {
+	                    e.preventDefault();
+	                    ViewPopupWS.init(this);
+	                });
 	        }
 	    };
 	});
