@@ -11997,6 +11997,8 @@
 	}
 	
 	function japanese_client() {
+	    // handle for test case
+	    if (typeof window === 'undefined') return false;
 	    return (page.language().toLowerCase() === 'ja' || (Cookies.get('residence') === 'jp') || localStorage.getItem('clients_country') === 'jp');
 	}
 	
@@ -16346,7 +16348,7 @@
 	                '<td class="payout"><strong>' + format_money(data.currency, data.payout) + '</strong></td>' +
 	                '<td class="details">' + longCode + '</td>' +
 	                '<td class="purchase"><strong>' + format_money(data.currency, data.buy_price) + '</strong></td>' +
-	                '<td class="indicative"><strong class="indicative_price">' + format_money(data.currency, '--.--') + '</strong></td>' +
+	                '<td class="indicative"><strong class="indicative_price">' + '--.--' + '</strong></td>' +
 	                '<td class="button"><button class="button open_contract_detailsws nowrap" contract_id="' + data.contract_id + '">' + page.text.localize('View') + '</button></td>' +
 	            '</tr>' +
 	            '<tr class="tr-desc ' + new_class + ' ' + data.contract_id + '">' +
@@ -16483,8 +16485,8 @@
 	    };
 	
 	    var updateFooter = function() {
-	        $("#cost-of-open-positions").text(format_money(currency, addComma(Portfolio.getSumPurchase(values))));
-	        $("#value-of-open-positions").text(format_money(currency, addComma(Portfolio.getIndicativeSum(values))));
+	        $("#cost-of-open-positions").text(format_money(currency, Portfolio.getSumPurchase(values)));
+	        $("#value-of-open-positions").text(format_money(currency, Portfolio.getIndicativeSum(values)));
 	    };
 	
 	    var errorMessage = function(msg) {
@@ -16553,45 +16555,40 @@
 
 /***/ },
 /* 47 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
-	function format_money(currency, amount) {
-	    var updatedAmount = amount;
-	    if(currency === 'JPY') { // remove decimal points for JPY and add comma.
-	        updatedAmount = updatedAmount.replace(/\.\d+$/, '').replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-	    }
+	var japanese_client = __webpack_require__(29).japanese_client;
 	
-	    var symbol = format_money.map[currency];
-	    if (symbol === undefined) {
-	        return currency + ' ' + updatedAmount;
-	    }
-	    return symbol + updatedAmount;
-	}
-	
-	function format_money_jp(currency, amount) {
-	    var sign = '';
-	    var updatedAmount = amount;
-	    if(currency === 'JPY') { // remove decimal points and add comma.
-	
-	        updatedAmount = updatedAmount.replace(/,/g,'');
-	        if (Number(updatedAmount) < 0 ) {
-	           sign = '-';
+	function format_money(currencyValue, amount) {
+	    var money;
+	    if (typeof Intl !== 'undefined' && currencyValue && currencyValue !== '' && amount && amount !== '') {
+	        var options = { style: 'currency', currency: currencyValue },
+	            language = typeof window !== 'undefined' && page.language().toLowerCase() ? page.language().toLowerCase() : 'en';
+	        money = new Intl.NumberFormat(language, options).format(amount);
+	    } else {
+	        var updatedAmount, sign = '';
+	        if (japanese_client()) {
+	            updatedAmount = parseInt(amount);
+	            if (Number(updatedAmount) < 0 ) {
+	                sign = '-';
+	            }
+	        } else {
+	            updatedAmount = parseFloat(amount).toFixed(2);
 	        }
-	
-	        updatedAmount = updatedAmount.replace(/\.\d+$/, '').replace('-','').replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+	        updatedAmount = typeof addComma === 'undefined' ? updatedAmount : addComma(updatedAmount);
+	        var symbol = format_money.map[currencyValue];
+	        if (symbol === undefined) {
+	            money = currencyValue + ' ' + updatedAmount;
+	        } else {
+	            money = sign + symbol + updatedAmount;
+	        }
 	    }
-	
-	    var symbol = format_money.map[currency];
-	    if (symbol === undefined) {
-	        return currency + ' ' + updatedAmount;
-	    }
-	    return sign + symbol + updatedAmount;
+	    return money;
 	}
 	
 	function format_currency(currency) {
 	    return format_money.map[currency];
 	}
-	
 	
 	// Taken with modifications from:
 	//    https://github.com/bengourley/currency-symbol-map/blob/master/map.js
@@ -16606,7 +16603,6 @@
 	
 	module.exports = {
 	    format_money: format_money,
-	    format_money_jp: format_money_jp,
 	    format_currency: format_currency
 	};
 
@@ -16678,7 +16674,7 @@
 	
 	    function getBalance(balance, currency) {
 	        balance = parseFloat(balance);
-	        return currency ? format_money(currency, addComma(balance)) : balance;
+	        return currency ? format_money(currency, balance) : balance;
 	    }
 	
 	    function getPortfolioData(c) {
@@ -16690,7 +16686,7 @@
 	                c.longcode : (japanese_client() ?
 	                toJapanTimeIfNeeded(void 0, void 0, c.longcode) : c.longcode),
 	            'currency'       : c.currency,
-	            'buy_price'      : addComma(parseFloat(c.buy_price)),
+	            'buy_price'      : c.buy_price,
 	            'app_id'         : c.app_id
 	        };
 	
@@ -17321,7 +17317,7 @@
 	    if (node && type && payout) {
 	        var profit = payout - type,
 	            return_percent = (profit/type)*100,
-	            comment = Content.localize().textNetProfit + ': ' + format_money(currency, profit.toFixed(2)) + ' | ' + Content.localize().textReturn + ' ' + return_percent.toFixed(1) + '%';
+	            comment = Content.localize().textNetProfit + ': ' + format_money(currency, profit) + ' | ' + Content.localize().textReturn + ' ' + return_percent.toFixed(1) + '%';
 	
 	        if (isNaN(profit) || isNaN(return_percent)) {
 	            node.hide();
@@ -17352,7 +17348,7 @@
 	            } else {
 	                displayAmount = parseFloat(stopLoss);
 	            }
-	            node.textContent = Content.localize().textSpreadDepositComment + " " + format_money(currency, displayAmount.toFixed(2)) + " " + Content.localize().textSpreadRequiredComment + ": " + point + " " + Content.localize().textSpreadPointsComment;
+	            node.textContent = Content.localize().textSpreadDepositComment + " " + format_money(currency, displayAmount) + " " + Content.localize().textSpreadRequiredComment + ": " + point + " " + Content.localize().textSpreadPointsComment;
 	        }
 	    }
 	}
@@ -17616,8 +17612,7 @@
 	
 	function updateContractBalance(balance) {
 	    $('#contract_purchase_balance').text(
-	        Content.localize().textContractConfirmationBalance + ' ' +
-	        format_money(TUser.get().currency, addComma(parseFloat(balance)))
+	        Content.localize().textContractConfirmationBalance + ' ' + format_money(TUser.get().currency, balance)
 	    );
 	}
 	
@@ -18935,7 +18930,6 @@
 	var toJapanTimeIfNeeded = __webpack_require__(28).toJapanTimeIfNeeded;
 	var objectNotEmpty = __webpack_require__(28).objectNotEmpty;
 	var format_money = __webpack_require__(47).format_money;
-	var format_money_jp = __webpack_require__(47).format_money_jp;
 	var japanese_client = __webpack_require__(29).japanese_client;
 	var MBPrice = __webpack_require__(57).MBPrice;
 	var ViewPopupUI = __webpack_require__(63).ViewPopupUI;
@@ -19129,8 +19123,8 @@
 	
 	        containerSetText('trade_details_start_date'    , toJapanTimeIfNeeded(epochToDateTime(contract.date_start)));
 	        if (document.getElementById('trade_details_end_date')) containerSetText('trade_details_end_date'      , toJapanTimeIfNeeded(epochToDateTime(contract.date_expiry)));
-	        containerSetText('trade_details_payout', format_money(contract.currency, parseFloat(contract.payout).toFixed(2)));
-	        containerSetText('trade_details_purchase_price', format_money(contract.currency, parseFloat(contract.buy_price).toFixed(2)));
+	        containerSetText('trade_details_payout', format_money(contract.currency, contract.payout));
+	        containerSetText('trade_details_purchase_price', format_money(contract.currency, contract.buy_price));
 	
 	        normalUpdateTimers();
 	        normalUpdate();
@@ -19162,7 +19156,7 @@
 	        containerSetText('trade_details_ref_id'          , contract.transaction_ids.buy + (contract.transaction_ids.sell ? ' - ' + contract.transaction_ids.sell : ''));
 	        containerSetText('trade_details_current_date'    , toJapanTimeIfNeeded(epochToDateTime(currentSpotTime)));
 	        containerSetText('trade_details_current_spot'    , currentSpot || page.text.localize('not available'));
-	        containerSetText('trade_details_indicative_price', indicative_price ? format_money(contract.currency, parseFloat(indicative_price).toFixed(2)) : '-');
+	        containerSetText('trade_details_indicative_price', indicative_price ? format_money(contract.currency, indicative_price) : '-');
 	
 	        var profit_loss, percentage, jp_client;
 	        if (finalPrice) {
@@ -19170,7 +19164,7 @@
 	            percentage  = (profit_loss * 100 / contract.buy_price).toFixed(2);
 	            jp_client   = japanese_client();
 	            containerSetText('trade_details_profit_loss',
-	                (jp_client ? format_money_jp(contract.currency, parseFloat(profit_loss).toFixed(2)) : format_money(contract.currency, parseFloat(profit_loss).toFixed(2))) + '<span>(' + (percentage > 0 ? '+' : '') + percentage + '%' + ')</span>',
+	                format_money(contract.currency, profit_loss) + '<span>(' + (percentage > 0 ? '+' : '') + percentage + '%' + ')</span>',
 	                {'class': (profit_loss >= 0 ? 'profit' : 'loss')}
 	            );
 	        } else {
@@ -62942,9 +62936,7 @@
 	        if (!currency) {
 	            return;
 	        }
-	
-	        var amount = addComma(parseFloat(balance.balance));
-	        var view = format_money(currency, amount);
+	        var view = format_money(currency, balance.balance);
 	
 	        TUser.get().balance = balance.balance;
 	        updateContractBalance(balance.balance);
@@ -64488,7 +64480,7 @@
 	                } else {
 	                    $('.stake:hidden').show();
 	                    stake.textContent = page.text.localize('Stake') + ': ';
-	                    amount.textContent = format_money((currency.value || currency.getAttribute('value')), (data['display_value']*1).toFixed(2));
+	                    amount.textContent = format_money((currency.value || currency.getAttribute('value')), data['display_value']);
 	                }
 	                $('.stake_wrapper:hidden').show();
 	            } else {
@@ -64497,7 +64489,7 @@
 	
 	            if (data['payout']) {
 	              payout.textContent = (is_spread ? page.text.localize('Payout/point') : page.text.localize('Payout')) + ': ';
-	              payoutAmount.textContent = format_money((currency.value || currency.getAttribute('value')), (data['payout']*1).toFixed(2));
+	              payoutAmount.textContent = format_money((currency.value || currency.getAttribute('value')), data['payout']);
 	              $('.payout_wrapper:hidden').show();
 	            } else {
 	              $('.payout_wrapper:visible').hide();
@@ -65235,7 +65227,6 @@
 	var Content         = __webpack_require__(52).Content;
 	var Table           = __webpack_require__(138).Table;
 	var format_money    = __webpack_require__(47).format_money;
-	var format_money_jp = __webpack_require__(47).format_money_jp;
 	var showTooltip     = __webpack_require__(48).showTooltip;
 	var japanese_client = __webpack_require__(29).japanese_client;
 	var ProfitTable = __webpack_require__(139).ProfitTable;
@@ -65306,7 +65297,7 @@
 	
 	        var jpClient = japanese_client();
 	
-	        $("#pl-day-total > .pl").text(jpClient ? format_money_jp(TUser.get().currency, total.toString()) : addComma(Number(total).toFixed(2)));
+	        $("#pl-day-total > .pl").text(jpClient ? format_money(TUser.get().currency, total) : addComma(Number(total).toFixed(2)));
 	
 	        var subTotalType = (total >= 0 ) ? "profit" : "loss";
 	        $("#pl-day-total > .pl").removeClass("profit").removeClass("loss");
@@ -65319,7 +65310,7 @@
 	
 	        var jpClient = japanese_client();
 	
-	        var data = [jpClient ? toJapanTimeIfNeeded(transaction.purchase_time) : profit_table_data.buyDate, '<span' + showTooltip(profit_table_data.app_id, oauth_apps[profit_table_data.app_id]) + '>' + profit_table_data.ref + '</span>', jpClient ? format_money_jp(TUser.get().currency, profit_table_data.payout) : profit_table_data.payout , '', jpClient ? format_money_jp(TUser.get().currency, profit_table_data.buyPrice) : profit_table_data.buyPrice , (jpClient ? toJapanTimeIfNeeded(transaction.sell_time) : profit_table_data.sellDate), jpClient ? format_money_jp(TUser.get().currency, profit_table_data.sellPrice) : profit_table_data.sellPrice , jpClient ? format_money_jp(TUser.get().currency, profit_table_data.pl) : profit_table_data.pl , ''];
+	        var data = [jpClient ? toJapanTimeIfNeeded(transaction.purchase_time) : profit_table_data.buyDate, '<span' + showTooltip(profit_table_data.app_id, oauth_apps[profit_table_data.app_id]) + '>' + profit_table_data.ref + '</span>', jpClient ? format_money(TUser.get().currency, profit_table_data.payout) : profit_table_data.payout , '', jpClient ? format_money(TUser.get().currency, profit_table_data.buyPrice) : profit_table_data.buyPrice , (jpClient ? toJapanTimeIfNeeded(transaction.sell_time) : profit_table_data.sellDate), jpClient ? format_money(TUser.get().currency, profit_table_data.sellPrice) : profit_table_data.sellPrice , jpClient ? format_money(TUser.get().currency, profit_table_data.pl) : profit_table_data.pl , ''];
 	        var $row = Table.createFlexTableRow(data, cols, "data");
 	
 	        $row.children(".pl").addClass(plType);
@@ -65951,7 +65942,7 @@
 	    var moment = __webpack_require__(31);
 	    var StringUtil = __webpack_require__(144).StringUtil,
 	        addComma = __webpack_require__(50).addComma,
-	        format_money_jp = __webpack_require__(47).format_money_jp,
+	        format_money = __webpack_require__(47).format_money,
 	        toJapanTimeIfNeeded = __webpack_require__(28).toJapanTimeIfNeeded;
 	
 	    var getStatementData = function(statement, currency, jpClient) {
@@ -65959,17 +65950,17 @@
 	            momentObj = moment.utc(dateObj),
 	            dateStr = momentObj.format("YYYY-MM-DD"),
 	            timeStr = momentObj.format("HH:mm:ss") + ' GMT',
-	            payout  = parseFloat(statement["payout"]).toFixed(2),
+	            payout  = parseFloat(statement["payout"]),
 	            amount  = addComma(parseFloat(statement["amount"])),
 	            balance = addComma(parseFloat(statement["balance_after"]));
 	
 	        var statement_data = {
 	            'date'    : jpClient ? toJapanTimeIfNeeded(statement["transaction_time"]) : dateStr + "\n" + timeStr,
 	            'ref'     : statement["transaction_id"],
-	            'payout'  : isNaN(payout) ? '-' : (jpClient ? format_money_jp(currency, payout) : payout),
+	            'payout'  : isNaN(payout) ? '-' : (jpClient ? format_money(currency, payout) : payout.toFixed(2)),
 	            'action'  : StringUtil.toTitleCase(statement["action_type"]),
-	            'amount'  : jpClient ? format_money_jp(currency, amount) : amount,
-	            'balance' : jpClient ? format_money_jp(currency, balance) : balance,
+	            'amount'  : jpClient ? format_money(currency, amount) : amount,
+	            'balance' : jpClient ? format_money(currency, balance) : balance,
 	            'desc'    : statement["longcode"].replace(/\n/g, '<br />'),
 	            'id'      : statement["contract_id"],
 	            'app_id'  : statement["app_id"]
@@ -85014,7 +85005,7 @@
 	                } else {
 	                    $('.stake:hidden').show();
 	                    stake.textContent = page.text.localize('Stake') + ': ';
-	                    amount.textContent = format_money((currency.value || currency.getAttribute('value')), (data['display_value']*1).toFixed(2));
+	                    amount.textContent = format_money((currency.value || currency.getAttribute('value')), data['display_value']);
 	                }
 	                $('.stake_wrapper:hidden').show();
 	            } else {
@@ -85023,7 +85014,7 @@
 	
 	            if (data['payout']) {
 	              payout.textContent = (is_spread ? page.text.localize('Payout/point') : page.text.localize('Payout')) + ': ';
-	              payoutAmount.textContent = format_money((currency.value || currency.getAttribute('value')), (data['payout']*1).toFixed(2));
+	              payoutAmount.textContent = format_money((currency.value || currency.getAttribute('value')), data['payout']*1);
 	              $('.payout_wrapper:hidden').show();
 	            } else {
 	              $('.payout_wrapper:visible').hide();
@@ -85432,7 +85423,7 @@
 	                // label_value(profit, Content.localize().textContractConfirmationProfit, addComma(profit_value));
 	            }
 	
-	            balance.textContent = Content.localize().textContractConfirmationBalance + ' ' + format_money(TUser.get().currency, Math.round(receipt['balance_after']*100)/100);
+	            balance.textContent = Content.localize().textContractConfirmationBalance + ' ' + format_money(TUser.get().currency, receipt['balance_after']);
 	
 	            if(show_chart){
 	                chart.show();

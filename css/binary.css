@@ -618,13 +618,6 @@ input[type=checkbox] {
   word-wrap: break-word;
   color: #fff;
 }
-#header .main-nav > li > ul {
-  margin: -20px -1px;
-}
-#header .main-nav .nav-caret {
-  right: -68px;
-  left: initial;
-}
 #header .topMenuBalance {
   visibility: hidden;
 }
