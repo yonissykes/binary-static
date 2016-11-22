@@ -2454,6 +2454,23 @@ ol.start {
   font-size: 12px;
 }
 
+.careers-for-americans img.responsive {
+  width: 50%;
+}
+.careers-for-americans .fill-bg-color img.responsive {
+  width: 15%;
+}
+.careers-for-americans h2 {
+  margin-bottom: 0;
+}
+.careers-for-americans .margin {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+.careers-for-americans .border-bottom {
+  border-bottom: 1px solid #DEDEDE;
+}
+
 .empty-space {
   margin-top: 115px;
 }
