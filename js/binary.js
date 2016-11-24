@@ -27723,7 +27723,7 @@
 	    if (typeof Intl !== 'undefined' && currencyValue && currencyValue !== '' && amount && amount !== '') {
 	        var options = { style: 'currency', currency: currencyValue },
 	            language = typeof window !== 'undefined' && page.language().toLowerCase() ? page.language().toLowerCase() : 'en';
-	        money = new Intl.NumberFormat(language, options).format(amount);
+	        money = new Intl.NumberFormat(language.replace('_','-'), options).format(amount);
 	    } else {
 	        var updatedAmount, sign = '';
 	        if (japanese_client()) {
@@ -77265,7 +77265,7 @@
 	            action: page.text.localize(statement_data.action),
 	            desc  : page.text.localize(statement_data.desc),
 	        }));
-	        var creditDebitType = (parseFloat(statement_data.amount) >= 0) ? "profit" : "loss";
+	        var creditDebitType = (parseFloat(transaction.amount) >= 0) ? "profit" : "loss";
 	
 	        var $statementRow = Table.createFlexTableRow([
 	                statement_data.date,
