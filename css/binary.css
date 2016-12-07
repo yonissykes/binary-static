@@ -3786,9 +3786,6 @@ div.kineticjs-content {
   #trading_socket_container #contract_market_form_container {
     height: auto;
   }
-  #trading_socket_container #expiry_time {
-    width: 175px;
-  }
   #trading_socket_container #contract_form_content {
     margin-top: 0px;
   }
@@ -3885,6 +3882,9 @@ div.kineticjs-content {
   }
   #trading_socket_container #contract_prices_container {
     margin-left: 0;
+  }
+  #trading_socket_container #expiry_time {
+    width: 175px;
   }
 }
 #spot {
@@ -5279,7 +5279,7 @@ div.kineticjs-content {
   left: 30%;
 }
 #statement-ws-container input {
-  max-width: 100%;
+  max-width: 60%;
   margin-left: 10px;
 }
 #statement-ws-container .padding-left {
@@ -5795,7 +5795,7 @@ body.TH .google-play-badge {
 /*
  * Timepicker stylesheet
  * Highly inspired from datepicker
- * FG - Nov 2010 - Web3R 
+ * FG - Nov 2010 - Web3R
  *
  * version 0.0.3 : Fixed some settings, more dynamic
  * version 0.0.4 : Removed width:100% on tables
@@ -5888,6 +5888,17 @@ body.TH .google-play-badge {
 /* the deselect button */
 .ui-timepicker .ui-timepicker-deselect {
   float: left;
+}
+
+#ui-timepicker-div, #ui-timepicker-div:before, #ui-timepicker-div:after, #ui-datepicker-div, #ui-datepicker-div:before, #ui-datepicker-div:after {
+  transition: none;
+}
+
+.ui-datepicker.ui-widget-content, .ui-timepicker-table.ui-widget-content {
+  border: 0;
+}
+.ui-datepicker.ui-corner-all, .ui-datepicker .ui-corner-all, .ui-timepicker-table.ui-corner-all, .ui-timepicker-table .ui-corner-all {
+  border-radius: 0;
 }
 
 /* Grid layout system */
