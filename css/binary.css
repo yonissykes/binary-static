@@ -507,28 +507,32 @@ input[type=checkbox] {
 
 /* main style */
 /* Logo and top bar */
-#topbar {
+body #topbar {
   text-align: right;
 }
-#topbar #virtual-text {
+body #topbar #virtual-text {
   font-weight: 700;
 }
-#topbar #topbar-info {
+body #topbar #topbar-info {
   margin-left: auto;
+  height: 23px;
 }
-#topbar #gmt-clock, #topbar #contact-us, #topbar .upgrademessage {
+body #topbar #topbar-info > div {
+  height: 23px;
+}
+body #topbar #gmt-clock, body #topbar #contact-us, body #topbar .upgrademessage {
   -webkit-align-self: center;
       -ms-flex-item-align: center;
               -ms-grid-row-align: center;
           align-self: center;
 }
-#topbar #gmt-clock {
+body #topbar #gmt-clock {
   white-space: nowrap;
 }
-#topbar .upgrademessage {
+body #topbar .upgrademessage {
   text-align: center;
 }
-#topbar .upgrademessage a {
+body #topbar .upgrademessage a {
   color: #fff;
   text-decoration: none;
   text-align: center;
@@ -545,22 +549,24 @@ input[type=checkbox] {
   text-transform: none;
   margin: 0 0 0 10px;
 }
-#topbar .upgrademessage a:visited {
+body #topbar .upgrademessage a:visited {
   color: #fff;
 }
-#topbar .upgrademessage a:hover, #topbar .upgrademessage a:active {
+body #topbar .upgrademessage a:hover, body #topbar .upgrademessage a:active {
   text-decoration: none;
   background-color: #14602B;
 }
-#topbar #language_select select {
-  padding: 0px;
-  float: right;
-  max-width: 100%;
-}
-#topbar a {
+body #topbar a {
   color: #fff;
   white-space: nowrap;
   text-decoration: none;
+}
+body #topbar #select_language {
+  right: 0px;
+  top: -23px;
+}
+body #topbar #display_language li:first-child {
+  margin-top: 0;
 }
 
 #header {
@@ -5251,7 +5257,7 @@ body.JA #footer-regulatory .gr-9, body.JA #footer-regulatory .gr-p-7 {
 body.JA #bet_guide_content div:nth-child(1) {
   display: none !important;
 }
-body.JA #language_select {
+body.JA .languages {
   display: none;
 }
 body.JA #header #menu-top li {
@@ -5325,7 +5331,7 @@ body.ID .id-hide {
 body.ID .extra-space {
   margin-top: 127px;
 }
-body.ID #language_select {
+body.ID .languages {
   display: none;
 }
 body.ID .app-store-badge {
