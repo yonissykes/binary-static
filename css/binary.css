@@ -562,8 +562,7 @@ body #topbar a {
   text-decoration: none;
 }
 body #topbar #select_language {
-  right: 0px;
-  top: -23px;
+  top: -3px;
 }
 body #topbar #display_language li:first-child {
   margin-top: 0;
