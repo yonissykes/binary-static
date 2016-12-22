@@ -827,19 +827,6 @@ html.mm-right.mm-opening body .mm-page, html.mm-right.mm-opening body #mm-blocke
     width: 95vw;
   }
 }
-meter#password-meter {
-  display: block;
-  width: 10.9em;
-  height: 0.5em;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-}
-
-meter#password-meter::-webkit-meter-bar {
-  background: #F2F2F2;
-  box-shadow: 0 5px 5px -5px rgba(0, 0, 0, 0.25) inset;
-}
-
 #accordion .ui-accordion-content {
   padding-top: 0;
 }
@@ -5520,7 +5507,7 @@ body.TH .google-play-badge {
     max-height: 100%;
   }
 
-  input, meter#password-meter, select {
+  input, select {
     width: 80%;
   }
 
