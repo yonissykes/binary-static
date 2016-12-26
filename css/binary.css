@@ -704,6 +704,7 @@ body #topbar #display_language li:first-child {
 }
 #footer #footer-regulatory #ratelimit-error-message .message a {
   color: #2E8836;
+  font-size: inherit;
 }
 #footer #footer-last a {
   text-decoration: underline;
