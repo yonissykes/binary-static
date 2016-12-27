@@ -82733,6 +82733,9 @@
 	    return {
 	        onLoad: function onLoad() {
 	            Platforms.init();
+	        },
+	        onUnload: function onUnload() {
+	            Platforms.unload();
 	        }
 	    };
 	});
@@ -82765,6 +82768,9 @@
 	    return {
 	        onLoad: function onLoad() {
 	            GetStartedJP.init();
+	        },
+	        onUnload: function onUnload() {
+	            GetStartedJP.unload();
 	        }
 	    };
 	});
@@ -82782,6 +82788,9 @@
 	        onLoad: function onLoad() {
 	            JobDetails.init();
 	            JobDetails.addEventListeners();
+	        },
+	        onUnload: function onUnload() {
+	            JobDetails.removeEventListeners();
 	        }
 	    };
 	});
@@ -82884,8 +82893,13 @@
 	        });
 	    };
 	
+	    var unload = function unload() {
+	        $(window).off('hashchange');
+	    };
+	
 	    return {
-	        init: init
+	        init: init,
+	        unload: unload
 	    };
 	}();
 	
@@ -82978,11 +82992,17 @@
 	        });
 	    }
 	
+	    function removeEventListeners() {
+	        $(window).off('hashchange');
+	    }
+	
 	    return {
 	        showSelectedDiv: showSelectedDiv,
 	        check_url: check_url,
 	        init: init,
-	        addEventListeners: addEventListeners
+	
+	        addEventListeners: addEventListeners,
+	        removeEventListeners: removeEventListeners
 	    };
 	}();
 	
@@ -82999,7 +83019,7 @@
 	var Platforms = function () {
 	    var sections = [];
 	    function init() {
-	        sections = ['more-tools', 'trading-platforms', 'platforms-comparison'];
+	        sections = ['more-tools', 'trading-platforms'];
 	        var sidebarListItem = $('.sidebar-nav li');
 	        sidebarListItem.click(function () {
 	            sidebarListItem.removeClass('selected');
@@ -83049,8 +83069,13 @@
 	        $('.sections[id="' + get_hash().substring(1) + '"]').removeClass('invisible');
 	        $('.sidebar-nav a[href="' + get_hash() + '"]').parent().addClass('selected');
 	    }
+	    function unload() {
+	        $(window).off('resize');
+	        $(window).off('hashchange');
+	    }
 	    return {
-	        init: init
+	        init: init,
+	        unload: unload
 	    };
 	}();
 	
