@@ -2900,6 +2900,10 @@ div.kineticjs-content {
   table-layout: fixed;
   width: 100%;
 }
+.platforms-content table ul.checked li {
+  background-position: center;
+  margin: 0;
+}
 .platforms-content td, .platforms-content th {
   vertical-align: top;
   padding: 10px;
@@ -2928,10 +2932,6 @@ div.kineticjs-content {
   font-weight: bold;
   background: #F2F2F2;
   border-bottom: 1px solid #F2F2F2;
-}
-.platforms-content ul.checked li {
-  background-position: center;
-  margin: 0;
 }
 .platforms-content .small-padding-top {
   padding-top: 4px;

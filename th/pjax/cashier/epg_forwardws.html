@@ -19,8 +19,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <div class='gr-12 gr-padding-10'>
     <h1 id="deposit-withdraw-heading"></h1>
     <div>
-
-        <div id="deposit-withdraw-message" style="display:none">
+        <div id="deposit-withdraw-message" class="invisible">
             <p id="cashier-locked-message" class="messages">
                 การรับ/ชำระเงินของท่านถูกล็อก - หากประสงค์ปลดล็อก โปรดคลิก <a class="pjaxload" href="/th/user/security/cashier_passwordws.html">ที่นี่</a>
             </p>
@@ -31,25 +30,35 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <br /> หากท่านต้องการความช่วยเหลือ โปรดติดต่อ <a class="pjaxload" href="/th/contact.html">แผนกบริการลูกค้า</a>ของเรา
             </p>
             <p id="not-authenticated-message" class="messages">
-                บัญชีของท่านยังไม่ได้รับการยืนยันตัวตนอย่างสมบูรณ์ โปรดเข้าเยี่ยมหน้า <a class="pjaxload" href="/th/user/authenticatews.html">การยืนยันตัวตน</a> เพื่อดำเนินการเพิ่มเติม
+                Your account is not fully authenticated.
             </p>
         </div>
-
-        <div id="deposit-withdraw-error" class="error-msg" style="display:none">
+        <div id="deposit-withdraw-error" class="center-text notice-msg invisible">
             <p id="withdrawal-locked-error" class="error_messages">
-                การถอนถูกล็อค โปรด<a class="pjaxload" href="/th/contact.html">ติดต่อเรา</a> สำหรับข้อมูลเพิ่มเติม
+                Withdrawal is locked, please contact <a class="pjaxload" href="/th/contact.html">customer support</a> for more information.
             </p>
             <p id="deposit-locked-error" class="error_messages">
-                การฝากเงินถูกล็อค โปรด <a class="pjaxload" href="/th/contact.html">ติดต่อเรา</a> สำหรับข้อมูลเพิ่มเติม
+                Deposit is locked, please contact <a class="pjaxload" href="/th/contact.html">customer support</a> for more information.
             </p>
             <p id="cashier-locked-error" class="error_messages">
-                แคชเชียร์ถูกล็อค โปรด <a class="pjaxload" href="/th/contact.html">ติดต่อเรา</a> สำหรับข้อมูลเพิ่มเติม
+                Cashier is locked, please contact <a class="pjaxload" href="/th/contact.html">customer support</a> for more information.
+            </p>
+            <p id="financial-risk-error" class="error_messages">
+                Financial Risk approval is required. Please contact <a class="pjaxload" href="/th/contact.html">customer support</a> for more information.
+            </p>
+            <p id="knowledge-test-error" class="error_messages">
+                You must complete the knowledge test to activate this account. Please contact <a class="pjaxload" href="/th/contact.html">customer support</a> for more information.
+            </p>
+            <p id="activation-error" class="error_messages">
+                Account not activated, please contact <a class="pjaxload" href="/th/contact.html">customer support</a> for more information.
+            </p>
+            <p id="age-error" class="error_messages">
+                Account needs age verification, please contact <a class="pjaxload" href="/th/contact.html">customer support</a> for more information.
             </p>
             <p id="custom-error" class="error_messages"></p>
         </div>
-
     </div>
-    <div class="container" id="deposit-withdraw-iframe-container" style="display:none">
+    <div class="container invisible" id="deposit-withdraw-iframe-container">
         <script data-cfasync="false" type="text/javascript">
             function receiveCmd(e) {
                 if (e.origin !== "https://cashier.binary.com") return;
@@ -67,7 +76,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         </script>
         <iframe src="" frameborder="0" width="100%" height="1500" id="cashiercont" scrolling="auto" style="padding:0px;margin:0px;"></iframe>
     </div>
-    <div id="ukgc-funds-protection" class="gr-row gr-parent" style="display:none">
+    <div id="ukgc-funds-protection" class="gr-row gr-parent invisible">
         <div class="gr-2 gr-6-m gr-centered-m">
             <p>
                 <img class="responsive" src="/images/pages/cashier/protection-icon.svg" />
@@ -88,7 +97,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             </div>
         </div>
     </div>
-    <div id="currency-form" style="display:none">
+    <div id="currency-form" class="invisible">
         <div class="rbox-wrap">
             <fieldset>
                 <div class="gr-padding-10 gr-row clear">
@@ -109,7 +118,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             </fieldset>
         </div>
     </div>
-    <div id="withdraw-form" style="display:none">
+    <div id="withdraw-form" class="invisible">
         <fieldset>
             <div class="gr-row gr-parent gr-padding-10">
                 <div class="form_label gr-4">
@@ -118,13 +127,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <div class="gr-8">
                     <input id="verification-token" type="text" maxlength="48" autocomplete="off" />
                     <div class="hint">โปรดตรวจสอบอีเมล์ของท่านเพื่อการใช้งานโทเค่นนี้</div>
-                    <p class="errorfield" id="verification-error" style="display:none"></p>
+                    <p class="errorfield invisible" id="verification-error"></p>
                 </div>
             </div>
             <div class="gr-12 gr-parent gr-centered center-text">
                 <span class="button">
-          <button class="button" id="submit-verification" type="button">ส่ง</button>
-        </span>
+                    <button class="button" id="submit-verification" type="button">ส่ง</button>
+                </span>
             </div>
         </fieldset>
     </div>

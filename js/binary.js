@@ -19335,7 +19335,7 @@
 	        return match_type !== 'any';
 	    },
 	    show_authenticate_message: function show_authenticate_message() {
-	        if ($('.authenticate-msg').length !== 0) return;
+	        if ($('.authenticate-msg').length !== 0 || /authenticatews\.html/.test(window.location.pathname)) return;
 	
 	        var p = $('<p/>', { class: 'authenticate-msg notice-msg' }),
 	            span;
@@ -41248,28 +41248,22 @@
 	                draw_line_x(end_time, '', 'textLeft', 'Dash');
 	            }
 	            if (sell_spot_time && sell_spot_time < end_time && sell_spot_time >= start_time) {
-	                remove_message('waiting_exit_tick');
 	                select_exit_tick(sell_spot_time);
 	            } else if (exit_tick_time) {
-	                remove_message('waiting_exit_tick');
 	                select_exit_tick(exit_tick_time);
+	            }
+	            if (!contract.sell_spot && !contract.exit_tick) {
+	                if ($('#waiting_exit_tick').length === 0) {
+	                    $('#trade_details_message').append('<div id="waiting_exit_tick">' + page.text.localize('Waiting for exit tick.') + '</div>');
+	                }
 	            } else {
-	                show_message('Waiting for exit tick.');
+	                $('#waiting_exit_tick').remove();
 	            }
 	        }
 	        if (!contract_ended) {
 	            forget_streams();
 	            contract_ended = true;
 	        }
-	    }
-	
-	    function remove_message(id) {
-	        $('#' + id).remove();
-	    }
-	
-	    function show_message(message) {
-	        if ($('#waiting_exit_tick').length !== 0) return;
-	        $('#trade_details_message').append('<div id="waiting_exit_tick">' + page.text.localize(message) + '</div>');
 	    }
 	
 	    function forget_streams() {
@@ -47591,7 +47585,7 @@
 	            container.style.display = 'block';
 	            message_container.hide();
 	            confirmation_error.show();
-	            confirmation_error.innerHTML = /ClientUnwelcome/.test(error.code) ? error.message + '<a class="pjaxload" href="' + page.url.url_for('user/authenticatews') + '"> ' + page.text.localize('Authorise your account.') + '</a>' : error.message;
+	            confirmation_error.innerHTML = error.message;
 	        } else {
 	            var guideBtn = document.getElementById('guideBtn');
 	            if (guideBtn) {
@@ -68897,7 +68891,7 @@
 	            container.style.display = 'block';
 	            message_container.hide();
 	            confirmation_error.show();
-	            confirmation_error_contents.innerHTML = /ClientUnwelcome/.test(error.code) ? error.message + '<a class="pjaxload" href="' + page.url.url_for('user/authenticatews') + '"> ' + page.text.localize('Authorise your account.') + '</a>' : error.message;
+	            confirmation_error_contents.innerHTML = error.message;
 	        } else {
 	            var guideBtn = document.getElementById('guideBtn');
 	            if (guideBtn) {
@@ -84968,7 +84962,7 @@
 	            type: 'payment_withdraw'
 	        });
 	        ForwardWS.showMessage('check-email-message');
-	        $('#withdraw-form').show();
+	        $('#withdraw-form').removeClass('invisible');
 	    }
 	
 	    function initDepositForm() {
@@ -84985,7 +84979,7 @@
 	            appendTextValueChild('select-currency', c, c);
 	        });
 	        ForwardWS.showMessage('choose-currency-message');
-	        $('#currency-form').show();
+	        $('#currency-form').removeClass('invisible');
 	    }
 	
 	    function getCashierType() {
@@ -85010,29 +85004,31 @@
 	    }
 	
 	    function hideAll(option) {
-	        $('#withdraw-form').hide();
-	        $('#currency-form').hide();
-	        $('#ukgc-funds-protection').hide();
-	        $('#deposit-withdraw-error').hide();
+	        $('#withdraw-form, #currency-form, #ukgc-funds-protection, #deposit-withdraw-error').addClass('invisible');
 	        if (option) {
-	            $(option).hide();
+	            $(option).addClass('invisible');
 	        }
 	    }
 	
 	    function showError(error, id) {
 	        hideAll();
-	        var $deposit_withdraw_error = $('#deposit-withdraw-error');
-	        $deposit_withdraw_error.find('.error_messages').hide();
-	        if (id) {
-	            $deposit_withdraw_error.find('#' + id).show();
-	        } else {
-	            $('#custom-error').html(error || page.text.localize('Sorry, an error occurred while processing your request.')).show();
+	        if (!id) {
+	            $('#custom-error').html(error || page.text.localize('Sorry, an error occurred while processing your request.'));
 	        }
-	        $deposit_withdraw_error.show();
+	        hideParentShowChild('#deposit-withdraw-error', '.error_messages', id || 'custom-error');
+	    }
+	
+	    function showErrorMessage(id) {
+	        hideAll();
+	        hideParentShowChild('#deposit-withdraw-error', '.error_messages', id);
 	    }
 	
 	    function showMessage(id) {
-	        $('#deposit-withdraw-message').find('.messages').hide().end().find('#' + id).show().end().show();
+	        hideParentShowChild('#deposit-withdraw-message', '.messages', id);
+	    }
+	
+	    function hideParentShowChild(parent, children, id) {
+	        $(parent).find(children).addClass('invisible').end().find('#' + id).removeClass('invisible').end().removeClass('invisible');
 	    }
 	
 	    function showPersonalDetailsError(details) {
@@ -85088,10 +85084,22 @@
 	                                        ForwardWS.showPersonalDetailsError(error.details);
 	                                        break;
 	                                    case 'ASK_UK_FUNDS_PROTECTION':
-	                                        $('#ukgc-funds-protection').show();
+	                                        $('#ukgc-funds-protection').removeClass('invisible');
 	                                        break;
 	                                    case 'ASK_AUTHENTICATE':
 	                                        ForwardWS.showMessage('not-authenticated-message');
+	                                        break;
+	                                    case 'ASK_FINANCIAL_RISK_APPROVAL':
+	                                        showErrorMessage('financial-risk-error');
+	                                        break;
+	                                    case 'ASK_JP_KNOWLEDGE_TEST':
+	                                        showErrorMessage('knowledge-test-error');
+	                                        break;
+	                                    case 'JP_NOT_ACTIVATION':
+	                                        showErrorMessage('activation-error');
+	                                        break;
+	                                    case 'ASK_AGE_VERIFICATION':
+	                                        showErrorMessage('age-error');
 	                                        break;
 	                                    default:
 	                                        ForwardWS.showError(error.message);
@@ -85112,7 +85120,7 @@
 	                        break;
 	                    case 'cashier':
 	                        ForwardWS.hideAll('#deposit-withdraw-message');
-	                        $('#deposit-withdraw-iframe-container').find('iframe').attr('src', response.cashier).end().show();
+	                        $('#deposit-withdraw-iframe-container').find('iframe').attr('src', response.cashier).end().removeClass('invisible');
 	                        break;
 	                    case 'set_account_currency':
 	                    case 'tnc_approval':
