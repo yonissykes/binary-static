@@ -2221,24 +2221,24 @@ ol.start {
     font-size: 80% !important;
   }
 }
-.career .xquote, .user_testing .xquote, .regulation-content .xquote {
+.career .xquote, .security_testing .xquote, .regulation-content .xquote {
   background-color: #F2F2F2;
   padding: 20px;
   margin: 30px 0;
 }
-.career .xquote div, .user_testing .xquote div, .regulation-content .xquote div {
+.career .xquote div, .security_testing .xquote div, .regulation-content .xquote div {
   overflow: hidden;
   display: table;
 }
-.career .xquote div .picture, .user_testing .xquote div .picture, .regulation-content .xquote div .picture {
+.career .xquote div .picture, .security_testing .xquote div .picture, .regulation-content .xquote div .picture {
   float: left;
   padding-right: 20px;
 }
-.career .xquote div .text, .user_testing .xquote div .text, .regulation-content .xquote div .text {
+.career .xquote div .text, .security_testing .xquote div .text, .regulation-content .xquote div .text {
   display: table-cell;
   vertical-align: middle;
 }
-.career .xquote div .text span, .user_testing .xquote div .text span, .regulation-content .xquote div .text span {
+.career .xquote div .text span, .security_testing .xquote div .text span, .regulation-content .xquote div .text span {
   color: #44484C;
   font-size: 12px;
 }
