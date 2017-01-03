@@ -3462,7 +3462,7 @@ div.kineticjs-content {
   display: -ms-inline-flexbox;
   display: inline-flex;
 }
-#trading_socket_container #period_row, #trading_socket_container #jbarrier_row, #trading_socket_container #jhigh_barrier_row, #trading_socket_container #jlow_barrier_row {
+#trading_socket_container #period_row {
   display: none;
 }
 #trading_socket_container #duration_amount {
@@ -3492,7 +3492,7 @@ div.kineticjs-content {
 #trading_socket_container #expiry_date, #trading_socket_container #expiry_time {
   font-size: 90%;
 }
-#trading_socket_container .barrier_class input, #trading_socket_container #jhigh_barrier_row select, #trading_socket_container #jlow_barrier_row select, #trading_socket_container #jbarrier_row select, #trading_socket_container #period {
+#trading_socket_container .barrier_class input, #trading_socket_container #period {
   width: 175px;
   margin-right: 5px;
 }
@@ -4664,7 +4664,7 @@ div.kineticjs-content {
   display: -ms-inline-flexbox;
   display: inline-flex;
 }
-#trading_socket_container_beta #period_row, #trading_socket_container_beta #jbarrier_row, #trading_socket_container_beta #jhigh_barrier_row, #trading_socket_container_beta #jlow_barrier_row {
+#trading_socket_container_beta #period_row {
   display: none;
 }
 #trading_socket_container_beta #duration_amount {
@@ -4694,7 +4694,7 @@ div.kineticjs-content {
 #trading_socket_container_beta #expiry_date, #trading_socket_container_beta #expiry_time {
   font-size: 90%;
 }
-#trading_socket_container_beta .barrier_class input, #trading_socket_container_beta #jhigh_barrier_row select, #trading_socket_container_beta #jlow_barrier_row select, #trading_socket_container_beta #jbarrier_row select, #trading_socket_container_beta #period {
+#trading_socket_container_beta .barrier_class input, #trading_socket_container_beta #period {
   width: 175px;
   margin-right: 5px;
 }
