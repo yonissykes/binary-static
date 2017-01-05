@@ -34646,6 +34646,27 @@
 	    return true;
 	}
 	
+	function selectorExists(element) {
+	    if (typeof element !== 'undefined' && element !== null) {
+	        return true;
+	    }
+	    return false;
+	}
+	
+	function elementTextContent(element, text) {
+	    // eslint-disable-line consistent-return
+	    if (selectorExists(element)) {
+	        if (text) element.textContent = text;else return element.textContent;
+	    }
+	}
+	
+	function elementInnerHtml(element, text) {
+	    // eslint-disable-line consistent-return
+	    if (selectorExists(element)) {
+	        if (text) element.innerHTML = text;else return element.innerHTML;
+	    }
+	}
+	
 	module.exports = {
 	    getLoginToken: function getLoginToken() {
 	        return Cookies.get('login');
@@ -34658,7 +34679,10 @@
 	    isValidDate: isValidDate,
 	    isVisible: isVisible,
 	    checkInput: checkInput,
-	    dateValueChanged: dateValueChanged
+	    dateValueChanged: dateValueChanged,
+	    selectorExists: selectorExists,
+	    elementTextContent: elementTextContent,
+	    elementInnerHtml: elementInnerHtml
 	};
 
 /***/ },
@@ -34678,6 +34702,7 @@
 	var appendTextValueChild = __webpack_require__(421).appendTextValueChild;
 	var Cookies = __webpack_require__(301);
 	var moment = __webpack_require__(308);
+	var elementInnerHtml = __webpack_require__(421).elementInnerHtml;
 	
 	var displayAcctSettings = function displayAcctSettings(response) {
 	    var country = response.get_settings.country_code;
@@ -34762,7 +34787,7 @@
 	                var errorElement = document.getElementById('error-residence');
 	                if (response.hasOwnProperty('error')) {
 	                    if (response.error.message) {
-	                        errorElement.innerHTML = response.error.message;
+	                        elementInnerHtml(errorElement, response.error.message);
 	                        errorElement.setAttribute('style', 'display:block');
 	                    }
 	                } else {
@@ -34864,6 +34889,7 @@
 	
 	var japanese_client = __webpack_require__(307).japanese_client;
 	var localize = __webpack_require__(424).localize;
+	var elementInnerHtml = __webpack_require__(421).elementInnerHtml;
 	
 	function generateBirthDate() {
 	    var days = document.getElementById('dobdd'),
@@ -34883,9 +34909,9 @@
 	    dropDownNumbers(year, startYear, endYear);
 	
 	    if (japanese_client()) {
-	        days.options[0].innerHTML = localize('Day');
-	        months.options[0].innerHTML = localize('Month');
-	        year.options[0].innerHTML = localize('Year');
+	        elementInnerHtml(days.options[0], localize('Day'));
+	        elementInnerHtml(months.options[0], localize('Month'));
+	        elementInnerHtml(year.options[0], localize('Year'));
 	    }
 	}
 	
@@ -35010,6 +35036,8 @@
 	
 	var Content = __webpack_require__(427).Content;
 	var localize = __webpack_require__(424).localize;
+	var elementTextContent = __webpack_require__(421).elementTextContent;
+	var elementInnerHtml = __webpack_require__(421).elementInnerHtml;
 	
 	var Validate = function () {
 	    var errorCounter = 0;
@@ -35039,10 +35067,10 @@
 	                allText += parClass[i].textContent;
 	            }
 	            if (!re.test(allText)) {
-	                par.innerHTML = par.innerHTML + ' ' + message;
+	                elementInnerHtml(par.innerHTML + ' ' + message);
 	            }
 	        } else {
-	            par.innerHTML = message;
+	            elementInnerHtml(par.innerHTML, message);
 	        }
 	        error.appendChild(par);
 	        displayErrorMessage(error);
@@ -35056,11 +35084,11 @@
 	    // give error message for invalid email, needs DOM element of error and value of email
 	    var errorMessageEmail = function errorMessageEmail(email, error) {
 	        if (email === '') {
-	            error.textContent = Content.errorMessage('req');
+	            elementTextContent(error, Content.errorMessage('req'));
 	            displayErrorMessage(error);
 	            return true;
 	        } else if (!validateEmail(email)) {
-	            error.textContent = Content.errorMessage('valid', localize('email address'));
+	            elementTextContent(error, Content.errorMessage('valid', localize('email address')));
 	            displayErrorMessage(error);
 	            return true;
 	        }
@@ -35071,11 +35099,11 @@
 	    // give error message for invalid verification token, needs DOM element of error and value of verification token
 	    var errorMessageToken = function errorMessageToken(token, error) {
 	        if (token === '') {
-	            error.textContent = Content.errorMessage('req');
+	            elementTextContent(error, Content.errorMessage('req'));
 	            displayErrorMessage(error);
 	            return true;
 	        } else if (!validateToken(token)) {
-	            error.textContent = Content.errorMessage('valid', localize('verification token'));
+	            elementTextContent(error, Content.errorMessage('valid', localize('verification token')));
 	            displayErrorMessage(error);
 	            return true;
 	        }
@@ -35093,7 +35121,7 @@
 	
 	    var fieldNotEmpty = function fieldNotEmpty(field, error) {
 	        if (!/^.+$/.test(field)) {
-	            error.textContent = Content.errorMessage('req');
+	            elementTextContent(error, Content.errorMessage('req'));
 	            displayErrorMessage(error);
 	            return errorCounter++;
 	        }
@@ -35102,7 +35130,7 @@
 	
 	    var passwordMatching = function passwordMatching(password, rPassword, rError) {
 	        if (password !== rPassword) {
-	            rError.textContent = Content.localize().textPasswordsNotMatching;
+	            elementTextContent(rError, Content.localize().textPasswordsNotMatching);
 	            displayErrorMessage(rError);
 	            return errorCounter++;
 	        }
@@ -35163,7 +35191,7 @@
 	    var errorMessageResidence = function errorMessageResidence(residence, error) {
 	        hideErrorMessage(error);
 	        if (residence === '') {
-	            error.textContent = Content.errorMessage('req');
+	            elementTextContent(error, Content.errorMessage('req'));
 	            displayErrorMessage(error);
 	            return true;
 	        }
@@ -35230,6 +35258,7 @@
 	
 	var template = __webpack_require__(420).template;
 	var localize = __webpack_require__(424).localize;
+	var selectorExists = __webpack_require__(421).selectorExists;
 	
 	var Content = function () {
 	    'use strict';
@@ -35359,119 +35388,119 @@
 	        });
 	
 	        var starTime = document.getElementById('start_time_label');
-	        if (starTime) {
+	        if (selectorExists(starTime)) {
 	            starTime.textContent = localized.textStartTime;
 	        }
 	
 	        var minDurationTooltip = document.getElementById('duration_tooltip');
-	        if (minDurationTooltip) {
+	        if (selectorExists(minDurationTooltip)) {
 	            minDurationTooltip.textContent = localized.textMinDuration;
 	            minDurationTooltip.setAttribute('data-balloon', localized.textMinDurationTooltip);
 	        }
 	
 	        var spotLabel = document.getElementById('spot_label');
-	        if (spotLabel) {
+	        if (selectorExists(spotLabel)) {
 	            spotLabel.textContent = localized.textSpot;
 	        }
 	
 	        var barrierTooltip = document.getElementById('barrier_tooltip');
-	        if (barrierTooltip) {
+	        if (selectorExists(barrierTooltip)) {
 	            barrierTooltip.textContent = localized.textBarrierOffset;
 	            barrierTooltip.setAttribute('data-balloon', localized.textBarrierOffsetTooltip);
 	        }
 	
 	        var barrierSpan = document.getElementById('barrier_span');
-	        if (barrierSpan) {
+	        if (selectorExists(barrierSpan)) {
 	            barrierSpan.textContent = localized.textBarrier;
 	        }
 	
 	        var barrierHighTooltip = document.getElementById('barrier_high_tooltip');
-	        if (barrierHighTooltip) {
+	        if (selectorExists(barrierHighTooltip)) {
 	            barrierHighTooltip.textContent = localized.textHighBarrierOffset;
 	            barrierHighTooltip.setAttribute('data-balloon', localized.textBarrierOffsetTooltip);
 	        }
 	        var barrierHighSpan = document.getElementById('barrier_high_span');
-	        if (barrierHighSpan) {
+	        if (selectorExists(barrierHighSpan)) {
 	            barrierHighSpan.textContent = localized.textHighBarrier;
 	        }
 	
 	        var barrierLowTooltip = document.getElementById('barrier_low_tooltip');
-	        if (barrierLowTooltip) {
+	        if (selectorExists(barrierLowTooltip)) {
 	            barrierLowTooltip.textContent = localized.textLowBarrierOffset;
 	            barrierLowTooltip.setAttribute('data-balloon', localized.textBarrierOffsetTooltip);
 	        }
 	        var barrierLowSpan = document.getElementById('barrier_low_span');
-	        if (barrierLowSpan) {
+	        if (selectorExists(barrierLowSpan)) {
 	            barrierLowSpan.textContent = localized.textLowBarrier;
 	        }
 	
 	        var predictionLabel = document.getElementById('prediction_label');
-	        if (predictionLabel) {
+	        if (selectorExists(predictionLabel)) {
 	            predictionLabel.textContent = localized.textPredictionLabel;
 	        }
 	
 	        var payoutOption = document.getElementById('payout_option');
-	        if (payoutOption) {
+	        if (selectorExists(payoutOption)) {
 	            payoutOption.textContent = localized.textPayout;
 	        }
 	
 	        var stakeOption = document.getElementById('stake_option');
-	        if (stakeOption) {
+	        if (selectorExists(stakeOption)) {
 	            stakeOption.textContent = localized.textStake;
 	        }
 	
 	        var purchaseButtonTop = document.getElementById('purchase_button_top');
-	        if (purchaseButtonTop) {
+	        if (selectorExists(purchaseButtonTop)) {
 	            purchaseButtonTop.textContent = localized.textPurchase;
 	        }
 	
 	        var purchaseButtonBottom = document.getElementById('purchase_button_bottom');
-	        if (purchaseButtonBottom) {
+	        if (selectorExists(purchaseButtonBottom)) {
 	            purchaseButtonBottom.textContent = localized.textPurchase;
 	        }
 	
 	        var period_label = document.getElementById('period_label');
-	        if (period_label) {
+	        if (selectorExists(period_label)) {
 	            period_label.textContent = localized.textContractPeriod;
 	        }
 	
 	        var amount_per_point_label = document.getElementById('amount_per_point_label');
-	        if (amount_per_point_label) {
+	        if (selectorExists(amount_per_point_label)) {
 	            amount_per_point_label.textContent = localized.textAmountPerPoint;
 	        }
 	
 	        var stop_loss_label = document.getElementById('stop_loss_label');
-	        if (stop_loss_label) {
+	        if (selectorExists(stop_loss_label)) {
 	            stop_loss_label.textContent = localized.textStopLoss;
 	        }
 	
 	        var stop_profit_label = document.getElementById('stop_profit_label');
-	        if (stop_profit_label) {
+	        if (selectorExists(stop_profit_label)) {
 	            stop_profit_label.textContent = localized.textStopProfit;
 	        }
 	
 	        var stop_type_label = document.getElementById('stop_type_label');
-	        if (stop_type_label) {
+	        if (selectorExists(stop_type_label)) {
 	            stop_type_label.textContent = localized.textStopType;
 	        }
 	
 	        var stop_type_points = document.getElementById('stop_type_points_label');
-	        if (stop_type_points) {
+	        if (selectorExists(stop_type_points)) {
 	            stop_type_points.textContent = localized.textStopTypePoints;
 	        }
 	
 	        var indicative_barrier_tooltip = document.getElementById('indicative_barrier_tooltip');
-	        if (indicative_barrier_tooltip) {
+	        if (selectorExists(indicative_barrier_tooltip)) {
 	            indicative_barrier_tooltip.setAttribute('data-balloon', localized.textIndicativeBarrierTooltip);
 	        }
 	
 	        var indicative_high_barrier_tooltip = document.getElementById('indicative_high_barrier_tooltip');
-	        if (indicative_high_barrier_tooltip) {
+	        if (selectorExists(indicative_high_barrier_tooltip)) {
 	            indicative_high_barrier_tooltip.setAttribute('data-balloon', localized.textIndicativeBarrierTooltip);
 	        }
 	
 	        var indicative_low_barrier_tooltip = document.getElementById('indicative_low_barrier_tooltip');
-	        if (indicative_low_barrier_tooltip) {
+	        if (selectorExists(indicative_low_barrier_tooltip)) {
 	            indicative_low_barrier_tooltip.setAttribute('data-balloon', localized.textIndicativeBarrierTooltip);
 	        }
 	    };
@@ -37064,6 +37093,7 @@
 	var Client = __webpack_require__(305).Client;
 	var japanese_client = __webpack_require__(307).japanese_client;
 	var addComma = __webpack_require__(437).addComma;
+	var elementInnerHtml = __webpack_require__(421).elementInnerHtml;
 	
 	/*
 	 * Price object handles all the functions we need to display prices
@@ -37162,8 +37192,8 @@
 	            var values = getValues(proposal),
 	                values_opp = getValues(prices[barrier][contract_info.opposite]);
 	
-	            price_rows[+contract_info.order].innerHTML = makePriceRow(values, true);
-	            price_rows[+contract_info_opp.order].innerHTML = makePriceRow(values_opp, true);
+	            elementInnerHtml(price_rows[+contract_info.order], makePriceRow(values, true));
+	            elementInnerHtml(price_rows[+contract_info_opp.order], makePriceRow(values_opp, true));
 	        });
 	    };
 	
@@ -37304,6 +37334,7 @@
 	var MBDefaults = __webpack_require__(440).MBDefaults;
 	var MBSymbols = __webpack_require__(441).MBSymbols;
 	var moment = __webpack_require__(308);
+	var elementInnerHtml = __webpack_require__(421).elementInnerHtml;
 	
 	/*
 	 * Contract object mocks the trading form we have on our website
@@ -37490,7 +37521,7 @@
 	                remainingTimeString.push(all_durations[key] + localize(key + (+all_durations[key] === 1 ? '' : 's')));
 	            }
 	        });
-	        remainingTimeElement.innerHTML = remainingTimeString.join(' ');
+	        elementInnerHtml(remainingTimeElement, remainingTimeString.join(' '));
 	        if (remainingTimeout) clearContractTimeout(remainingTimeout);
 	        remainingTimeout = setTimeout(displayRemainingTime, 1000);
 	    };
@@ -39483,6 +39514,7 @@
 	var localize = __webpack_require__(424).localize;
 	var Highcharts = __webpack_require__(455);
 	__webpack_require__(447)(Highcharts);
+	var elementInnerHtml = __webpack_require__(421).elementInnerHtml;
 	
 	var TickDisplay = function () {
 	    return {
@@ -39680,7 +39712,7 @@
 	            }
 	            var barrier = document.getElementById('contract_purchase_barrier');
 	            if ($self.contract_barrier && barrier) {
-	                barrier.innerHTML = Content.localize().textBarrier + ': ' + $self.contract_barrier;
+	                elementInnerHtml(barrier, Content.localize().textBarrier + ': ' + $self.contract_barrier);
 	            }
 	        },
 	        add: function add(indicator) {
@@ -39885,6 +39917,7 @@
 	var displayPriceMovement = __webpack_require__(450).displayPriceMovement;
 	var countDecimalPlaces = __webpack_require__(450).countDecimalPlaces;
 	var isVisible = __webpack_require__(421).isVisible;
+	var elementTextContent = __webpack_require__(421).elementTextContent;
 	
 	/*
 	 * Tick object handles all the process/display related to tick streaming
@@ -39948,11 +39981,11 @@
 	            spotElement.className = 'error';
 	        } else {
 	            spotElement.classList.remove('error');
-	            displayPriceMovement(spotElement, spotElement.textContent, message);
+	            displayPriceMovement(spotElement, elementTextContent(spotElement), message);
 	            displayIndicativeBarrier();
 	        }
 	
-	        spotElement.textContent = message;
+	        elementTextContent(spotElement, message);
 	    };
 	
 	    /*
@@ -39990,9 +40023,9 @@
 	                indicativeLowBarrierTooltip.textContent = (parseFloat(currentTick) + value).toFixed(decimalPlaces);
 	            }
 	        } else {
-	            indicativeBarrierTooltip.textContent = '';
-	            indicativeHighBarrierTooltip.textContent = '';
-	            indicativeLowBarrierTooltip.textContent = '';
+	            elementTextContent(indicativeBarrierTooltip, '');
+	            elementTextContent(indicativeHighBarrierTooltip, '');
+	            elementTextContent(indicativeLowBarrierTooltip, '');
 	        }
 	    };
 	
@@ -40156,6 +40189,8 @@
 	var getLanguage = __webpack_require__(303).getLanguage;
 	var Client = __webpack_require__(305).Client;
 	var url_for = __webpack_require__(306).url_for;
+	var elementTextContent = __webpack_require__(421).elementTextContent;
+	var elementInnerHtml = __webpack_require__(421).elementInnerHtml;
 	
 	/*
 	 * This contains common functions we need for processing the response
@@ -40192,7 +40227,7 @@
 	    var target = document.getElementById(id),
 	        fragment = document.createDocumentFragment();
 	
-	    target.innerHTML = '';
+	    elementInnerHtml(target, '');
 	
 	    if (elements) {
 	        var tree = getContractCategoryTree(elements);
@@ -40322,7 +40357,7 @@
 	                if (selected && selected === key2) {
 	                    option.setAttribute('selected', 'selected');
 	                }
-	                option.textContent = '\xA0\xA0\xA0\xA0' + elements[key].submarkets[key2].name;
+	                elementTextContent(option, '\xA0\xA0\xA0\xA0' + elements[key].submarkets[key2].name);
 	                fragment.appendChild(option);
 	            }
 	        }
@@ -40615,7 +40650,7 @@
 	            node.hide();
 	        } else {
 	            node.show();
-	            node.textContent = comment;
+	            elementTextContent(node, comment);
 	        }
 	    }
 	}
@@ -40640,7 +40675,7 @@
 	            } else {
 	                displayAmount = parseFloat(stopLoss);
 	            }
-	            node.textContent = Content.localize().textSpreadDepositComment + ' ' + format_money(currency, displayAmount) + ' ' + Content.localize().textSpreadRequiredComment + ': ' + point + ' ' + Content.localize().textSpreadPointsComment;
+	            elementTextContent(node, Content.localize().textSpreadDepositComment + ' ' + format_money(currency, displayAmount) + ' ' + Content.localize().textSpreadRequiredComment + ': ' + point + ' ' + Content.localize().textSpreadPointsComment);
 	        }
 	    }
 	}
@@ -40999,9 +41034,9 @@
 	
 	function label_value(label_elem, label, value, no_currency) {
 	    var currency = Client.get_value('currency');
-	    label_elem.innerHTML = label;
+	    elementInnerHtml(label_elem, label);
 	    var value_elem = document.getElementById(label_elem.id + '_value');
-	    value_elem.innerHTML = no_currency ? value : format_money(currency, value);
+	    elementInnerHtml(value_elem, no_currency ? value : format_money(currency, value));
 	    value_elem.setAttribute('value', String(value).replace(/,/g, ''));
 	}
 	
@@ -42243,6 +42278,7 @@
 	var Url = __webpack_require__(306).Url;
 	var url_for = __webpack_require__(306).url_for;
 	var url_for_static = __webpack_require__(306).url_for_static;
+	var elementInnerHtml = __webpack_require__(421).elementInnerHtml;
 	
 	/*
 	 * This file contains the code related to loading of trading page bottom analysis
@@ -42341,7 +42377,7 @@
 	                    method: 'GET',
 	                    url: url
 	                }).done(function (data) {
-	                    contentId.innerHTML = data;
+	                    elementInnerHtml(contentId, data);
 	                    if (currentTab === 'tab_explanation') {
 	                        showExplanation(currentLink.href);
 	                    }
@@ -42482,6 +42518,8 @@
 	var template = __webpack_require__(420).template;
 	var localize = __webpack_require__(424).localize;
 	var Highcharts = __webpack_require__(455);
+	var elementInnerHtml = __webpack_require__(421).elementInnerHtml;
+	
 	__webpack_require__(447)(Highcharts);
 	
 	var DigitInfoWS = function DigitInfoWS() {
@@ -42587,7 +42625,9 @@
 	            elem += '<option value="' + underlyings[i] + '">' + localize(symbols[underlyings[i]]) + '</option>';
 	        }
 	        elem += '</select>';
-	        document.getElementById('tab_last_digit-content').innerHTML = '<div class="gr-parent">' + '<div id="last_digit_histo_form" class="gr-8 gr-12-m gr-centered">' + '<form class="smallfont gr-row" action="#" method="post">' + '<div class="gr-6 gr-12-m">' + localize('Select market') + ' : ' + elem + ' </div>' + '<div class="gr-6 gr-12-m">' + localize('Number of ticks') + ' : <select class="smallfont" name="tick_count"><option value="25">25</option><option value="50">50</option><option selected="selected" value="100">100</option><option value="500">500</option><option value="1000">1000</option></select></div>' + '</form>' + '</div>' + '<div id="last_digit_histo" class="gr-8 gr-12-m gr-centered"></div>' + '<div id="last_digit_title" class="gr-hide">' + (domain.charAt(0).toUpperCase() + domain.slice(1)) + ' - ' + localize('Last digit stats for the latest [_1] ticks on [_2]') + '</div>' + '</div>';
+	        var contentId = document.getElementById('tab_last_digit-content'),
+	            content = '<div class="gr-parent">' + '<div id="last_digit_histo_form" class="gr-8 gr-12-m gr-centered">' + '<form class="smallfont gr-row" action="#" method="post">' + '<div class="gr-6 gr-12-m">' + localize('Select market') + ' : ' + elem + ' </div>' + '<div class="gr-6 gr-12-m">' + localize('Number of ticks') + ' : <select class="smallfont" name="tick_count"><option value="25">25</option><option value="50">50</option><option selected="selected" value="100">100</option><option value="500">500</option><option value="1000">1000</option></select></div>' + '</form>' + '</div>' + '<div id="last_digit_histo" class="gr-8 gr-12-m gr-centered"></div>' + '<div id="last_digit_title" class="gr-hide">' + (domain.charAt(0).toUpperCase() + domain.slice(1)) + ' - ' + localize('Last digit stats for the latest [_1] ticks on [_2]') + '</div>' + '</div>';
+	        elementInnerHtml(contentId, content);
 	        $('[name=underlying]').val(underlying);
 	    },
 	    on_latest: function on_latest() {
@@ -42892,6 +42932,7 @@
 	var dateValueChanged = __webpack_require__(421).dateValueChanged;
 	var load_with_pjax = __webpack_require__(478).load_with_pjax;
 	var Client = __webpack_require__(305).Client;
+	var elementTextContent = __webpack_require__(421).elementTextContent;
 	
 	/*
 	 * TradingEvents object contains all the event handler const required = function for
@@ -43167,7 +43208,7 @@
 	                Defaults.set('currency', e.target.value);
 	                var stopTypeDollarLabel = document.getElementById('stop_type_dollar_label');
 	                if (stopTypeDollarLabel && isVisible(stopTypeDollarLabel)) {
-	                    stopTypeDollarLabel.textContent = e.target.value;
+	                    elementTextContent(stopTypeDollarLabel, e.target.value);
 	                }
 	                Price.processPriceRequest();
 	            });
@@ -43378,6 +43419,7 @@
 	var moment = __webpack_require__(308);
 	var isVisible = __webpack_require__(421).isVisible;
 	var countDecimalPlaces = __webpack_require__(450).countDecimalPlaces;
+	var elementTextContent = __webpack_require__(421).elementTextContent;
 	
 	/*
 	 * Handles barrier processing and display
@@ -43427,16 +43469,16 @@
 	                            tooltip.style.display = 'none';
 	                            span.style.display = 'inherit';
 	                            // no need to display indicative barrier in case of absolute barrier
-	                            indicativeBarrierTooltip.textContent = '';
+	                            elementTextContent(indicativeBarrierTooltip, '');
 	                        } else {
 	                            if (!String(barrier_def).match(/^[+-]/)) barrier_def = barrier.barrier; // override Defaults value, because it's changing from absolute to relative barrier
 	                            value = barrier_def;
 	                            span.style.display = 'none';
 	                            tooltip.style.display = 'inherit';
 	                            if (currentTick && !isNaN(currentTick)) {
-	                                indicativeBarrierTooltip.textContent = (parseFloat(currentTick) + parseFloat(barrier_def)).toFixed(decimalPlaces);
+	                                elementTextContent(indicativeBarrierTooltip, (parseFloat(currentTick) + parseFloat(barrier_def)).toFixed(decimalPlaces));
 	                            } else {
-	                                indicativeBarrierTooltip.textContent = '';
+	                                elementTextContent(indicativeBarrierTooltip, '');
 	                            }
 	                        }
 	                        elm.value = elm.textContent = value;
@@ -43478,8 +43520,8 @@
 	                            low_span.style.display = 'inherit';
 	                            low_tooltip.style.display = 'none';
 	
-	                            indicativeHighBarrierTooltip.textContent = '';
-	                            indicativeLowBarrierTooltip.textContent = '';
+	                            elementTextContent(indicativeHighBarrierTooltip, '');
+	                            elementTextContent(indicativeLowBarrierTooltip, '');
 	                        } else {
 	                            // override Defaults value, if it's changing from absolute to relative barrier
 	                            if (!String(barrier_high).match(/^[+-]/) || !String(barrier_low).match(/^[+-]/)) {
@@ -43500,11 +43542,11 @@
 	
 	                            if (currentTick && !isNaN(currentTick)) {
 	                                var current_tick = parseFloat(currentTick);
-	                                indicativeHighBarrierTooltip.textContent = barrierVal(current_tick, barrier_high);
-	                                indicativeLowBarrierTooltip.textContent = barrierVal(current_tick, barrier_low);
+	                                elementTextContent(indicativeHighBarrierTooltip, barrierVal(current_tick, barrier_high));
+	                                elementTextContent(indicativeLowBarrierTooltip, barrierVal(current_tick, barrier_low));
 	                            } else {
-	                                indicativeHighBarrierTooltip.textContent = '';
-	                                indicativeLowBarrierTooltip.textContent = '';
+	                                elementTextContent(indicativeHighBarrierTooltip, '');
+	                                elementTextContent(indicativeLowBarrierTooltip, '');
 	                            }
 	                        }
 	                        high_elm.value = high_elm.textContent = value_high;
@@ -43807,6 +43849,7 @@
 	var DatePicker = __webpack_require__(470).DatePicker;
 	var toReadableFormat = __webpack_require__(437).toReadableFormat;
 	var toISOFormat = __webpack_require__(437).toISOFormat;
+	var elementTextContent = __webpack_require__(421).elementTextContent;
 	
 	/*
 	 * Handles duration processing display
@@ -44015,8 +44058,8 @@
 	            unitMaxValue = unit.options[unit.selectedIndex].getAttribute('data-maximum');
 	        var unitValue = Defaults.get('duration_amount') || unitMinValue;
 	        unit.value = Defaults.get('duration_units') && document.querySelectorAll('select[id="duration_units"] [value="' + Defaults.get('duration_units') + '"]').length ? Defaults.get('duration_units') : unit.value;
-	        document.getElementById('duration_minimum').textContent = unitMinValue;
-	        document.getElementById('duration_maximum').textContent = unitMaxValue;
+	        elementTextContent(document.getElementById('duration_minimum'), unitMinValue);
+	        elementTextContent(document.getElementById('duration_maximum'), unitMaxValue);
 	        if (selected_duration.amount && selected_duration.unit > unitValue) {
 	            unitValue = selected_duration.amount;
 	        }
@@ -44248,6 +44291,7 @@
 	var isVisible = __webpack_require__(421).isVisible;
 	var localize = __webpack_require__(424).localize;
 	var Client = __webpack_require__(305).Client;
+	var elementTextContent = __webpack_require__(421).elementTextContent;
 	
 	/*
 	 * Price object handles all the functions we need to display prices
@@ -44430,12 +44474,12 @@
 	            h4.setAttribute('class', 'contract_heading ' + type);
 	            if (is_spread) {
 	                if (position === 'top') {
-	                    h4.textContent = Content.localize().textSpreadTypeLong;
+	                    elementTextContent(h4, Content.localize().textSpreadTypeLong);
 	                } else {
-	                    h4.textContent = Content.localize().textSpreadTypeShort;
+	                    elementTextContent(h4, Content.localize().textSpreadTypeShort);
 	                }
 	            } else {
-	                h4.textContent = display_text;
+	                elementTextContent(h4, display_text);
 	            }
 	        }
 	
@@ -44444,11 +44488,11 @@
 	            if (data.display_value) {
 	                if (is_spread) {
 	                    $('.stake:visible').hide();
-	                    amount.textContent = data.display_value;
+	                    elementTextContent(amount, data.display_value);
 	                } else {
 	                    $('.stake:hidden').show();
-	                    stake.textContent = localize('Stake') + ': ';
-	                    amount.textContent = format_money(currency.value || currency.getAttribute('value'), data.display_value);
+	                    elementTextContent(stake, localize('Stake') + ': ');
+	                    elementTextContent(amount, format_money(currency.value || currency.getAttribute('value'), data.display_value));
 	                }
 	                $('.stake_wrapper:hidden').show();
 	            } else {
@@ -44456,8 +44500,8 @@
 	            }
 	
 	            if (data.payout) {
-	                payout.textContent = (is_spread ? localize('Payout/point') : localize('Payout')) + ': ';
-	                payoutAmount.textContent = format_money(currency.value || currency.getAttribute('value'), data.payout);
+	                elementTextContent(payout, (is_spread ? localize('Payout/point') : localize('Payout')) + ': ');
+	                elementTextContent(payoutAmount, format_money(currency.value || currency.getAttribute('value'), data.payout));
 	                $('.payout_wrapper:hidden').show();
 	            } else {
 	                $('.payout_wrapper:visible').hide();
@@ -44475,7 +44519,7 @@
 	            comment.hide();
 	            setData(details.error.details);
 	            error.show();
-	            error.textContent = details.error.message;
+	            elementTextContent(error, details.error.message);
 	        } else {
 	            setData(proposal);
 	            if ($('#websocket_form').find('.error-field:visible').length > 0) {
@@ -44789,6 +44833,8 @@
 	var setFormPlaceholderContent = __webpack_require__(474).setFormPlaceholderContent;
 	var localize = __webpack_require__(424).localize;
 	var moment = __webpack_require__(308);
+	var elementTextContent = __webpack_require__(421).elementTextContent;
+	var elementInnerHtml = __webpack_require__(421).elementInnerHtml;
 	
 	/*
 	 * This function process the active symbols to get markets
@@ -44894,7 +44940,7 @@
 	        contracts_list.style.display = 'none';
 	        message_container.hide();
 	        confirmation_error.show();
-	        confirmation_error.innerHTML = contracts.error.message + ' <a href="javascript:;" onclick="sessionStorage.removeItem(\'underlying\'); window.location.reload();">' + localize('Please reload the page') + '</a>';
+	        elementInnerHtml(confirmation_error, contracts.error.message + ' <a href="javascript:;" onclick="sessionStorage.removeItem(\'underlying\'); window.location.reload();">' + localize('Please reload the page') + '</a>');
 	        return;
 	    }
 	
@@ -45005,7 +45051,7 @@
 	        amountPerPointLabel.show();
 	        amountPerPoint.show();
 	        spreadContainer.show();
-	        stopTypeDollarLabel.textContent = document.getElementById('currency').value || Defaults.get('currency');
+	        elementTextContent(stopTypeDollarLabel, document.getElementById('currency').value || Defaults.get('currency'));
 	        if (Defaults.get('stop_type')) {
 	            var el = document.querySelectorAll('input[name="stop_type"][value="' + Defaults.get('stop_type') + '"]');
 	            if (el) {
@@ -45162,6 +45208,8 @@
 	var isVisible = __webpack_require__(421).isVisible;
 	var updatePurchaseStatus = __webpack_require__(451).updatePurchaseStatus;
 	var updateContractBalance = __webpack_require__(451).updateContractBalance;
+	var elementTextContent = __webpack_require__(421).elementTextContent;
+	var elementInnerHtml = __webpack_require__(421).elementInnerHtml;
 	
 	/*
 	 * Purchase object that handles all the functions related to
@@ -45202,7 +45250,7 @@
 	            container.style.display = 'block';
 	            message_container.hide();
 	            confirmation_error.show();
-	            confirmation_error.innerHTML = error.message;
+	            elementInnerHtml(confirmation_error, error.message);
 	        } else {
 	            var guideBtn = document.getElementById('guideBtn');
 	            if (guideBtn) {
@@ -45212,10 +45260,10 @@
 	            message_container.show();
 	            confirmation_error.hide();
 	
-	            heading.textContent = Content.localize().textContractConfirmationHeading;
-	            descr.textContent = receipt.longcode;
+	            elementTextContent(heading, Content.localize().textContractConfirmationHeading);
+	            elementTextContent(descr, receipt.longcode);
 	            if (barrier_element) barrier_element.textContent = '';
-	            reference.textContent = Content.localize().textContractConfirmationReference + ' ' + receipt.transaction_id;
+	            elementTextContent(reference, Content.localize().textContractConfirmationReference + ' ' + receipt.transaction_id);
 	
 	            var payout_value = void 0,
 	                cost_value = void 0;
@@ -45230,13 +45278,13 @@
 	            var profit_value = Math.round((payout_value - cost_value) * 100) / 100;
 	
 	            if (sessionStorage.getItem('formname') === 'spreads') {
-	                payout.innerHTML = Content.localize().textStopLoss + ' <p>' + receipt.stop_loss_level + '</p>';
-	                cost.innerHTML = Content.localize().textAmountPerPoint + ' <p>' + receipt.amount_per_point + '</p>';
-	                profit.innerHTML = Content.localize().textStopProfit + ' <p>' + receipt.stop_profit_level + '</p>';
+	                elementInnerHtml(payout, Content.localize().textStopLoss + ' <p>' + receipt.stop_loss_level + '</p>');
+	                elementInnerHtml(cost, Content.localize().textAmountPerPoint + ' <p>' + receipt.amount_per_point + '</p>');
+	                elementInnerHtml(profit, Content.localize().textStopProfit + ' <p>' + receipt.stop_profit_level + '</p>');
 	            } else {
-	                payout.innerHTML = Content.localize().textContractConfirmationPayout + ' <p>' + payout_value + '</p>';
-	                cost.innerHTML = Content.localize().textContractConfirmationCost + ' <p>' + cost_value + '</p>';
-	                profit.innerHTML = Content.localize().textContractConfirmationProfit + ' <p>' + profit_value + '</p>';
+	                elementInnerHtml(payout, Content.localize().textContractConfirmationPayout + ' <p>' + payout_value + '</p>');
+	                elementInnerHtml(cost, Content.localize().textContractConfirmationCost + ' <p>' + cost_value + '</p>');
+	                elementInnerHtml(profit, Content.localize().textContractConfirmationProfit + ' <p>' + profit_value + '</p>');
 	            }
 	
 	            updateContractBalance(receipt.balance_after);
@@ -45248,7 +45296,7 @@
 	            }
 	
 	            if (Contract.form() === 'digits') {
-	                spots.textContent = '';
+	                elementTextContent(spots, '');
 	                spots.className = '';
 	                spots.show();
 	            } else {
@@ -45256,7 +45304,7 @@
 	            }
 	
 	            if (Contract.form() !== 'digits' && !show_chart) {
-	                button.textContent = Content.localize().textContractConfirmationButton;
+	                elementTextContent(button, Content.localize().textContractConfirmationButton);
 	                button.setAttribute('contract_id', receipt.contract_id);
 	                button.show();
 	                $('.open_contract_detailsws').attr('contract_id', receipt.contract_id).removeClass('invisible');
@@ -45345,7 +45393,7 @@
 	
 	                var el1 = document.createElement('div');
 	                el1.classList.add('col');
-	                el1.textContent = Content.localize().textTickResultLabel + ' ' + (spots.getElementsByClassName('row').length + 1);
+	                elementTextContent(el1, Content.localize().textTickResultLabel + ' ' + (spots.getElementsByClassName('row').length + 1));
 	                fragment.appendChild(el1);
 	
 	                var el2 = document.createElement('div');
@@ -45354,13 +45402,13 @@
 	                var hours = date.getUTCHours() < 10 ? '0' + date.getUTCHours() : date.getUTCHours();
 	                var minutes = date.getUTCMinutes() < 10 ? '0' + date.getUTCMinutes() : date.getUTCMinutes();
 	                var seconds = date.getUTCSeconds() < 10 ? '0' + date.getUTCSeconds() : date.getUTCSeconds();
-	                el2.textContent = hours + ':' + minutes + ':' + seconds;
+	                elementTextContent(el2, hours + ':' + minutes + ':' + seconds);
 	                fragment.appendChild(el2);
 	
 	                var tick = tick_d.quote.replace(/\d$/, replace);
 	                var el3 = document.createElement('div');
 	                el3.classList.add('col');
-	                el3.innerHTML = tick;
+	                elementInnerHtml(el3, tick);
 	                fragment.appendChild(el3);
 	
 	                spots.appendChild(fragment);
@@ -47109,6 +47157,7 @@
 	var localize = __webpack_require__(424).localize;
 	var Client = __webpack_require__(305).Client;
 	var url_for = __webpack_require__(306).url_for;
+	var selectorExists = __webpack_require__(421).selectorExists;
 	
 	var FinancialAssessmentws = function () {
 	    'use strict';
@@ -47137,8 +47186,14 @@
 	        $heading.text(localize($heading.text()));
 	        $heading_risk.text(localize($heading_risk.text()));
 	        $high_risk.text(localize($high_risk.text()));
-	        document.getElementsByTagName('legend')[0].innerHTML = localize(document.getElementsByTagName('legend')[0].innerHTML);
-	        if (document.getElementsByTagName('legend')[1]) document.getElementsByTagName('legend')[1].innerHTML = localize(document.getElementsByTagName('legend')[1].innerHTML);
+	        var legend_0 = document.getElementsByTagName('legend')[0];
+	        var legend_1 = document.getElementsByTagName('legend')[1];
+	        if (selectorExists(legend_0)) {
+	            legend_0.innerHTML = localize(legend_0.innerHTML);
+	        }
+	        if (selectorExists(legend_1)) {
+	            legend_1.innerHTML = localize(legend_1.innerHTML);
+	        }
 	        $assessment_form.find('label').each(function () {
 	            var ele = $(this);
 	            ele.text(localize(ele.text()));
@@ -48904,6 +48959,7 @@
 	var japanese_client = __webpack_require__(307).japanese_client;
 	var addComma = __webpack_require__(437).addComma;
 	var ProfitTable = __webpack_require__(499).ProfitTable;
+	var elementTextContent = __webpack_require__(421).elementTextContent;
 	
 	var ProfitTableUI = function () {
 	    'use strict';
@@ -48935,10 +48991,12 @@
 	    };
 	
 	    var updateFooter = function updateFooter(transactions) {
-	        var accTotal = document.querySelector('#pl-day-total > .pl').textContent;
+	        var accTotal = elementTextContent(document.querySelector('#pl-day-total > .pl'));
 	        accTotal = parseFloat(accTotal.replace(/,/g, ''));
-	        if (isNaN(accTotal)) {
-	            accTotal = 0;
+	        if (accTotal) {
+	            if (isNaN(accTotal)) {
+	                accTotal = 0;
+	            }
 	        }
 	
 	        var currentTotal = transactions.reduce(function (previous, current) {
@@ -66176,6 +66234,7 @@
 	var Client = __webpack_require__(305).Client;
 	var showHighchart = __webpack_require__(451).showHighchart;
 	var toggleActiveNavMenuElement_Beta = __webpack_require__(451).toggleActiveNavMenuElement_Beta;
+	var elementInnerHtml = __webpack_require__(421).elementInnerHtml;
 	
 	/*
 	 * This file contains the code related to loading of trading page bottom analysis
@@ -66279,7 +66338,7 @@
 	                        method: 'GET',
 	                        url: url
 	                    }).done(function (data) {
-	                        contentId.innerHTML = data;
+	                        elementInnerHtml(contentId, data);
 	                        if (currentTab === 'tab_explanation') {
 	                            showExplanation(currentLink.href);
 	                        }
@@ -66985,6 +67044,8 @@
 	var template = __webpack_require__(420).template;
 	var localize = __webpack_require__(424).localize;
 	var Highcharts = __webpack_require__(455);
+	var elementInnerHtml = __webpack_require__(421).elementInnerHtml;
+	
 	__webpack_require__(447)(Highcharts);
 	
 	var DigitInfoWS_Beta = function DigitInfoWS_Beta() {
@@ -67093,7 +67154,9 @@
 	            elem = elem + '<option value="' + underlyings[i] + '">' + localize(symbols[underlyings[i]]) + '</option>';
 	        }
 	        elem += '</select>';
-	        document.getElementById('tab_last_digit-content').innerHTML = '<div class="gr-parent">' + '<div id="last_digit_histo_form" class="gr-12 gr-12-m gr-centered">' + '<form class="smallfont gr-row" action="#" method="post">' + '<div class="gr-6 gr-12-m center-text"><div class="gr-padding-10">' + localize('Select market') + ':</div>' + elem + ' </div>' + '<div class="gr-6 gr-12-m center-text"><div class="gr-padding-10">' + localize('Number of ticks') + ':</div><select class="smallfont" name="tick_count"><option value="25">25</option><option value="50">50</option><option selected="selected" value="100">100</option><option value="500">500</option><option value="1000">1000</option></select></div>' + '</form>' + '</div>' + '<div id="last_digit_histo" class="gr-12 gr-12-m gr-centered"></div>' + '<div id="last_digit_title" class="gr-hide">' + (domain.charAt(0).toUpperCase() + domain.slice(1)) + ' - ' + localize('Last digit stats for the latest [_1] ticks on [_2]') + '</div>' + '</div>';
+	        var contentId = document.getElementById('tab_last_digit-content'),
+	            content = '<div class="gr-parent">' + '<div id="last_digit_histo_form" class="gr-12 gr-12-m gr-centered">' + '<form class="smallfont gr-row" action="#" method="post">' + '<div class="gr-6 gr-12-m center-text"><div class="gr-padding-10">' + localize('Select market') + ':</div>' + elem + ' </div>' + '<div class="gr-6 gr-12-m center-text"><div class="gr-padding-10">' + localize('Number of ticks') + ':</div><select class="smallfont" name="tick_count"><option value="25">25</option><option value="50">50</option><option selected="selected" value="100">100</option><option value="500">500</option><option value="1000">1000</option></select></div>' + '</form>' + '</div>' + '<div id="last_digit_histo" class="gr-12 gr-12-m gr-centered"></div>' + '<div id="last_digit_title" class="gr-hide">' + (domain.charAt(0).toUpperCase() + domain.slice(1)) + ' - ' + localize('Last digit stats for the latest [_1] ticks on [_2]') + '</div>' + '</div>';
+	        elementInnerHtml(contentId, content);
 	        $('[name=underlying]').val(underlying);
 	    },
 	    on_latest: function on_latest() {
@@ -67280,6 +67343,7 @@
 	var TimePicker = __webpack_require__(477).TimePicker;
 	var load_with_pjax = __webpack_require__(478).load_with_pjax;
 	var Client = __webpack_require__(305).Client;
+	var elementTextContent = __webpack_require__(421).elementTextContent;
 	
 	/*
 	 * TradingEvents object contains all the event handler const required = function for
@@ -67557,7 +67621,7 @@
 	                Defaults.set('currency', e.target.value);
 	                var stopTypeDollarLabel = document.getElementById('stop_type_dollar_label');
 	                if (stopTypeDollarLabel && isVisible(stopTypeDollarLabel)) {
-	                    stopTypeDollarLabel.textContent = e.target.value;
+	                    elementTextContent(stopTypeDollarLabel, e.target.value);
 	                }
 	                Price_Beta.processPriceRequest_Beta();
 	            });
@@ -67766,6 +67830,7 @@
 	var moment = __webpack_require__(308);
 	var isVisible = __webpack_require__(421).isVisible;
 	var countDecimalPlaces = __webpack_require__(450).countDecimalPlaces;
+	var elementTextContent = __webpack_require__(421).elementTextContent;
 	
 	/*
 	 * Handles barrier processing and display
@@ -67814,16 +67879,16 @@
 	                        tooltip.style.display = 'none';
 	                        span.style.display = 'inherit';
 	                        // no need to display indicative barrier in case of absolute barrier
-	                        indicativeBarrierTooltip.textContent = '';
+	                        elementTextContent(indicativeBarrierTooltip, '');
 	                    } else {
 	                        if (!String(barrier_def).match(/^[+-]/)) barrier_def = barrier.barrier; // override Defaults value, because it's changing from absolute to relative barrier
 	                        value = barrier_def;
 	                        span.style.display = 'none';
 	                        tooltip.style.display = 'inherit';
 	                        if (currentTick && !isNaN(currentTick)) {
-	                            indicativeBarrierTooltip.textContent = (parseFloat(currentTick) + parseFloat(barrier_def)).toFixed(decimalPlaces);
+	                            elementTextContent(indicativeBarrierTooltip, (parseFloat(currentTick) + parseFloat(barrier_def)).toFixed(decimalPlaces));
 	                        } else {
-	                            indicativeBarrierTooltip.textContent = '';
+	                            elementTextContent(indicativeBarrierTooltip, '');
 	                        }
 	                    }
 	                    elm.value = elm.textContent = value;
@@ -67863,8 +67928,8 @@
 	                        low_tooltip.style.display = 'none';
 	                        low_span.style.display = 'inherit';
 	
-	                        indicativeHighBarrierTooltip.textContent = '';
-	                        indicativeLowBarrierTooltip.textContent = '';
+	                        elementTextContent(indicativeHighBarrierTooltip, '');
+	                        elementTextContent(indicativeLowBarrierTooltip, '');
 	                    } else {
 	                        // override Defaults value, if it's changing from absolute to relative barrier
 	                        if (!String(barrier_high).match(/^[+-]/) || !String(barrier_low).match(/^[+-]/)) {
@@ -67880,11 +67945,11 @@
 	                        low_tooltip.style.display = 'inherit';
 	
 	                        if (currentTick && !isNaN(currentTick)) {
-	                            indicativeHighBarrierTooltip.textContent = (parseFloat(currentTick) + parseFloat(barrier_high)).toFixed(decimalPlaces);
-	                            indicativeLowBarrierTooltip.textContent = (parseFloat(currentTick) + parseFloat(barrier_low)).toFixed(decimalPlaces);
+	                            elementTextContent(indicativeHighBarrierTooltip, (parseFloat(currentTick) + parseFloat(barrier_high)).toFixed(decimalPlaces));
+	                            elementTextContent(indicativeLowBarrierTooltip, (parseFloat(currentTick) + parseFloat(barrier_low)).toFixed(decimalPlaces));
 	                        } else {
-	                            indicativeHighBarrierTooltip.textContent = '';
-	                            indicativeLowBarrierTooltip.textContent = '';
+	                            elementTextContent(indicativeHighBarrierTooltip, '');
+	                            elementTextContent(indicativeLowBarrierTooltip, '');
 	                        }
 	                    }
 	                    high_elm.value = high_elm.textContent = value_high;
@@ -67952,6 +68017,7 @@
 	var DatePicker = __webpack_require__(470).DatePicker;
 	var toReadableFormat = __webpack_require__(437).toReadableFormat;
 	var toISOFormat = __webpack_require__(437).toISOFormat;
+	var elementTextContent = __webpack_require__(421).elementTextContent;
 	
 	/*
 	 * Handles duration processing display
@@ -68159,8 +68225,8 @@
 	            unitMaxValue = unit.options[unit.selectedIndex].getAttribute('data-maximum');
 	        var unitValue = Defaults.get('duration_amount') || unitMinValue;
 	        unit.value = Defaults.get('duration_units') && document.querySelectorAll('select[id="duration_units"] [value="' + Defaults.get('duration_units') + '"]').length ? Defaults.get('duration_units') : unit.value;
-	        document.getElementById('duration_minimum').textContent = unitMinValue;
-	        document.getElementById('duration_maximum').textContent = unitMaxValue;
+	        elementTextContent(document.getElementById('duration_minimum'), unitMinValue);
+	        elementTextContent(document.getElementById('duration_maximum'), unitMaxValue);
 	        if (selected_duration.amount && selected_duration.unit > unitValue) {
 	            unitValue = selected_duration.amount;
 	        }
@@ -68393,6 +68459,7 @@
 	var isVisible = __webpack_require__(421).isVisible;
 	var localize = __webpack_require__(424).localize;
 	var Client = __webpack_require__(305).Client;
+	var elementTextContent = __webpack_require__(421).elementTextContent;
 	
 	/*
 	 * Price object handles all the functions we need to display prices
@@ -68577,12 +68644,12 @@
 	            h4.setAttribute('class', 'contract_heading ' + type);
 	            if (is_spread) {
 	                if (position === 'top') {
-	                    h4.textContent = Content.localize().textSpreadTypeLong;
+	                    elementTextContent(h4, Content.localize().textSpreadTypeLong);
 	                } else {
-	                    h4.textContent = Content.localize().textSpreadTypeShort;
+	                    elementTextContent(h4, Content.localize().textSpreadTypeShort);
 	                }
 	            } else {
-	                h4.textContent = display_type;
+	                elementTextContent(h4, display_type);
 	            }
 	        }
 	
@@ -68591,11 +68658,11 @@
 	            if (data.display_value) {
 	                if (is_spread) {
 	                    $('.stake:visible').hide();
-	                    amount.textContent = data.display_value;
+	                    elementTextContent(amount, data.display_value);
 	                } else {
 	                    $('.stake:hidden').show();
-	                    stake.textContent = localize('Stake') + ': ';
-	                    amount.textContent = format_money(currency.value || currency.getAttribute('value'), data.display_value);
+	                    elementTextContent(stake, localize('Stake') + ': ');
+	                    elementTextContent(amount, format_money(currency.value || currency.getAttribute('value'), data.display_value));
 	                }
 	                $('.stake_wrapper:hidden').show();
 	            } else {
@@ -68603,8 +68670,8 @@
 	            }
 	
 	            if (data.payout) {
-	                payout.textContent = (is_spread ? localize('Payout/point') : localize('Payout')) + ': ';
-	                payoutAmount.textContent = format_money(currency.value || currency.getAttribute('value'), +data.payout);
+	                elementTextContent(payout, (is_spread ? localize('Payout/point') : localize('Payout')) + ': ');
+	                elementTextContent(payoutAmount, format_money(currency.value || currency.getAttribute('value'), +data.payout));
 	                $('.payout_wrapper:hidden').show();
 	            } else {
 	                $('.payout_wrapper:visible').hide();
@@ -68622,7 +68689,7 @@
 	            comment.hide();
 	            setData(details.error.details);
 	            error.show();
-	            error.textContent = details.error.message;
+	            elementTextContent(error, details.error.message);
 	        } else {
 	            setData(proposal);
 	            if ($('#websocket_form').find('.error-field').length > 0) {
@@ -68769,6 +68836,8 @@
 	var displayTooltip_Beta = __webpack_require__(451).displayTooltip_Beta;
 	var processTradingTimesAnswer = __webpack_require__(450).processTradingTimesAnswer;
 	var moment = __webpack_require__(308);
+	var elementTextContent = __webpack_require__(421).elementTextContent;
+	var elementInnerHtml = __webpack_require__(421).elementInnerHtml;
 	
 	/*
 	 * This function process the active symbols to get markets
@@ -68875,7 +68944,7 @@
 	        contracts_list.style.display = 'none';
 	        message_container.hide();
 	        confirmation_error.show();
-	        confirmation_error_contents.innerHTML = contracts.error.message + ' <a href="javascript:;" onclick="sessionStorage.removeItem(\'underlying\'); window.location.reload();">' + localize('Please reload the page') + '</a>';
+	        elementInnerHtml(confirmation_error_contents, contracts.error.message + ' <a href="javascript:;" onclick="sessionStorage.removeItem(\'underlying\'); window.location.reload();">' + localize('Please reload the page') + '</a>');
 	        return;
 	    }
 	
@@ -68988,7 +69057,7 @@
 	        amountPerPointLabel.show();
 	        amountPerPoint.show();
 	        spreadContainer.show();
-	        stopTypeDollarLabel.textContent = document.getElementById('currency').value || Defaults.get('currency');
+	        elementTextContent(stopTypeDollarLabel, document.getElementById('currency').value || Defaults.get('currency'));
 	        if (Defaults.get('stop_type')) {
 	            var el = document.querySelectorAll('input[name="stop_type"][value="' + Defaults.get('stop_type') + '"]');
 	            if (el) {
@@ -69151,6 +69220,8 @@
 	var updatePurchaseStatus_Beta = __webpack_require__(451).updatePurchaseStatus_Beta;
 	var label_value = __webpack_require__(451).label_value;
 	var Client = __webpack_require__(305).Client;
+	var elementTextContent = __webpack_require__(421).elementTextContent;
+	var elementInnerHtml = __webpack_require__(421).elementInnerHtml;
 	
 	/*
 	 * Purchase object that handles all the functions related to
@@ -69193,7 +69264,7 @@
 	            container.style.display = 'block';
 	            message_container.hide();
 	            confirmation_error.show();
-	            confirmation_error_contents.innerHTML = error.message;
+	            elementInnerHtml(confirmation_error_contents, error.message);
 	        } else {
 	            var guideBtn = document.getElementById('guideBtn');
 	            if (guideBtn) {
@@ -69207,7 +69278,7 @@
 	                $(this).text('').removeAttr('class', '');
 	            });
 	            var purchase_passthrough = purchase_data.echo_req.passthrough;
-	            brief.textContent = $('#underlying').find('option:selected').text() + ' / ' + toTitleCase(Contract_Beta.contractType()[Contract_Beta.form()][purchase_passthrough.contract_type]) + (Contract_Beta.form() === 'digits' ? ' ' + purchase_passthrough.barrier : '');
+	            elementTextContent(brief, $('#underlying').find('option:selected').text() + ' / ' + toTitleCase(Contract_Beta.contractType()[Contract_Beta.form()][purchase_passthrough.contract_type]) + (Contract_Beta.form() === 'digits' ? ' ' + purchase_passthrough.barrier : ''));
 	
 	            var is_spread = Contract_Beta.form() === 'spreads';
 	            if (is_spread) {
@@ -69216,11 +69287,11 @@
 	                $('#contract_purchase_profit_list').removeClass('gr-6').addClass('gr-4');
 	                $('#contract_purchase_description_section').removeClass('gr-6').addClass('gr-8');
 	            }
-	            heading.textContent = Content.localize().textContractConfirmationHeading;
-	            descr.textContent = receipt.longcode;
+	            elementTextContent(heading, Content.localize().textContractConfirmationHeading);
+	            elementTextContent(descr, receipt.longcode);
 	            if (barrier_element) label_value(barrier_element, '', '', true);
 	            [].forEach.call(document.getElementsByClassName('contract_purchase_reference'), function (ref) {
-	                ref.textContent = Content.localize().textRef + ' ' + receipt.transaction_id;
+	                elementTextContent(ref, Content.localize().textRef + ' ' + receipt.transaction_id);
 	            });
 	
 	            var payout_value = void 0,
@@ -69246,7 +69317,7 @@
 	                label_value(cost, Content.localize().textStake, addComma(cost_value));
 	            }
 	
-	            balance.textContent = Content.localize().textContractConfirmationBalance + ' ' + format_money(Client.get_value('currency'), receipt.balance_after);
+	            elementTextContent(balance, Content.localize().textContractConfirmationBalance + ' ' + format_money(Client.get_value('currency'), receipt.balance_after));
 	
 	            if (show_chart) {
 	                chart.show();
@@ -69254,7 +69325,7 @@
 	
 	            if (Contract_Beta.form() === 'digits') {
 	                [].forEach.call(spots.childNodes, function (child) {
-	                    child.innerHTML = '&nbsp;';
+	                    elementInnerHtml(child, '&nbsp;');
 	                });
 	                spots.show();
 	            }
@@ -69342,12 +69413,12 @@
 	            var digit_elem = document.createElement('div');
 	            digit_elem.classList.add('digit');
 	            digit_elem.id = 'tick_digit_' + i;
-	            digit_elem.innerHTML = '&nbsp;';
+	            elementInnerHtml(digit_elem, '&nbsp;');
 	            fragment.appendChild(digit_elem);
 	
 	            var number_elem = document.createElement('div');
 	            number_elem.classList.add('number');
-	            number_elem.innerHTML = i;
+	            elementInnerHtml(number_elem, i);
 	            fragment.appendChild(number_elem);
 	
 	            list_elem.appendChild(fragment);
@@ -69378,12 +69449,12 @@
 	            if (isVisible(container) && tick_d.epoch && tick_d.epoch > purchase_data.buy.start_time) {
 	                tick_number++;
 	
-	                tick_elem.textContent = Content.localize().textTickResultLabel + ' ' + tick_number;
-	                spot_elem.innerHTML = tick_d.quote.replace(/\d$/, replace);
+	                elementTextContent(tick_elem, Content.localize().textTickResultLabel + ' ' + tick_number);
+	                elementInnerHtml(spot_elem, tick_d.quote.replace(/\d$/, replace));
 	
 	                var this_digit_elem = document.getElementById('tick_digit_' + tick_number);
 	                this_digit_elem.classList.add(is_win(last_digit) ? 'profit' : 'loss');
-	                this_digit_elem.textContent = last_digit;
+	                elementTextContent(this_digit_elem, last_digit);
 	
 	                if (last_digit && duration === 1) {
 	                    var contract_status = void 0,
@@ -83818,6 +83889,7 @@
 	var ValidateV2 = __webpack_require__(563).ValidateV2;
 	var url_for = __webpack_require__(306).url_for;
 	var bind_validation = __webpack_require__(565).bind_validation;
+	var localize = __webpack_require__(424).localize;
 	
 	var VerifyEmail = function VerifyEmail() {
 	    Content.populate();
@@ -83858,6 +83930,10 @@
 	        submit: function submit(ev, info) {
 	            ev.preventDefault();
 	            if (info.errors.length) return;
+	            if (localStorage.getItem('clients_country') === 'my') {
+	                $('#verify-email-form > div').html('<p class="notice-msg center-text">' + localize('Sorry, account signup is not available in your country. Please contact <a href="[_1]">customer support</a> for more information.', [url_for('contact')]) + '</p>');
+	                return;
+	            }
 	            openAccount(info.values.email);
 	        }
 	    });
@@ -85215,6 +85291,7 @@
 	var Client = __webpack_require__(305).Client;
 	var url_for = __webpack_require__(306).url_for;
 	var appendTextValueChild = __webpack_require__(421).appendTextValueChild;
+	var elementInnerHtml = __webpack_require__(421).elementInnerHtml;
 	
 	var ForwardWS = function () {
 	    var init = function init(cashier_password) {
@@ -85295,10 +85372,10 @@
 	            hash_value = window.location.hash;
 	        if (/withdraw/.test(hash_value)) {
 	            cashier_type = 'withdraw';
-	            deposit_withdraw_heading.innerHTML = localize('Withdraw');
+	            elementInnerHtml(deposit_withdraw_heading, localize('Withdraw'));
 	        } else if (/deposit/.test(hash_value)) {
 	            cashier_type = 'deposit';
-	            deposit_withdraw_heading.innerHTML = localize('Deposit');
+	            elementInnerHtml(deposit_withdraw_heading, localize('Deposit'));
 	        }
 	        return cashier_type;
 	    };
@@ -86962,6 +87039,8 @@
 	var LimitsUI = __webpack_require__(594).LimitsUI;
 	var localize = __webpack_require__(424).localize;
 	var Client = __webpack_require__(305).Client;
+	var elementTextContent = __webpack_require__(421).elementTextContent;
+	var elementInnerHtml = __webpack_require__(421).elementInnerHtml;
 	
 	var LimitsWS = function () {
 	    'use strict';
@@ -86975,7 +87054,7 @@
 	        var elWithdrawLimitAgg = document.getElementById('withdrawal-limit-aggregate');
 	
 	        if (limits.lifetime_limit === 99999999 && limits.num_of_days_limit === 99999999) {
-	            elWithdrawLimit.textContent = Content.localize().textAuthenticatedWithdrawal;
+	            elementTextContent(elWithdrawLimit, Content.localize().textAuthenticatedWithdrawal);
 	        } else {
 	            var txtWithdrawLim = Content.localize().textWithdrawalLimitsEquivalant,
 	                txtWithdrawAmt = Content.localize().textWithrawalAmountEquivalant,
@@ -86990,8 +87069,8 @@
 	                // MX
 	                txtWithdrawLim = Content.localize().textWithdrawalLimitsEquivalantDay;
 	                txtWithdrawAmt = Content.localize().textWithrawalAmountEquivalantDay;
-	                elWithdrawLimit.textContent = template(txtWithdrawLim, [limits.num_of_days, currency, daysLimit]);
-	                elWithdrawn.textContent = template(txtWithdrawAmt, [currency, withdrawn, limits.num_of_days]);
+	                elementTextContent(elWithdrawLimit, template(txtWithdrawLim, [limits.num_of_days, currency, daysLimit]));
+	                elementTextContent(elWithdrawn, template(txtWithdrawAmt, [currency, withdrawn, limits.num_of_days]));
 	            } else {
 	                if (/^(costarica|japan)$/i.test(Client.get_value('landing_company_name'))) {
 	                    // CR , JP
@@ -87000,10 +87079,10 @@
 	                    text_CurrentMaxWithdrawal = Content.localize().textCurrentMaxWithdrawal;
 	                    currency = Client.get_value('currencies');
 	                }
-	                elWithdrawLimit.textContent = template(txtWithdrawLim, [currency, daysLimit]);
-	                elWithdrawn.textContent = template(txtWithdrawAmt, [currency, withdrawn]);
+	                elementTextContent(elWithdrawLimit, template(txtWithdrawLim, [currency, daysLimit]));
+	                elementTextContent(elWithdrawn, template(txtWithdrawAmt, [currency, withdrawn]));
 	            }
-	            elWithdrawLimitAgg.textContent = template(text_CurrentMaxWithdrawal, [currency, remainder]);
+	            elementTextContent(elWithdrawLimitAgg, template(text_CurrentMaxWithdrawal, [currency, remainder]));
 	        }
 	    };
 	
@@ -87012,11 +87091,11 @@
 	        document.getElementById('limits-title').setAttribute('style', 'display:none');
 	        var errorElement = document.getElementsByClassName('notice-msg')[0];
 	        if (error && error.code === 'FeatureNotAvailable' && Client.get_boolean('is_virtual') || Client.get_boolean('is_virtual')) {
-	            errorElement.innerHTML = localize('This feature is not relevant to virtual-money accounts.');
+	            elementInnerHtml(errorElement, localize('This feature is not relevant to virtual-money accounts.'));
 	        } else if (error && error.message) {
-	            errorElement.innerHTML = error.message;
+	            elementInnerHtml(errorElement, error.message);
 	        } else {
-	            errorElement.innerHTML = localize('An error occured') + '.';
+	            elementInnerHtml(errorElement, localize('An error occured') + '.');
 	        }
 	        document.getElementById('client_message').setAttribute('style', 'display:block');
 	    };
@@ -87049,6 +87128,7 @@
 	var addComma = __webpack_require__(437).addComma;
 	var localize = __webpack_require__(424).localize;
 	var Client = __webpack_require__(305).Client;
+	var elementTextContent = __webpack_require__(421).elementTextContent;
 	
 	var LimitsUI = function () {
 	    'use strict';
@@ -87071,10 +87151,10 @@
 	            payout = document.getElementById('payout'),
 	            payoutPer = document.getElementById('payout-per-symbol-and-contract-type');
 	
-	        openPosition.textContent = addComma(limits.open_positions).split('.')[0];
-	        accountBalance.textContent = addComma(limits.account_balance).split('.')[0];
-	        payout.textContent = addComma(limits.payout).split('.')[0];
-	        payoutPer.textContent = addComma(limits.payout_per_symbol_and_contract_type).split('.')[0];
+	        elementTextContent(openPosition, addComma(limits.open_positions).split('.')[0]);
+	        elementTextContent(accountBalance, addComma(limits.account_balance).split('.')[0]);
+	        elementTextContent(payout, addComma(limits.payout).split('.')[0]);
+	        elementTextContent(payoutPer, addComma(limits.payout_per_symbol_and_contract_type).split('.')[0]);
 	
 	        var marketSpecific = limits.market_specific;
 	        clientLimits = $('#client-limits');
@@ -88315,6 +88395,7 @@
 	var Client = __webpack_require__(305).Client;
 	var Contents = __webpack_require__(481).Contents;
 	var url_for = __webpack_require__(306).url_for;
+	var elementInnerHtml = __webpack_require__(421).elementInnerHtml;
 	
 	var ValidAccountOpening = function () {
 	    var redirectCookie = function redirectCookie() {
@@ -88349,8 +88430,9 @@
 	                $('#financial-form').remove();
 	                $('#financial-risk').remove();
 	            }
+	
 	            var error = document.getElementsByClassName('notice-msg')[0];
-	            error.innerHTML = response.msg_type === 'sanity_check' ? localize('There was some invalid character in an input field.') : errorMessage;
+	            elementInnerHtml(error, response.msg_type === 'sanity_check' ? localize('There was some invalid character in an input field.') : errorMessage);
 	            error.parentNode.parentNode.parentNode.setAttribute('style', 'display:block');
 	        } else if (Cookies.get('residence') === 'jp') {
 	            window.location.href = url_for('new_account/knowledge_testws');
@@ -88378,31 +88460,31 @@
 	
 	    var checkFname = function checkFname(fname, errorFname) {
 	        if (fname.value.trim().length < 2) {
-	            errorFname.innerHTML = Content.errorMessage('min', '2');
+	            elementInnerHtml(errorFname, Content.errorMessage('min', '2'));
 	            Validate.displayErrorMessage(errorFname);
 	            window.accountErrorCounter++;
 	        } else if (/[`~!@#$%^&*)(_=+\[}{\]\\\/";:\?><,|\d]+/.test(fname.value)) {
 	            initializeValues();
-	            errorFname.innerHTML = Content.errorMessage('reg', [letters, space, hyphen, period, apost]);
+	            elementInnerHtml(errorFname, Content.errorMessage('reg', [letters, space, hyphen, period, apost]));
 	            Validate.displayErrorMessage(errorFname);
 	            window.accountErrorCounter++;
 	        }
 	    };
 	    var checkLname = function checkLname(lname, errorLname) {
 	        if (lname.value.trim().length < 2) {
-	            errorLname.innerHTML = Content.errorMessage('min', '2');
+	            elementInnerHtml(errorLname, Content.errorMessage('min', '2'));
 	            Validate.displayErrorMessage(errorLname);
 	            window.accountErrorCounter++;
 	        } else if (/[`~!@#$%^&*)(_=+\[}{\]\\\/";:\?><,|\d]+/.test(lname.value)) {
 	            initializeValues();
-	            errorLname.innerHTML = Content.errorMessage('reg', [letters, space, hyphen, period, apost]);
+	            elementInnerHtml(errorLname, Content.errorMessage('reg', [letters, space, hyphen, period, apost]));
 	            Validate.displayErrorMessage(errorLname);
 	            window.accountErrorCounter++;
 	        }
 	    };
 	    var checkDate = function checkDate(dobdd, dobmm, dobyy, errorDob) {
 	        if (!isValidDate(dobdd.value, dobmm.value, dobyy.value) || dobdd.value === '' || dobmm.value === '' || dobyy.value === '') {
-	            errorDob.innerHTML = Content.localize().textErrorBirthdate;
+	            elementInnerHtml(errorDob, Content.localize().textErrorBirthdate);
 	            Validate.displayErrorMessage(errorDob);
 	            window.accountErrorCounter++;
 	        }
@@ -88410,26 +88492,26 @@
 	    var checkPostcode = function checkPostcode(postcode, errorPostcode) {
 	        if ((postcode.value !== '' || Client.get_value('residence') === 'gb') && !/^[a-zA-Z\d-]+$/.test(postcode.value)) {
 	            initializeValues();
-	            errorPostcode.innerHTML = Content.errorMessage('reg', [letters, numbers, hyphen]);
+	            elementInnerHtml(errorPostcode, Content.errorMessage('reg', [letters, numbers, hyphen]));
 	            Validate.displayErrorMessage(errorPostcode);
 	            window.accountErrorCounter++;
 	        }
 	    };
 	    var checkTel = function checkTel(tel, errorTel) {
 	        if (tel.value.replace(/\+| /g, '').length < 6) {
-	            errorTel.innerHTML = Content.errorMessage('min', 6);
+	            elementInnerHtml(errorTel, Content.errorMessage('min', 6));
 	            Validate.displayErrorMessage(errorTel);
 	            window.accountErrorCounter++;
 	        } else if (!/^\+?[0-9\s]{6,35}$/.test(tel.value)) {
 	            initializeValues();
-	            errorTel.innerHTML = Content.errorMessage('reg', [numbers, space]);
+	            elementInnerHtml(errorTel, Content.errorMessage('reg', [numbers, space]));
 	            Validate.displayErrorMessage(errorTel);
 	            window.accountErrorCounter++;
 	        }
 	    };
 	    var checkAnswer = function checkAnswer(answer, errorAnswer) {
 	        if (answer.value.length < 4) {
-	            errorAnswer.innerHTML = Content.errorMessage('min', 4);
+	            elementInnerHtml(errorAnswer, Content.errorMessage('min', 4));
 	            Validate.displayErrorMessage(errorAnswer);
 	            window.accountErrorCounter++;
 	        }
@@ -88437,7 +88519,7 @@
 	    var checkCity = function checkCity(city, errorCity) {
 	        if (/[`~!@#$%^&*)(_=+\[}{\]\\\/";:\?><,|\d]+/.test(city.value)) {
 	            initializeValues();
-	            errorCity.innerHTML = Content.errorMessage('reg', [letters, space, hyphen, period, apost]);
+	            elementInnerHtml(errorCity, Content.errorMessage('reg', [letters, space, hyphen, period, apost]));
 	            Validate.displayErrorMessage(errorCity);
 	            window.accountErrorCounter++;
 	        }
@@ -88469,6 +88551,7 @@
 	var ValidAccountOpening = __webpack_require__(603).ValidAccountOpening;
 	var Validate = __webpack_require__(426).Validate;
 	var FinancialAccOpeningData = __webpack_require__(605).FinancialAccOpeningData;
+	var selectorExists = __webpack_require__(421).selectorExists;
 	
 	var FinancialAccOpeningUI = function () {
 	    'use strict';
@@ -88560,8 +88643,10 @@
 	        ValidAccountOpening.checkPostcode(elementObj.postcode, errorObj.postcode);
 	
 	        if (elementObj.residence.value === 'gb' && /^$/.test(elementObj.postcode.value.trim())) {
-	            errorObj.postcode.innerHTML = Content.errorMessage('req');
-	            Validate.displayErrorMessage(errorObj.postcode);
+	            if (selectorExists(errorObj.postcode)) {
+	                errorObj.postcode.innerHTML = Content.errorMessage('req');
+	                Validate.displayErrorMessage(errorObj.postcode);
+	            }
 	            window.accountErrorCounter++;
 	        }
 	
