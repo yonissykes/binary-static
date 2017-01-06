@@ -35391,7 +35391,9 @@
 	            textFeatureUnavailable: 'Sorry, this feature is not available.',
 	            textMessagePasswordScore: 'Password score is: [_1]. Passing score is: 20.',
 	            textShouldNotLessThan: 'Please enter a number greater or equal to [_1].',
-	            textNumberLimit: 'Please enter a number between [_1].' };
+	            textNumberLimit: 'Please enter a number between [_1].', // [_1] should be a range
+	            featureNotRelevantToVirtual: 'This feature is not relevant to virtual-money accounts.'
+	        };
 	
 	        Object.keys(localized).forEach(function (key) {
 	            localized[key] = localize(localized[key]);
@@ -36230,6 +36232,7 @@
 	var localize = __webpack_require__(424).localize;
 	var Client = __webpack_require__(305).Client;
 	var url_for = __webpack_require__(306).url_for;
+	var Content = __webpack_require__(427).Content;
 	var selectorExists = __webpack_require__(421).selectorExists;
 	
 	var FinancialAssessmentws = function () {
@@ -36238,6 +36241,7 @@
 	    var financial_assessment = {};
 	
 	    var init = function init() {
+	        Content.populate();
 	        if (checkIsVirtual()) return;
 	        LocalizeText();
 	        $('#assessment_form').on('submit', function (event) {
@@ -36386,7 +36390,7 @@
 	    var checkIsVirtual = function checkIsVirtual() {
 	        if (Client.get_boolean('is_virtual')) {
 	            $('#assessment_form').addClass('invisible');
-	            $('#response_on_success').addClass('notice-msg center-text').removeClass('invisible').text(localize('This feature is not relevant to virtual-money accounts.'));
+	            $('#response_on_success').addClass('notice-msg center-text').removeClass('invisible').text(Content.localize().featureNotRelevantToVirtual);
 	            hideLoadingImg(false);
 	            return true;
 	        }
@@ -36438,10 +36442,11 @@
 	
 	var CashierJP = function () {
 	    function init(action) {
+	        Content.populate();
 	        if (Client.get_boolean('values_set')) {
 	            var $container = $('#japan_cashier_container');
 	            if (Client.get_boolean('is_virtual')) {
-	                $container.addClass('center-text').removeClass('invisible').html($('<p/>', { class: 'notice-msg', html: localize('This feature is not relevant to virtual-money accounts.') }));
+	                $container.addClass('center-text notice-msg').removeClass('invisible').text(Content.localize().featureNotRelevantToVirtual);
 	                return;
 	            }
 	            $container.removeClass('invisible');
@@ -36551,6 +36556,9 @@
 	
 	        if (Client.get_boolean('is_virtual')) {
 	            // Virtual Account
+	            Content.populate();
+	            var errorMessage = document.getElementById('custom-error');
+	            $(errorMessage).addClass('notice-msg center-text');
 	            showPageError(localize('You are not authorized for withdrawal via payment agent.'));
 	            return;
 	        }
@@ -49037,10 +49045,8 @@
 	    var updateFooter = function updateFooter(transactions) {
 	        var accTotal = elementTextContent(document.querySelector('#pl-day-total > .pl'));
 	        accTotal = parseFloat(accTotal.replace(/,/g, ''));
-	        if (accTotal) {
-	            if (isNaN(accTotal)) {
-	                accTotal = 0;
-	            }
+	        if (!accTotal || isNaN(accTotal)) {
+	            accTotal = 0;
 	        }
 	
 	        var currentTotal = transactions.reduce(function (previous, current) {
@@ -85483,9 +85489,11 @@
 	
 	    var checkOnLoad = function checkOnLoad() {
 	        var clientIsVirtual = function clientIsVirtual() {
+	            Content.populate();
 	            var is_virtual = Client.get_boolean('is_virtual');
 	            if (is_virtual) {
-	                ForwardWS.showError(localize('This feature is not relevant to virtual-money accounts.'));
+	                getCashierType();
+	                ForwardWS.showError(Content.localize().featureNotRelevantToVirtual);
 	            }
 	            return is_virtual;
 	        };
@@ -85756,7 +85764,6 @@
 	
 	var Content = __webpack_require__(427).Content;
 	var japanese_client = __webpack_require__(307).japanese_client;
-	var localize = __webpack_require__(424).localize;
 	var Client = __webpack_require__(305).Client;
 	var url_for = __webpack_require__(306).url_for;
 	
@@ -85773,7 +85780,7 @@
 	        };
 	
 	        var check_virtual = function check_virtual() {
-	            return Client.get_boolean('is_virtual') && show_error(localize('This feature is not relevant to virtual-money accounts.'));
+	            return Client.get_boolean('is_virtual') && show_error(Content.localize().featureNotRelevantToVirtual);
 	        };
 	        if (!check_virtual()) {
 	            BinarySocket.init({
@@ -87133,11 +87140,12 @@
 	    };
 	
 	    var limitsError = function limitsError(error) {
+	        Content.populate();
 	        document.getElementById('withdrawal-title').setAttribute('style', 'display:none');
 	        document.getElementById('limits-title').setAttribute('style', 'display:none');
 	        var errorElement = document.getElementsByClassName('notice-msg')[0];
 	        if (error && error.code === 'FeatureNotAvailable' && Client.get_boolean('is_virtual') || Client.get_boolean('is_virtual')) {
-	            elementInnerHtml(errorElement, localize('This feature is not relevant to virtual-money accounts.'));
+	            elementInnerHtml(errorElement, Content.localize().featureNotRelevantToVirtual);
 	        } else if (error && error.message) {
 	            elementInnerHtml(errorElement, error.message);
 	        } else {
@@ -87361,7 +87369,7 @@
 	
 	        if (Client.get_boolean('is_virtual')) {
 	            $('#selfExclusionDesc').addClass(hiddenClass);
-	            showPageError(Content.localize().textFeatureUnavailable, true);
+	            showPageError(Content.localize().featureNotRelevantToVirtual, true);
 	            return;
 	        }
 	        showLoadingImage($loading);
@@ -87961,7 +87969,7 @@
 	            return false;
 	        }
 	        $form.hide();
-	        $('#SecuritySuccessMsg').addClass('notice-msg center-text').text(Content.localize().textFeatureUnavailable);
+	        $('#SecuritySuccessMsg').addClass('notice-msg center-text').text(Content.localize().featureNotRelevantToVirtual);
 	        return true;
 	    };
 	
