@@ -5123,6 +5123,13 @@ iframe#chart_frame {
   /* stylelint-disable-line declaration-block-no-duplicate-properties */
 }
 
+.chart-delay {
+  display: block;
+  text-align: center;
+  margin-bottom: 0.2em;
+  color: #c03;
+}
+
 #knowledge-test-msg {
   white-space: pre-line;
 }
