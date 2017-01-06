@@ -34820,14 +34820,21 @@
 	                    $('#real-form').show();
 	                }
 	            } else if (type === 'states_list') {
-	                select = document.getElementById('address-state');
-	                var states_list = response.states_list;
-	                for (var i = 0; i < states_list.length; i++) {
-	                    appendTextValueChild(select, states_list[i].text, states_list[i].value);
+	                select = $('#address-state');
+	                var states = response.states_list;
+	
+	                select.empty();
+	
+	                if (states && states.length > 0) {
+	                    states.forEach(function (state) {
+	                        select.append($('<option/>', { value: state.value, text: state.text }));
+	                    });
+	                } else {
+	                    select.replaceWith($('<input/>', { id: 'address-state', name: 'address_state', type: 'text', maxlength: '35' }));
 	                }
-	                select.parentNode.parentNode.show();
+	                $('#address-state').parent().parent().show();
 	                if (window.state) {
-	                    select.value = window.state;
+	                    $('#address-state').val(window.state);
 	                }
 	            } else if (type === 'residence_list') {
 	                select = document.getElementById('residence-disabled') || document.getElementById('residence');
@@ -87758,7 +87765,8 @@
 	                $field.append($('<option/>', { value: state.value, text: state.text }));
 	            });
 	        } else {
-	            $field.replaceWith($('<input/>', { id: fieldIDs.state, name: 'address_state', type: 'text', maxlength: '35' }));
+	            $field.replaceWith($('<input/>', { id: fieldIDs.state.replace('#', ''), name: 'address_state', type: 'text', maxlength: '35' }));
+	            $field = $(fieldIDs.state);
 	        }
 	
 	        $field.val(defaultValue);
@@ -88578,6 +88586,14 @@
 	            window.accountErrorCounter++;
 	        }
 	    };
+	    var checkState = function checkState(state, errorState) {
+	        if (/[`~!@#$%^&*)(_=+\[}{\]\\\/";:\?><|]+/.test(state.value)) {
+	            initializeValues();
+	            elementInnerHtml(errorState, Content.errorMessage('reg', [letters, space, hyphen, period, apost]));
+	            Validate.displayErrorMessage(errorState);
+	            window.accountErrorCounter++;
+	        }
+	    };
 	    return {
 	        redirectCookie: redirectCookie,
 	        handler: handler,
@@ -88587,7 +88603,8 @@
 	        checkPostcode: checkPostcode,
 	        checkTel: checkTel,
 	        checkAnswer: checkAnswer,
-	        checkCity: checkCity
+	        checkCity: checkCity,
+	        checkState: checkState
 	    };
 	}();
 	
@@ -89265,6 +89282,9 @@
 	        ValidAccountOpening.checkTel(elementObj.tel, errorObj.tel);
 	        ValidAccountOpening.checkAnswer(elementObj.answer, errorObj.answer);
 	        ValidAccountOpening.checkCity(elementObj.town, errorObj.town);
+	        if (elementObj.state.nodeName === 'INPUT') {
+	            ValidAccountOpening.checkState(elementObj.state, errorObj.state);
+	        }
 	
 	        Object.keys(elementObj).forEach(function (key) {
 	            if (elementObj[key].offsetParent !== null && key !== 'address2' && key !== 'postcode' && key !== 'state') {
