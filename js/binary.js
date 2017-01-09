@@ -18229,11 +18229,7 @@
 	                            send({ get_settings: 1 });
 	                            send({ get_account_status: 1 });
 	                            if (Cookies.get('residence')) send({ landing_company: Cookies.get('residence') });
-	                            if (!Client.get_boolean('is_virtual')) {
-	                                send({ get_self_exclusion: 1 });
-	                            } else {
-	                                Cashier.check_virtual_top_up();
-	                            }
+	                            if (!Client.get_boolean('is_virtual')) send({ get_self_exclusion: 1 });
 	                            if (/tnc_approvalws/.test(window.location.pathname)) {
 	                                TNCApproval.showTNC();
 	                            }
@@ -34655,26 +34651,24 @@
 	}
 	
 	function selectorExists(element) {
-	    if (typeof element !== 'undefined' && element !== null) {
-	        return true;
+	    return typeof element !== 'undefined' && element !== null;
+	}
+	
+	function get_set_element_value(element, text, type) {
+	    // eslint-disable-line consistent-return
+	    if (selectorExists(element)) {
+	        if (typeof text === 'undefined') return element[type];
+	        // else
+	        element[type] = text;
 	    }
-	    return false;
 	}
 	
 	function elementTextContent(element, text) {
-	    // eslint-disable-line consistent-return
-	    if (selectorExists(element)) {
-	        if (text) element.textContent = text;else return element.textContent;
-	    }
+	    return get_set_element_value(element, text, 'textContent');
 	}
 	
 	function elementInnerHtml(element, text) {
-	    // eslint-disable-line consistent-return
-	    if (selectorExists(element)) {
-	        if (typeof text === 'undefined') return element.innerHTML;
-	        // else
-	        element.innerHTML = text;
-	    }
+	    return get_set_element_value(element, text, 'innerHTML');
 	}
 	
 	module.exports = {
@@ -35697,7 +35691,7 @@
 	    };
 	
 	    var check_virtual_top_up = function check_virtual_top_up() {
-	        if (Client.get_boolean('is_virtual')) {
+	        if (is_cashier_page && Client.get_boolean('is_virtual')) {
 	            if (Client.get_value('currency') !== 'JPY' && Client.get_value('balance') > 1000 || Client.get_value('currency') === 'JPY' && Client.get_value('balance') > 100000) {
 	                replace_with_disabled_button('#VRT_topup_link');
 	            }
@@ -35708,15 +35702,24 @@
 	        var $a = $(elementToReplace);
 	        if ($a.length === 0) return;
 	        // use replaceWith, to disable previously caught pjax event
-	        $a.replaceWith($('<a/>', { class: $a.attr('class').replace('pjaxload') + ' button-disabled', html: $a.html() }));
+	        var new_element = { class: $a.attr('class').replace('pjaxload', 'button-disabled'), html: $a.html() },
+	            id = $a.attr('id');
+	
+	        if (id) new_element.id = id;
+	        $a.replaceWith($('<a/>', new_element));
 	    };
 	
 	    var onLoad = function onLoad() {
-	        if (/\/cashier\.html/.test(window.location.pathname) && Client.get_boolean('is_logged_in')) {
+	        if (is_cashier_page && Client.get_boolean('is_logged_in')) {
 	            Cashier.check_locked();
 	            Cashier.check_virtual_top_up();
 	            Header.topbar_message_visibility(Client.landing_company());
 	        }
+	    };
+	
+	    var is_cashier_page = function is_cashier_page() {
+	        return (/\/cashier\.html/.test(window.location.pathname)
+	        );
 	    };
 	
 	    var onLoadPaymentMethods = function onLoadPaymentMethods() {
@@ -42509,6 +42512,7 @@
 	var PortfolioWS = __webpack_require__(463).PortfolioWS;
 	var updateContractBalance = __webpack_require__(457).updateContractBalance;
 	var Client = __webpack_require__(305).Client;
+	var Cashier = __webpack_require__(429).Cashier;
 	
 	var ViewBalanceUI = function () {
 	    var updateBalances = function updateBalances(response) {
@@ -42526,6 +42530,7 @@
 	        var view = format_money(currency, balance);
 	        updateContractBalance(balance);
 	        $('.topMenuBalance').text(view).css('visibility', 'visible');
+	        Cashier.check_virtual_top_up();
 	    };
 	
 	    return {
