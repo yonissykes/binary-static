@@ -1,9 +1,12 @@
 @charset "UTF-8";
+/* stylelint-disable color-no-hex */
+/* stylelint-enable color-no-hex */
 /* common styles */
 /* http://meyerweb.com/eric/tools/css/reset/
    v2.0 | 20110126
    License: none (public domain)
 */
+/* stylelint-disable selector-list-comma-newline-after, selector-list-comma-space-after */
 html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
 a, abbr, acronym, address, big, cite, code,
@@ -20,7 +23,6 @@ time, mark, audio, video {
   margin: 0;
   padding: 0;
   border: 0;
-  font-size: 100%;
   font: inherit;
   vertical-align: baseline;
 }
@@ -31,6 +33,7 @@ footer, header, hgroup, menu, nav, section {
   display: block;
 }
 
+/* stylelint-enable selector-list-comma-newline-after, selector-list-comma-space-after */
 body {
   line-height: 1;
 }
@@ -43,9 +46,7 @@ blockquote, q {
   quotes: none;
 }
 
-blockquote:before, blockquote:after,
-q:before, q:after {
-  content: '';
+blockquote:before, blockquote:after, q:before, q:after {
   content: none;
 }
 
@@ -98,7 +99,7 @@ h1, h2, h3 {
 
 select, input, button, textarea {
   background: #fff;
-  border: 1px solid #DEDEDE;
+  border: 1px solid #dedede;
   padding: 2px 3px;
 }
 
@@ -111,7 +112,7 @@ button {
 }
 
 button:focus, input[type='submit']:focus {
-  background: #2E8836;
+  background: #2e8836;
   outline: none;
 }
 
@@ -148,8 +149,8 @@ acronym, abbr {
 }
 
 span.button.button-disabled button.button-disabled, span a.button-disabled button {
-  color: #C2C2C2;
-  background: #F2F2F2;
+  color: #c2c2c2;
+  background: #f2f2f2;
   cursor: default;
 }
 
@@ -171,7 +172,7 @@ form {
 
 fieldset {
   position: relative;
-  border: 1px solid #DEDEDE;
+  border: 1px solid #dedede;
   padding: 5px;
   margin-bottom: 10px;
 }
@@ -183,7 +184,7 @@ fieldset#formlayout .errorfield {
   margin-left: 0;
 }
 fieldset legend {
-  color: #44484C;
+  color: #44484c;
   padding: 0 0.8em;
   font-weight: bold;
   text-transform: capitalize;
@@ -221,7 +222,7 @@ label {
 }
 
 .text-only {
-  color: #44484C;
+  color: #44484c;
 }
 
 .errorfield {
@@ -272,7 +273,7 @@ fieldset .error-msg {
   padding: 10px;
   text-align: center;
   border: solid 1px #e98024;
-  background: #F2F2F2;
+  background: #f2f2f2;
   z-index: 1000;
   max-width: 90%;
 }
@@ -288,7 +289,7 @@ fieldset .error-msg {
   padding: 0;
   margin: 0;
   background: #fff;
-  border: solid 2px #DEDEDE;
+  border: solid 2px #dedede;
   text-align: center;
 }
 
@@ -299,7 +300,7 @@ fieldset .error-msg {
 /* Coche icon, AKA tick */
 .hint {
   font-size: 14px;
-  color: #44484C;
+  color: #44484c;
   margin-top: 3px;
 }
 
@@ -376,7 +377,7 @@ img.responsive {
 }
 
 .color-green {
-  color: #2E8836;
+  color: #2e8836;
 }
 
 .color-orange {
@@ -391,7 +392,7 @@ button.blue-button {
   background: #2a3052;
 }
 button.blue-button:hover {
-  background-color: #14602B;
+  background-color: #14602b;
 }
 
 .half-sized-picture {
@@ -408,11 +409,11 @@ p.no-para-margin {
 }
 
 .separator-line-thin-gray {
-  border-top: 1px solid #DEDEDE;
+  border-top: 1px solid #dedede;
 }
 
 .border-dark-gray {
-  border: 1px solid #C2C2C2;
+  border: 1px solid #c2c2c2;
 }
 
 .vertical-align-middle {
@@ -537,10 +538,10 @@ body #topbar .upgrademessage a {
   text-decoration: none;
   text-align: center;
   line-height: 100%;
-  background: #2E8836;
+  background: #2e8836;
   border-radius: 3px;
   text-transform: capitalize;
-  padding: 10px 25px 10px 25px;
+  padding: 10px 25px;
   display: inline-block;
   letter-spacing: 0.75px;
   border-radius: 2px;
@@ -554,7 +555,7 @@ body #topbar .upgrademessage a:visited {
 }
 body #topbar .upgrademessage a:hover, body #topbar .upgrademessage a:active {
   text-decoration: none;
-  background-color: #14602B;
+  background-color: #14602b;
 }
 body #topbar a {
   color: #fff;
@@ -575,7 +576,7 @@ body #topbar #display_language li:first-child {
   height: 55px;
 }
 #header select#client_loginid option[disabled=disabled] {
-  background-color: #F2F2F2;
+  background-color: #f2f2f2;
 }
 #header #binary-logo-text {
   margin-top: 0 !important;
@@ -703,7 +704,7 @@ body #topbar #display_language li:first-child {
   color: #c03;
 }
 #footer #footer-regulatory #ratelimit-error-message .message a {
-  color: #2E8836;
+  color: #2e8836;
   font-size: inherit;
 }
 #footer #footer-last a {
@@ -888,7 +889,7 @@ html.mm-right.mm-opening body .mm-page, html.mm-right.mm-opening body #mm-blocke
   height: 0px;
   border-style: solid;
   border-width: 25px 5px 0 10px;
-  border-color: #F2F2F2 transparent transparent transparent;
+  border-color: #f2f2f2 transparent transparent transparent;
   position: relative;
   left: 80%;
 }
@@ -898,7 +899,7 @@ html.mm-right.mm-opening body .mm-page, html.mm-right.mm-opening body #mm-blocke
   height: 0px;
   border-style: solid;
   border-width: 25px 10px 0 5px;
-  border-color: #F2F2F2 transparent transparent transparent;
+  border-color: #f2f2f2 transparent transparent transparent;
   position: relative;
   left: 10%;
 }
@@ -932,12 +933,12 @@ html.mm-right.mm-opening body .mm-page, html.mm-right.mm-opening body #mm-blocke
 .get-started .sidebar-left ul li, .get-started-jp .sidebar-left ul li {
   list-style-image: none;
   margin: 0;
-  background: #F2F2F2;
+  background: #f2f2f2;
   line-height: 150%;
-  border-bottom: 1px solid #FFFFFF;
+  border-bottom: 1px solid #fff;
 }
 .get-started .sidebar-left ul li:hover, .get-started-jp .sidebar-left ul li:hover {
-  background: #DEDEDE;
+  background: #dedede;
 }
 .get-started .sidebar-left ul li a, .get-started-jp .sidebar-left ul li a {
   font-weight: normal;
@@ -954,11 +955,11 @@ html.mm-right.mm-opening body .mm-page, html.mm-right.mm-opening body #mm-blocke
   text-decoration: none;
 }
 .get-started .sidebar-left .open-account, .get-started-jp .sidebar-left .open-account {
-  background: #F2F2F2;
+  background: #f2f2f2;
   padding: 20px;
 }
 .get-started .sidebar-right div, .get-started-jp .sidebar-right div {
-  background: #F2F2F2;
+  background: #f2f2f2;
   margin-bottom: 20px;
   padding: 20px;
   text-align: center;
@@ -1003,7 +1004,7 @@ html.mm-right.mm-opening body .mm-page, html.mm-right.mm-opening body #mm-blocke
   text-decoration: none;
 }
 .get-started dl a:hover .section-header, .get-started-jp dl a:hover .section-header {
-  background: #14602B;
+  background: #14602b;
 }
 .get-started dl div#what-is-binary-trading, .get-started-jp dl div#what-is-binary-trading {
   height: 80px;
@@ -1124,7 +1125,7 @@ html.mm-right.mm-opening body .mm-page, html.mm-right.mm-opening body #mm-blocke
   margin-bottom: 10px;
 }
 .contact-content .hr-line {
-  border-bottom: 1px solid #DEDEDE;
+  border-bottom: 1px solid #dedede;
 }
 .contact-content #cs_telephone_number {
   width: 100%;
@@ -1182,7 +1183,7 @@ html.mm-right.mm-opening body .mm-page, html.mm-right.mm-opening body #mm-blocke
   text-align: center;
   padding: 15px 0;
   display: block;
-  background-color: #F2F2F2;
+  background-color: #f2f2f2;
 }
 .charity .gallery {
   position: relative;
@@ -1228,7 +1229,7 @@ a.close:hover {
 }
 
 .profit {
-  color: #2E8836;
+  color: #2e8836;
 }
 
 .loss {
@@ -1270,7 +1271,7 @@ a.close:hover {
 
 .popup_bet_desc {
   padding: 5px 0;
-  border: 1px solid #DEDEDE;
+  border: 1px solid #dedede;
 }
 
 #sell_popup_container {
@@ -1333,7 +1334,7 @@ a.close:hover {
   -ms-overflow-x: hidden;
 }
 .inpage_popup_container_ws .inpage_popup_content_box #sell_content_wrapper #sell_details_chart_wrapper {
-  border-right: 1px solid #44484C;
+  border-right: 1px solid #44484c;
   margin-right: -1px;
   padding: 0px;
 }
@@ -1345,15 +1346,15 @@ a.close:hover {
 }
 .inpage_popup_container_ws .inpage_popup_content_box #sell_content_wrapper #sell_details_table {
   padding: 0px;
-  border-left: 1px solid #44484C;
+  border-left: 1px solid #44484c;
 }
 .inpage_popup_container_ws .inpage_popup_content_box #sell_content_wrapper #sell_details_table th {
   line-height: 24px;
-  border-bottom: #C2C2C2;
+  border-bottom: #c2c2c2;
   cursor: pointer;
 }
 .inpage_popup_container_ws .inpage_popup_content_box #sell_content_wrapper #sell_details_table td, .inpage_popup_container_ws .inpage_popup_content_box #sell_content_wrapper #sell_details_table td[data-balloon] {
-  border-bottom: 1px solid #F2F2F2;
+  border-bottom: 1px solid #f2f2f2;
   vertical-align: middle;
 }
 .inpage_popup_container_ws .inpage_popup_content_box #sell_content_wrapper #sell_details_table #trade_details_profit_loss {
@@ -1395,7 +1396,7 @@ a.close:hover {
 
 #content .rbox-heading {
   font-weight: bold;
-  background-color: #F2F2F2;
+  background-color: #f2f2f2;
 }
 #content .rbox-heading h4 {
   font-size: 1em;
@@ -1443,11 +1444,11 @@ a.close:hover {
 }
 
 .disabled {
-  color: #C2C2C2;
+  color: #c2c2c2;
 }
 
 .disabled-link {
-  color: #DEDEDE !important;
+  color: #dedede !important;
   pointer-events: none;
 }
 
@@ -1459,7 +1460,7 @@ input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer
 }
 
 select[disabled=disabled] {
-  color: #C2C2C2;
+  color: #c2c2c2;
 }
 
 #popup {
@@ -1601,8 +1602,8 @@ table thead, table th {
   line-height: 1.1em;
   font-weight: bold;
   padding: 3px 8px;
-  background: #F2F2F2;
-  border-bottom: 1px solid #44484C;
+  background: #f2f2f2;
+  border-bottom: 1px solid #44484c;
   vertical-align: middle;
 }
 table thead#pf-bet-details, table th#pf-bet-details {
@@ -1618,7 +1619,7 @@ table td {
   vertical-align: top;
   border-width: 0 1px;
   padding: 4px;
-  border-bottom: 3px solid #F2F2F2;
+  border-bottom: 3px solid #f2f2f2;
 }
 table td.num {
   text-align: center;
@@ -1631,21 +1632,21 @@ table td.tip {
   text-align: left;
 }
 table td a.button-analyse, table td a.button-analyse:visited {
-  color: #2E8836;
+  color: #2e8836;
   background: none;
   display: inline;
   padding: 0;
 }
 table td a.button-analyse span, table td a.button-analyse:visited span {
   font-weight: normal;
-  color: #2E8836;
+  color: #2e8836;
   background: none;
   text-transform: capitalize;
   padding: 0;
 }
 table td a.button-analyse span:hover, table td a.button-analyse span:active, table td a.button-analyse:visited span:hover, table td a.button-analyse:visited span:active {
   background: none;
-  color: #2E8836;
+  color: #2e8836;
   text-decoration: underline;
 }
 table tr.rbox-sub-header {
@@ -1689,8 +1690,8 @@ table .loss, table .lower {
   overflow: auto;
   font-weight: bold;
   font-size: 90%;
-  border-bottom: 1px solid #44484C;
-  background: none repeat scroll 0% 0% #F2F2F2;
+  border-bottom: 1px solid #44484c;
+  background: none repeat scroll 0% 0% #f2f2f2;
 }
 .table-header [class*='grd-grid-'] {
   word-wrap: break-word;
@@ -1705,32 +1706,32 @@ table .loss, table .lower {
   padding-bottom: 0px;
 }
 .table-body .profit {
-  color: #2E8836;
+  color: #2e8836;
 }
 .table-body .loss, .table-body .lower {
   color: #c03;
 }
 .table-body a.button-analyse, .table-body a.button-analyse:visited {
-  color: #2E8836;
+  color: #2e8836;
   background: none;
   display: inline;
   padding: 0;
 }
 .table-body a.button-analyse span, .table-body a.button-analyse:visited span {
   font-weight: normal;
-  color: #2E8836;
+  color: #2e8836;
   background: none;
   text-transform: capitalize;
   padding: 0;
 }
 .table-body a.button-analyse span:hover, .table-body a.button-analyse span:active, .table-body a.button-analyse:visited span:hover, .table-body a.button-analyse:visited span:active {
   background: none;
-  color: #2E8836;
+  color: #2e8836;
   text-decoration: underline;
 }
 
 .table-body-lines {
-  border-bottom: 3px solid #F2F2F2;
+  border-bottom: 3px solid #f2f2f2;
 }
 
 #cashier-content h3 {
@@ -1890,7 +1891,7 @@ table .loss, table .lower {
   color: #2a3052;
 }
 .static_full .sidebar-button {
-  background: #F2F2F2;
+  background: #f2f2f2;
   padding: 20px;
 }
 .static_full .sidebar-button a {
@@ -1898,10 +1899,10 @@ table .loss, table .lower {
   text-decoration: none;
   text-align: center;
   line-height: 100%;
-  background: #2E8836;
+  background: #2e8836;
   border-radius: 3px;
   text-transform: capitalize;
-  padding: 10px 25px 10px 25px;
+  padding: 10px 25px;
   display: inline-block;
   letter-spacing: 0.75px;
   display: block;
@@ -1911,7 +1912,7 @@ table .loss, table .lower {
 }
 .static_full .sidebar-button a:hover, .static_full .sidebar-button a:active {
   text-decoration: none;
-  background-color: #14602B;
+  background-color: #14602b;
 }
 
 .sidebar ul {
@@ -1920,12 +1921,12 @@ table .loss, table .lower {
 .sidebar ul li {
   list-style-image: none;
   margin: 0;
-  background: #F2F2F2;
+  background: #f2f2f2;
   line-height: 150%;
-  border-bottom: 1px solid #FFFFFF;
+  border-bottom: 1px solid #fff;
 }
 .sidebar ul li:hover {
-  background: #DEDEDE;
+  background: #dedede;
 }
 .sidebar ul li a {
   font-weight: normal;
@@ -1942,12 +1943,12 @@ table .loss, table .lower {
   text-decoration: none;
 }
 .sidebar .open-account {
-  background: #F2F2F2;
+  background: #f2f2f2;
   padding: 20px;
 }
 
 .payment-agent .faded {
-  color: #C2C2C2;
+  color: #c2c2c2;
   font-size: 90%;
   margin-bottom: 0;
 }
@@ -2000,10 +2001,10 @@ ol.start {
   text-decoration: none;
   text-align: center;
   line-height: 100%;
-  background: #2E8836;
+  background: #2e8836;
   border-radius: 3px;
   text-transform: capitalize;
-  padding: 10px 25px 10px 25px;
+  padding: 10px 25px;
   display: inline-block;
   letter-spacing: 0.75px;
   padding: 6px 15px;
@@ -2014,13 +2015,13 @@ ol.start {
 }
 #live_chart_form_wrapper input[type=button]:hover, #live_chart_form_wrapper input[type=button]:active {
   text-decoration: none;
-  background-color: #14602B;
+  background-color: #14602b;
 }
 
 .chart-notice {
   text-align: left;
   font-size: 80%;
-  color: #44484C;
+  color: #44484c;
   width: 90%;
   margin: 5px 0;
 }
@@ -2059,20 +2060,20 @@ ol.start {
   box-sizing: border-box;
 }
 .timeline .year {
-  background: #F2F2F2;
+  background: #f2f2f2;
   clear: both;
   width: 80px;
   height: 80px;
   border-radius: 50%;
   line-height: 80px;
-  border: 1px solid #DEDEDE;
+  border: 1px solid #dedede;
   font-weight: bold;
   font-size: 22px;
   transition-duration: 0.4s;
   transition-property: -webkit-transform;
   transition-property: transform;
   transition-property: transform, -webkit-transform;
-  box-shadow: 0 0 2px #DEDEDE;
+  box-shadow: 0 0 2px #dedede;
 }
 @media all and (min-width: 600px) {
   .timeline .year {
@@ -2096,7 +2097,7 @@ ol.start {
   -webkit-transform: scale(1.1);
           transform: scale(1.1);
   background: #e98024;
-  color: #F2F2F2;
+  color: #f2f2f2;
 }
 .timeline .event {
   position: relative;
@@ -2106,11 +2107,11 @@ ol.start {
   background: #fff;
   text-align: left;
   margin-bottom: 20px;
-  box-shadow: 0 0 2px #DEDEDE;
+  box-shadow: 0 0 2px #dedede;
   direction: ltr;
 }
 .timeline .event .header {
-  background: #F2F2F2;
+  background: #f2f2f2;
   font-weight: bold;
   padding: 12px;
   border-top: none;
@@ -2118,13 +2119,13 @@ ol.start {
   direction: ltr;
 }
 .timeline .event .event-body {
-  border: 1px solid #F2F2F2;
+  border: 1px solid #f2f2f2;
   padding: 12px;
   direction: ltr;
 }
 .timeline .event.featured .header {
   background: #e98024;
-  color: #F2F2F2;
+  color: #f2f2f2;
 }
 .timeline .event.featured.right:after {
   border-right: 14px solid #e98024;
@@ -2145,7 +2146,7 @@ ol.start {
 }
 .timeline .event.right:after {
   border-left: none;
-  border-right: 14px solid #F2F2F2;
+  border-right: 14px solid #f2f2f2;
   left: -14px;
 }
 @media all and (min-width: 600px) {
@@ -2155,7 +2156,7 @@ ol.start {
     height: 0px;
     border-top: 14px solid transparent;
     border-bottom: 14px solid transparent;
-    border-left: 14px solid #F2F2F2;
+    border-left: 14px solid #f2f2f2;
     position: absolute;
     top: 10px;
     right: -14px;
@@ -2171,13 +2172,13 @@ ol.start {
   margin: 3px 0px;
 }
 .api_token table tr.deleting {
-  background-color: #F2F2F2;
+  background-color: #f2f2f2;
 }
 .api_token table tr.new {
   background-color: rgba(46, 136, 54, 0.2);
 }
 .api_token fieldset {
-  border-bottom: 1px solid #DEDEDE;
+  border-bottom: 1px solid #dedede;
   margin: 20px 0;
 }
 .api_token fieldset label {
@@ -2222,7 +2223,7 @@ ol.start {
   }
 }
 .career .xquote, .security_testing .xquote, .regulation-content .xquote {
-  background-color: #F2F2F2;
+  background-color: #f2f2f2;
   padding: 20px;
   margin: 30px 0;
 }
@@ -2239,7 +2240,7 @@ ol.start {
   vertical-align: middle;
 }
 .career .xquote div .text span, .security_testing .xquote div .text span, .regulation-content .xquote div .text span {
-  color: #44484C;
+  color: #44484c;
   font-size: 12px;
 }
 
@@ -2253,7 +2254,7 @@ ol.start {
   margin-bottom: 0;
 }
 .careers-for-americans .border-bottom {
-  border-bottom: 1px solid #DEDEDE;
+  border-bottom: 1px solid #dedede;
 }
 
 .careers-for-americans .margin, .contact-content .margin {
@@ -2273,7 +2274,7 @@ ol.start {
 }
 
 .about-us .blue-fill {
-  background-color: #F2F2F2;
+  background-color: #f2f2f2;
   margin-top: 60px;
   margin-bottom: 30px;
   padding-bottom: 20px;
@@ -2282,11 +2283,11 @@ ol.start {
   margin-top: 30px;
 }
 .about-us .border-bottom {
-  border-bottom: 1px solid #DEDEDE;
+  border-bottom: 1px solid #dedede;
   padding-bottom: 0;
 }
 .about-us .border-right-top {
-  border-right: 1px solid #DEDEDE;
+  border-right: 1px solid #dedede;
   padding-bottom: 50px;
 }
 .about-us .align {
@@ -2296,7 +2297,7 @@ ol.start {
   height: 200px;
 }
 .about-us .border-right-bottom {
-  border-right: 1px solid #DEDEDE;
+  border-right: 1px solid #dedede;
   padding-top: 30px;
 }
 .about-us h1 {
@@ -2336,7 +2337,7 @@ ol.start {
   white-space: nowrap;
 }
 #portfolio td.indicative.no_resale {
-  color: #C2C2C2;
+  color: #c2c2c2;
 }
 #portfolio td.indicative.no_resale span {
   font-size: 8px;
@@ -2407,13 +2408,13 @@ ol.start {
   margin-top: -2px;
 }
 #trading-times tr:nth-child(1) th, #asset-index tr:nth-child(1) th {
-  background-color: #C2C2C2;
+  background-color: #c2c2c2;
 }
 #trading-times th, #asset-index th {
   line-height: 30px;
 }
 #trading-times th.submarket-name, #asset-index th.submarket-name {
-  border-bottom: 1px solid #44484C !important;
+  border-bottom: 1px solid #44484c !important;
   text-align: center !important;
 }
 #trading-times th.asset, #asset-index th.asset {
@@ -2610,10 +2611,10 @@ ol.start {
   height: 40px;
   cursor: pointer;
   margin: 0 auto;
-  border: 2px solid #2E8836;
+  border: 2px solid #2e8836;
   border-radius: 40px;
   font: normal normal normal 17px/40px 'Advent Pro', 'Helvetica', sans-serif;
-  color: #2E8836;
+  color: #2e8836;
   text-align: center;
   text-overflow: clip;
   letter-spacing: 1px;
@@ -2623,7 +2624,7 @@ ol.start {
 
 .enjoyhint_btn:hover {
   color: white;
-  background: #2E8836;
+  background: #2e8836;
 }
 
 .enjoyhint_btn:active {
@@ -2694,7 +2695,7 @@ div.kineticjs-content {
 
 #guideBtn {
   display: inline-block;
-  background-color: #F2F2F2;
+  background-color: #f2f2f2;
   padding: 4px 20px;
   position: relative;
   margin-left: 15px;
@@ -2777,7 +2778,7 @@ div.kineticjs-content {
 }
 
 .open-positions .eq:not(:first-child) {
-  border: 1px dashed #DEDEDE;
+  border: 1px dashed #dedede;
   border-width: 0 0 0 1px;
 }
 .open-positions .eq:nth-child(3n+1) {
@@ -2863,8 +2864,8 @@ div.kineticjs-content {
   }
 }
 .regulation-content .gray-line {
-  border: 1px solid #F2F2F2;
-  background-color: #F2F2F2;
+  border: 1px solid #f2f2f2;
+  background-color: #f2f2f2;
   width: 2px;
   height: 50px;
   margin-left: auto;
@@ -2919,7 +2920,7 @@ div.kineticjs-content {
 }
 .platforms-content .outer {
   position: relative;
-  background-color: #F2F2F2;
+  background-color: #f2f2f2;
 }
 .platforms-content .inner {
   overflow-x: scroll;
@@ -2930,8 +2931,8 @@ div.kineticjs-content {
 .platforms-content tr:first-child td {
   line-height: 1.1em;
   font-weight: bold;
-  background: #F2F2F2;
-  border-bottom: 1px solid #F2F2F2;
+  background: #f2f2f2;
+  border-bottom: 1px solid #f2f2f2;
 }
 .platforms-content .small-padding-top {
   padding-top: 4px;
@@ -3126,7 +3127,7 @@ div.kineticjs-content {
           align-items: center;
   padding-top: 25px;
   position: relative;
-  border: 1px solid #DEDEDE;
+  border: 1px solid #dedede;
   -webkit-flex: 1 0 auto;
       -ms-flex: 1 0 auto;
           flex: 1 0 auto;
@@ -3141,7 +3142,7 @@ div.kineticjs-content {
   z-index: 9;
 }
 #trading_socket_container #contract_container .overlay_container#loading_container3 {
-  background: #F2F2F2;
+  background: #f2f2f2;
   opacity: 0.5;
   display: block;
   position: absolute;
@@ -3242,7 +3243,7 @@ div.kineticjs-content {
   margin-top: 28px;
 }
 #trading_socket_container #contract_prices_container .price_container {
-  border: 1px solid #DEDEDE;
+  border: 1px solid #dedede;
   -webkit-align-items: stretch;
       -ms-flex-align: stretch;
           align-items: stretch;
@@ -3288,7 +3289,7 @@ div.kineticjs-content {
   margin-bottom: 1rem;
 }
 #trading_socket_container #contract_prices_container .price_comment, #trading_socket_container #contract_prices_container .contract_error, #trading_socket_container #contract_prices_container #contract_purchase_balance {
-  background-color: #DEDEDE;
+  background-color: #dedede;
   line-height: 1.5rem;
   font-size: 0.8rem;
   padding: 5px;
@@ -3311,7 +3312,7 @@ div.kineticjs-content {
 }
 #trading_socket_container #contract_prices_container #contract_purchase_descr {
   background-color: #fff;
-  border: 2px solid #DEDEDE;
+  border: 2px solid #dedede;
   margin: 0 10px;
   padding: 10px 5px;
   text-align: justify;
@@ -3336,10 +3337,10 @@ div.kineticjs-content {
   padding-bottom: 10px;
 }
 #trading_socket_container #contract_prices_container #contract_purchase_payout {
-  border-right: 1px solid #DEDEDE;
+  border-right: 1px solid #dedede;
 }
 #trading_socket_container #contract_prices_container #contract_purchase_profit {
-  border-left: 1px solid #DEDEDE;
+  border-left: 1px solid #dedede;
 }
 #trading_socket_container #contract_prices_container .contract_amount, #trading_socket_container #contract_prices_container .contract_payout, #trading_socket_container #contract_prices_container .payout, #trading_socket_container #contract_prices_container .stake {
   padding: 3px;
@@ -3387,7 +3388,7 @@ div.kineticjs-content {
   z-index: 10;
 }
 #trading_socket_container .overlay_container#loading_container2 {
-  background: #F2F2F2;
+  background: #f2f2f2;
   opacity: 0.5;
   display: block;
   position: absolute;
@@ -3397,7 +3398,7 @@ div.kineticjs-content {
           flex: 1 0 auto;
 }
 #trading_socket_container #contract_confirmation_container {
-  background-color: #F2F2F2;
+  background-color: #f2f2f2;
   text-align: center;
 }
 #trading_socket_container #contract_confirmation_container a.close {
@@ -3675,7 +3676,7 @@ div.kineticjs-content {
 #trading_socket_container #contract_form_name_nav > li .tm-ul-2 {
   top: 29px;
   margin-top: -1px;
-  border-top: 1px solid #DEDEDE;
+  border-top: 1px solid #dedede;
 }
 
 #content ul.tm-ul li.active, #content ul.tm-ul li.ui-tabs-active {
@@ -3715,7 +3716,7 @@ div.kineticjs-content {
 }
 #trading_bottom_content ul#betsBottomPage {
   box-shadow: inset 0px 0px 0px 1px rgba(42, 48, 82, 0.2);
-  background-color: #F2F2F2;
+  background-color: #f2f2f2;
   color: #2a3052;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -3834,7 +3835,7 @@ div.kineticjs-content {
   padding-right: 20px;
 }
 #mb_trading .prices-wrapper .price-row:nth-child(odd) {
-  background: #F2F2F2;
+  background: #f2f2f2;
 }
 #mb_trading .base-value {
   font-size: 9px;
@@ -3868,7 +3869,7 @@ div.kineticjs-content {
   color: #fff;
   text-align: center;
   line-height: 100%;
-  background: #2E8836;
+  background: #2e8836;
   border-radius: 3px;
   padding: 10px 0;
   cursor: pointer;
@@ -3892,14 +3893,14 @@ div.kineticjs-content {
   right: 3px;
 }
 #mb_trading .price-button:hover {
-  background-color: #14602B;
+  background-color: #14602b;
 }
 #mb_trading .inactive {
-  color: #DEDEDE;
+  color: #dedede;
 }
 #mb_trading .inactive.price-button {
   color: #fff;
-  background: #DEDEDE;
+  background: #dedede;
   cursor: default;
   overflow: visible;
 }
@@ -3982,7 +3983,7 @@ div.kineticjs-content {
 }
 #mb_trading .select-box {
   float: left;
-  background: #F2F2F2;
+  background: #f2f2f2;
   border-radius: 3px;
   width: 100%;
 }
@@ -3990,7 +3991,7 @@ div.kineticjs-content {
   width: 100%;
   margin-top: 5px;
   padding: 2px 3px;
-  border: 1px solid #F2F2F2;
+  border: 1px solid #f2f2f2;
   background: #fff;
   border-radius: 3px;
 }
@@ -4301,7 +4302,7 @@ div.kineticjs-content {
           align-items: center;
   padding-top: 25px;
   position: relative;
-  border: 1px solid #DEDEDE;
+  border: 1px solid #dedede;
   -webkit-flex: 1 0 auto;
       -ms-flex: 1 0 auto;
           flex: 1 0 auto;
@@ -4316,7 +4317,7 @@ div.kineticjs-content {
   z-index: 9;
 }
 #trading_socket_container_beta #contract_container .overlay_container#loading_container3 {
-  background: #F2F2F2;
+  background: #f2f2f2;
   opacity: 0.5;
   display: block;
   position: absolute;
@@ -4414,7 +4415,7 @@ div.kineticjs-content {
   background-size: 2em;
 }
 #trading_socket_container_beta #contract_prices_container .price_container {
-  border: 1px solid #DEDEDE;
+  border: 1px solid #dedede;
   -webkit-align-items: stretch;
       -ms-flex-align: stretch;
           align-items: stretch;
@@ -4465,12 +4466,12 @@ div.kineticjs-content {
   padding: 20px;
   font-style: italic;
   vertical-align: middle;
-  border: 1px solid #DEDEDE;
+  border: 1px solid #dedede;
   border-top: none;
   line-height: 1.5em;
 }
 #trading_socket_container_beta #contract_prices_container .price_comment, #trading_socket_container_beta #contract_prices_container .contract_error, #trading_socket_container_beta #contract_prices_container #contract_purchase_balance {
-  background-color: #DEDEDE;
+  background-color: #dedede;
   line-height: 1.5rem;
   font-size: 0.8rem;
   padding: 5px;
@@ -4550,7 +4551,7 @@ div.kineticjs-content {
   line-height: normal;
 }
 #trading_socket_container_beta #contract_prices_container #tick_chart {
-  border: 1px solid #F2F2F2;
+  border: 1px solid #f2f2f2;
   direction: ltr;
 }
 #trading_socket_container_beta #contract_prices_container .contract_error {
@@ -4600,7 +4601,7 @@ div.kineticjs-content {
           flex: 1 0 auto;
 }
 #trading_socket_container_beta .overlay_container#loading_container2 div {
-  background: #F2F2F2;
+  background: #f2f2f2;
   width: 100%;
   height: 100%;
 }
@@ -4617,7 +4618,7 @@ div.kineticjs-content {
 }
 #trading_socket_container_beta #contract_confirmation_container #contract_purchase_contents {
   padding: 10px;
-  border: 1px solid #DEDEDE;
+  border: 1px solid #dedede;
   border-top: none;
 }
 #trading_socket_container_beta #contract_prices_container .price_container .price_wrapper {
@@ -4832,22 +4833,22 @@ div.kineticjs-content {
 #trading_socket_container_beta #contract_form_name_nav > li .tm-ul-2, #trading_socket_container_beta #analysis_tabs > li .tm-ul-2 {
   top: 29px;
   margin-top: -1px;
-  border-top: 1px solid #DEDEDE;
+  border-top: 1px solid #dedede;
 }
 #trading_socket_container_beta #contract_form_name_nav > li.see-more, #trading_socket_container_beta #analysis_tabs > li.see-more {
   transition: none;
   position: relative;
   height: 27px;
-  border: 1px solid #F2F2F2;
+  border: 1px solid #f2f2f2;
   border-bottom: 0;
 }
 #trading_socket_container_beta #contract_form_name_nav > li.see-more.open, #trading_socket_container_beta #analysis_tabs > li.see-more.open {
-  border-color: #DEDEDE;
+  border-color: #dedede;
 }
 #trading_socket_container_beta #contract_form_name_nav > li.see-more.open .over, #trading_socket_container_beta #analysis_tabs > li.see-more.open .over {
   width: 23px;
   height: 1px;
-  background: #F2F2F2;
+  background: #f2f2f2;
   position: absolute;
   bottom: -1px;
   right: 0px;
@@ -4867,9 +4868,9 @@ div.kineticjs-content {
   display: none;
   position: absolute;
   z-index: 2;
-  background: #F2F2F2;
+  background: #f2f2f2;
   right: -1px;
-  border: 1px solid #DEDEDE;
+  border: 1px solid #dedede;
 }
 #trading_socket_container_beta #contract_form_name_nav > li.see-more .more-tabs li, #trading_socket_container_beta #analysis_tabs > li.see-more .more-tabs li {
   display: block;
@@ -4886,7 +4887,7 @@ div.kineticjs-content {
   text-decoration: none;
 }
 #trading_socket_container_beta #contract_form_name_nav > li.see-more .more-tabs li aa:hover, #trading_socket_container_beta #analysis_tabs > li.see-more .more-tabs li aa:hover {
-  background: #DEDEDE;
+  background: #dedede;
 }
 
 #content ul.tm-ul li.active, #content ul.tm-ul li.ui-tabs-active {
@@ -4938,7 +4939,7 @@ div.kineticjs-content {
   padding-top: 10px;
   height: calc(100% - 40px);
   width: auto;
-  border: 1px solid #DEDEDE;
+  border: 1px solid #dedede;
   overflow-y: auto;
 }
 #content #trading_socket_container_beta #trading_analysis_content .content-tab-container #analysis_content .toggle-content, #content #trading_socket_container_beta #trading_analysis_content .content-tab-container #analysis_content #trade_live_chart, #content #trading_socket_container_beta #trading_analysis_content .content-tab-container #analysis_content #trade_live_chart #chart_frame {
@@ -4971,7 +4972,7 @@ div.kineticjs-content {
 }
 #content #trading_socket_container_beta #japan_analysis #trading_analysis_content ul#analysis_tabs {
   box-shadow: inset 0px 0px 0px 1px rgba(42, 48, 82, 0.2);
-  background-color: #F2F2F2;
+  background-color: #f2f2f2;
   color: #2a3052;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -5056,7 +5057,7 @@ div.kineticjs-content {
   padding-left: 10px;
 }
 .table-container td[data-balloon] {
-  border-bottom: 3px solid #F2F2F2;
+  border-bottom: 3px solid #f2f2f2;
 }
 .table-container .pre {
   white-space: pre;
@@ -5204,7 +5205,7 @@ button:disabled {
 }
 
 .big-error-code {
-  color: #DEDEDE;
+  color: #dedede;
   font-size: 10em;
   font-weight: normal;
 }
