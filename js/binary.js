@@ -87853,7 +87853,7 @@
 	        var isAddress = V2.regex(/^[^~!#$%^&*)(_=+\[}{\]\\\"\;\:\?\><\|]+$/, [letters, numbers, space, period, comma, '- . / @ \' ']);
 	        var isCity = V2.regex(/^[^~!@#$%^&*)(_=+\[\}\{\]\\\/\"\;\:\?\><\,\|\d]+$/, [letters, space, '- . \' ']);
 	        var isState = V2.regex(/^[^~!@#$%^&*)(_=+\[\}\{\]\\\/\"\;\:\?\><\|]+$/, [letters, numbers, space, comma, '- . \'']);
-	        var isPostcode = V2.regex(/^[\w\s-]+$/, [letters, numbers, space, '-']);
+	        var isPostcode = V2.regex(/^[^+]{0,20}$/, [letters, numbers, space, '-']);
 	        var isPhoneNo = V2.regex(/^(|\+?[0-9\s\-]+)$/, [numbers, space, '-']);
 	
 	        var maybeEmptyAddress = function maybeEmptyAddress(value) {
@@ -87865,7 +87865,7 @@
 	            address_line_2: [maybeEmptyAddress],
 	            address_city: [V2.required, isCity],
 	            address_state: [V2.required, isState],
-	            address_postcode: [V2.required, V2.lengthRange(1, 20), isPostcode],
+	            address_postcode: [V2.lengthRange(0, 20), isPostcode],
 	            phone: [V2.lengthRange(6, 35), isPhoneNo]
 	        };
 	    };
