@@ -37843,45 +37843,40 @@
 	        $tables = void 0;
 	
 	    var addPriceObj = function addPriceObj(req) {
-	        req.barriers.forEach(function (barrier_obj) {
-	            var barrier = makeBarrier(barrier_obj);
-	            if (!prices[barrier]) {
-	                prices[barrier] = {};
-	            }
-	            prices[barrier][req.contract_type] = {};
-	            if (!contract_types[req.contract_type]) {
-	                contract_types[req.contract_type] = MBContract.getTemplate(req.contract_type);
-	            }
-	        });
+	        var barrier = makeBarrier(req);
+	        if (!prices[barrier]) {
+	            prices[barrier] = {};
+	        }
+	        prices[barrier][req.contract_type] = {};
+	        if (!contract_types[req.contract_type]) {
+	            contract_types[req.contract_type] = MBContract.getTemplate(req.contract_type);
+	        }
 	    };
 	
-	    var makeBarrier = function makeBarrier(barrier_obj) {
-	        if (!barrier_obj.barrier && barrier_obj.error) barrier_obj = barrier_obj.error.details;
-	        return (barrier_obj.barrier2 ? barrier_obj.barrier2 + '_' : '') + barrier_obj.barrier;
+	    var makeBarrier = function makeBarrier(req) {
+	        return (req.barrier2 ? req.barrier2 + '_' : '') + req.barrier;
 	    };
 	
 	    var display = function display(response) {
+	        var barrier = makeBarrier(response.echo_req);
 	        var contract_type = response.echo_req.contract_type;
-	        response.proposal_array.proposals.forEach(function (proposal) {
-	            var barrier = makeBarrier(proposal),
-	                prev_proposal = $.extend({}, prices[barrier][contract_type]);
-	            prices[barrier][contract_type] = $.extend({ echo_req: response.echo_req }, proposal);
+	        var prev_proposal = $.extend({}, prices[barrier][contract_type]);
 	
-	            if (!objectNotEmpty(prev_proposal)) {
-	                res_count++;
-	            }
+	        if (!objectNotEmpty(prev_proposal)) {
+	            res_count++;
+	        }
 	
-	            // update previous ask_price to use in price movement
-	            if (objectNotEmpty(prev_proposal) && !prev_proposal.error) {
-	                prices[barrier][contract_type].prev_price = prev_proposal.ask_price;
-	            }
-	        });
+	        prices[barrier][contract_type] = response;
+	        // update previous ask_price to use in price movement
+	        if (objectNotEmpty(prev_proposal) && !prev_proposal.error) {
+	            prices[barrier][contract_type].prev_price = prev_proposal.proposal.ask_price;
+	        }
 	
 	        // populate table if all proposals received
 	        if (!is_displayed && res_count === Object.keys(prices).length * 2) {
 	            populateTable();
 	        } else {
-	            updatePrice(contract_type);
+	            updatePrice(prices[barrier][contract_type]);
 	        }
 	    };
 	
@@ -37915,25 +37910,24 @@
 	        is_displayed = true;
 	    };
 	
-	    var updatePrice = function updatePrice(contract_type) {
-	        barriers.forEach(function (barrier) {
-	            var proposal = prices[barrier][contract_type],
-	                price_rows = document.querySelectorAll(price_selector + ' div[data-barrier="' + makeBarrier(proposal) + '"]');
+	    var updatePrice = function updatePrice(proposal) {
+	        var barrier = makeBarrier(proposal.echo_req);
+	        var price_rows = document.querySelectorAll(price_selector + ' div[data-barrier="' + barrier + '"]');
 	
-	            if (!price_rows.length) return;
+	        if (!price_rows.length) return;
 	
-	            var contract_info = contract_types[contract_type],
-	                contract_info_opp = contract_types[contract_info.opposite];
-	            var values = getValues(proposal),
-	                values_opp = getValues(prices[barrier][contract_info.opposite]);
+	        var contract_type = proposal.echo_req.contract_type;
+	        var contract_info = contract_types[contract_type];
+	        var contract_info_opp = contract_types[contract_info.opposite];
+	        var values = getValues(proposal);
+	        var values_opp = getValues(prices[barrier][contract_info.opposite]);
 	
-	            elementInnerHtml(price_rows[+contract_info.order], makePriceRow(values, true));
-	            elementInnerHtml(price_rows[+contract_info_opp.order], makePriceRow(values_opp, true));
-	        });
+	        elementInnerHtml(price_rows[+contract_info.order], makePriceRow(values, true));
+	        elementInnerHtml(price_rows[+contract_info_opp.order], makePriceRow(values_opp, true));
 	    };
 	
 	    var getValues = function getValues(proposal) {
-	        var barrier = makeBarrier(proposal),
+	        var barrier = makeBarrier(proposal.echo_req),
 	            payout = proposal.echo_req.amount,
 	            contract_type = proposal.echo_req.contract_type,
 	            proposal_opp = prices[barrier][contract_types[contract_type].opposite];
@@ -37944,13 +37938,13 @@
 	            message: proposal.error && proposal.error.code !== 'RateLimit' ? proposal.error.message : '',
 	            ask_price: getAskPrice(proposal),
 	            sell_price: payout - getAskPrice(proposal_opp),
-	            ask_price_movement: !proposal.error ? getMovementDirection(proposal.prev_price, proposal.ask_price) : '',
-	            sell_price_movement: proposal_opp && !proposal_opp.error ? getMovementDirection(proposal_opp.ask_price, proposal_opp.prev_price) : ''
+	            ask_price_movement: !proposal.error ? getMovementDirection(proposal.prev_price, proposal.proposal.ask_price) : '',
+	            sell_price_movement: proposal_opp && !proposal_opp.error ? getMovementDirection(proposal_opp.proposal.ask_price, proposal_opp.prev_price) : ''
 	        };
 	    };
 	
 	    var getAskPrice = function getAskPrice(proposal) {
-	        return proposal.error || +proposal.ask_price === 0 ? proposal.echo_req.amount : proposal.ask_price;
+	        return proposal.error || +proposal.proposal.ask_price === 0 ? proposal.echo_req.amount : proposal.proposal.ask_price;
 	    };
 	
 	    var getMovementDirection = function getMovementDirection(prev, current) {
@@ -37996,10 +37990,10 @@
 	
 	        var req = {
 	            buy: 1,
-	            price: proposal.ask_price,
+	            price: proposal.proposal.ask_price,
 	            parameters: {
 	                amount: proposal.echo_req.amount,
-	                barrier: proposal.barrier,
+	                barrier: proposal.echo_req.barrier,
 	                basis: 'payout',
 	                contract_type: proposal.echo_req.contract_type,
 	                currency: MBContract.getCurrency(),
@@ -38010,8 +38004,8 @@
 	            }
 	        };
 	
-	        if (proposal.barrier2) {
-	            req.parameters.barrier2 = proposal.barrier2;
+	        if (proposal.echo_req.barrier2) {
+	            req.parameters.barrier2 = proposal.echo_req.barrier2;
 	        }
 	
 	        BinarySocket.send(req);
@@ -71053,7 +71047,7 @@
 	        var available_contracts = MBContract.getCurrentContracts(),
 	            durations = MBDefaults.get('period').split('_');
 	        var req = {
-	            proposal_array: 1,
+	            proposal: 1,
 	            subscribe: 1,
 	            basis: 'payout',
 	            amount: japanese_client() ? (parseInt(MBDefaults.get('payout')) || 1) * 1000 : MBDefaults.get('payout'),
@@ -71067,25 +71061,20 @@
 	        var barriers_array = void 0,
 	            all_expired = true;
 	        for (var i = 0; i < available_contracts.length; i++) {
-	            req.barriers = [];
 	            req.contract_type = available_contracts[i].contract_type;
 	            barriers_array = available_contracts[i].available_barriers;
 	            for (var j = 0; j < barriers_array.length; j++) {
-	                var barrier_item = {};
 	                if (+available_contracts[i].barriers === 2) {
-	                    barrier_item.barrier = barriers_array[j][1];
-	                    barrier_item.barrier2 = barriers_array[j][0];
+	                    req.barrier = barriers_array[j][1];
+	                    req.barrier2 = barriers_array[j][0];
 	                } else {
-	                    barrier_item.barrier = barriers_array[j];
+	                    req.barrier = barriers_array[j];
 	                }
-	                if (!barrierHasExpired(available_contracts[i].expired_barriers, barrier_item.barrier, barrier_item.barrier2)) {
+	                if (!barrierHasExpired(available_contracts[i].expired_barriers, req.barrier, req.barrier2)) {
 	                    all_expired = false;
-	                    req.barriers.push(barrier_item);
+	                    MBPrice.addPriceObj(req);
+	                    BinarySocket.send(req);
 	                }
-	            }
-	            if (req.barriers.length) {
-	                MBPrice.addPriceObj(req);
-	                BinarySocket.send(req);
 	            }
 	        }
 	        if (all_expired) {
@@ -71391,7 +71380,7 @@
 	                Client.set_value('currencies', response.payout_currencies.join(','));
 	                MBDisplayCurrencies('', false);
 	                MBSymbols.getSymbols(1);
-	            } else if (type === 'proposal_array') {
+	            } else if (type === 'proposal') {
 	                MBProcess.processProposal(response);
 	            } else if (type === 'buy') {
 	                MBPurchase.display(response);
