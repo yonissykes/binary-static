@@ -35669,56 +35669,90 @@
 	var Cashier = function () {
 	    'use strict';
 	
-	    var lock_cashier = function lock_cashier(withdrawal_locked, lock_type) {
-	        if (withdrawal_locked === 'locked') {
-	            $.each($('.' + lock_type), function () {
-	                replace_with_disabled_button($(this).parent());
-	            });
+	    var withdrawal_locked = void 0;
+	
+	    var lock_unlock_cashier = function lock_unlock_cashier(action, lock_type) {
+	        var toggle = action === 'lock' ? 'disable' : 'enable';
+	        if (/withdraw/.test(lock_type) && withdrawal_locked) {
+	            return;
 	        }
+	        $.each($('.' + lock_type), function () {
+	            replace_button(toggle, $(this).parent());
+	        });
 	    };
 	
 	    var check_locked = function check_locked() {
 	        if (Client.get_boolean('is_virtual')) return;
 	        if (Client.status_detected('cashier_locked')) {
-	            lock_cashier('locked', 'deposit, .withdraw');
+	            lock_unlock_cashier('lock', 'deposit, .withdraw');
+	            withdrawal_locked = true;
 	        } else if (Client.status_detected('withdrawal_locked')) {
-	            lock_cashier('locked', 'withdraw');
+	            lock_unlock_cashier('lock', 'withdraw');
+	            withdrawal_locked = true;
 	        } else if (Client.status_detected('unwelcome')) {
-	            lock_cashier('locked', 'deposit');
+	            lock_unlock_cashier('lock', 'deposit');
 	        } else if (sessionStorage.getItem('client_status') === null) {
 	            BinarySocket.send({ get_account_status: '1', passthrough: { dispatch_to: 'Cashier' } });
 	        }
 	    };
 	
-	    var check_virtual_top_up = function check_virtual_top_up() {
-	        if (is_cashier_page && Client.get_boolean('is_virtual')) {
-	            if (Client.get_value('currency') !== 'JPY' && Client.get_value('balance') > 1000 || Client.get_value('currency') === 'JPY' && Client.get_value('balance') > 100000) {
-	                replace_with_disabled_button('#VRT_topup_link');
+	    var check_top_up_withdraw = function check_top_up_withdraw() {
+	        if (is_cashier_page() && Client.get_boolean('values_set')) {
+	            var currency = Client.get_value('currency'),
+	                balance = Client.get_value('balance');
+	            if (Client.get_boolean('is_virtual')) {
+	                if (currency !== 'JPY' && balance > 1000 || currency === 'JPY' && balance > 100000) {
+	                    replace_button('disable', '#VRT_topup_link');
+	                }
+	            } else if (!currency || +balance === 0) {
+	                lock_unlock_cashier('lock', 'withdraw');
+	            } else {
+	                lock_unlock_cashier('unlock', 'withdraw');
 	            }
 	        }
 	    };
 	
-	    var replace_with_disabled_button = function replace_with_disabled_button(elementToReplace) {
+	    var replace_button = function replace_button(action, elementToReplace) {
 	        var $a = $(elementToReplace);
 	        if ($a.length === 0) return;
-	        // use replaceWith, to disable previously caught pjax event
-	        var new_element = { class: $a.attr('class').replace('pjaxload', 'button-disabled'), html: $a.html() },
-	            id = $a.attr('id');
+	        var replace = ['button-disabled', 'pjaxload'];
+	        var disable = action === 'disable';
+	        var id = $a.attr('id');
+	        var href = $a.attr('href');
+	        var data_href = $a.attr('data-href');
 	
-	        if (id) new_element.id = id;
+	        // use replaceWith, to disable previously caught pjax event
+	        var new_element = {
+	            class: $a.attr('class').replace(replace[+disable], replace[+!disable]),
+	            id: id,
+	            html: $a.html(),
+	            href: href || data_href,
+	            'data-href': href
+	        };
+	
+	        if (disable) {
+	            delete new_element.href;
+	        } else {
+	            delete new_element['data-href'];
+	        }
+	        if (!id) {
+	            delete new_element.id;
+	        }
+	
 	        $a.replaceWith($('<a/>', new_element));
 	    };
 	
 	    var onLoad = function onLoad() {
-	        if (is_cashier_page && Client.get_boolean('is_logged_in')) {
+	        if (is_cashier_page() && Client.get_boolean('is_logged_in')) {
+	            withdrawal_locked = false;
 	            Cashier.check_locked();
-	            Cashier.check_virtual_top_up();
+	            Cashier.check_top_up_withdraw();
 	            Header.topbar_message_visibility(Client.landing_company());
 	        }
 	    };
 	
 	    var is_cashier_page = function is_cashier_page() {
-	        return (/\/cashier\.html/.test(window.location.pathname)
+	        return (/cashier[\/\w]*\.html/.test(window.location.pathname)
 	        );
 	    };
 	
@@ -35733,7 +35767,7 @@
 	
 	    return {
 	        check_locked: check_locked,
-	        check_virtual_top_up: check_virtual_top_up,
+	        check_top_up_withdraw: check_top_up_withdraw,
 	        onLoad: onLoad,
 	        onLoadPaymentMethods: onLoadPaymentMethods
 	    };
@@ -42530,6 +42564,7 @@
 	        var balance = response.balance.balance;
 	        Client.set_value('balance', balance);
 	        PortfolioWS.updateBalance();
+	        Cashier.check_top_up_withdraw();
 	        var currency = response.balance.currency;
 	        if (!currency) {
 	            return;
@@ -42537,7 +42572,6 @@
 	        var view = format_money(currency, balance);
 	        updateContractBalance(balance);
 	        $('.topMenuBalance').text(view).css('visibility', 'visible');
-	        Cashier.check_virtual_top_up();
 	    };
 	
 	    return {
@@ -47342,17 +47376,21 @@
 	            }
 	        }
 	
+	        var href = window.location.href,
+	            cashier_page = /cashier[\/\w]*\.html/.test(href),
+	            withdrawal_page = cashier_page && !/(deposit|payment_agent_listws)/.test(href);
+	
 	        if (Client.status_detected('authenticated, unwelcome', 'all')) {
 	            span = $('<span/>', { html: template(localize('Your account is currently suspended. Only withdrawals are now permitted. For further information, please contact [_1].', ['<a href="mailto:support@binary.com">support@binary.com</a>'])) });
 	        } else if (Client.status_detected('unwelcome')) {
 	            span = this.general_authentication_message();
-	        } else if (Client.status_detected('authenticated, cashier_locked', 'all') && /cashier\.html/.test(window.location.href)) {
+	        } else if (Client.status_detected('authenticated, cashier_locked', 'all') && cashier_page) {
 	            span = $('<span/>', { html: template(localize('Deposits and withdrawal for your account is not allowed at this moment. Please contact [_1] to unlock it.', ['<a href="mailto:support@binary.com">support@binary.com</a>'])) });
-	        } else if (Client.status_detected('cashier_locked') && /cashier\.html/.test(window.location.href)) {
+	        } else if (Client.status_detected('cashier_locked') && cashier_page) {
 	            span = this.general_authentication_message();
-	        } else if (Client.status_detected('authenticated, withdrawal_locked', 'all') && /cashier\.html/.test(window.location.href)) {
+	        } else if (Client.status_detected('authenticated, withdrawal_locked', 'all') && withdrawal_page) {
 	            span = $('<span/>', { html: template(localize('Withdrawal for your account is not allowed at this moment. Please contact [_1] to unlock it.', ['<a href="mailto:support@binary.com">support@binary.com</a>'])) });
-	        } else if (Client.status_detected('withdrawal_locked') && /cashier\.html/.test(window.location.href)) {
+	        } else if (Client.status_detected('withdrawal_locked') && withdrawal_page) {
 	            span = this.general_authentication_message();
 	        }
 	        if (span) {
@@ -71941,11 +71979,7 @@
 	    var showResult = function showResult(score, time) {
 	        $('#knowledge-test-instructions').addClass('invisible');
 	        $('#knowledge-test-header').text(localize('{JAPAN ONLY}Knowledge Test Result'));
-	        if (score >= 14) {
-	            $('#knowledge-test-msg').text(localize(passMsg));
-	        } else {
-	            $('#knowledge-test-msg').text(localize(failMsg));
-	        }
+	        $('#knowledge-test-msg').text(localize(score >= 14 ? passMsg : failMsg));
 	
 	        var $resultTable = KnowledgeTestUI.createResultUI(score, time);
 	
@@ -72028,6 +72062,9 @@
 	                        $('#knowledgetest-link').addClass(hiddenClass); // hide it anyway
 	                    } else if (response.error.code === 'TestUnavailableNow') {
 	                        showMsgOnly('{JAPAN ONLY}The test is unavailable now, test can only be taken again on next business day with respect of most recent test.');
+	                    } else {
+	                        $('#form-msg').html(response.error.message).removeClass(hiddenClass);
+	                        submitCompleted = false;
 	                    }
 	                }
 	            }
@@ -85587,12 +85624,15 @@
 	                }
 	            }
 	        });
+	        var hash = window.location.hash,
+	            deposit_locked = /deposit/.test(hash) && Client.status_detected('cashier_locked, unwelcome', 'any'),
+	            withdraw_locked = /withdraw/.test(hash) && Client.status_detected('cashier_locked, withdrawal_locked', 'any');
 	        if (sessionStorage.getItem('client_status') === null) {
 	            BinarySocket.send({
 	                get_account_status: 1,
 	                passthrough: { dispatch_to: 'ForwardWS' }
 	            });
-	        } else if (!Client.status_detected('cashier_locked, unwelcome', 'any') && /deposit/.test(window.location.hash) || !Client.status_detected('cashier_locked, withdrawal_locked', 'any') && /withdraw/.test(window.location.hash)) {
+	        } else if (!deposit_locked && !withdraw_locked) {
 	            BinarySocket.send({ cashier_password: 1 });
 	        }
 	    };
@@ -86260,7 +86300,7 @@
 	    };
 	
 	    var updateConfirmView = function updateConfirmView(username, loginid, amount, currency) {
-	        $('#pa_confirm_transfer').find('td#user-name').html(username).end().find('td#login-id').html(loginid).end().find('td#amount').html(currency + ' ' + amount);
+	        $('#pa_confirm_transfer').find('td#user-name').empty().text(username).end().find('td#login-id').empty().text(loginid).end().find('td#amount').empty().text(currency + ' ' + amount);
 	    };
 	
 	    var showTransferError = function showTransferError(err) {
@@ -88584,6 +88624,11 @@
 	    var checkAnswer = function checkAnswer(answer, errorAnswer) {
 	        if (answer.value.length < 4) {
 	            elementInnerHtml(errorAnswer, Content.errorMessage('min', 4));
+	            Validate.displayErrorMessage(errorAnswer);
+	            window.accountErrorCounter++;
+	        } else if (!/^[\w\-\,\.\' ]{4,50}$/.test(answer.value)) {
+	            initializeValues();
+	            elementInnerHtml(errorAnswer, Content.errorMessage('reg', [letters, numbers, space, hyphen, period, apost]));
 	            Validate.displayErrorMessage(errorAnswer);
 	            window.accountErrorCounter++;
 	        }
