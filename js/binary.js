@@ -35859,7 +35859,7 @@
 	                    $('.account-type').html(localize(type));
 	                    $('.account-id').html(curr_id);
 	                } else {
-	                    loginid_select += '<a href="#" value="' + curr_id + '"><li>' + localize(type) + '<div>' + curr_id + '</div>' + '</li></a><div class="separator-line-thin-gray"></div>';
+	                    loginid_select += '<a href="javascript:;" value="' + curr_id + '"><li>' + localize(type) + '<div>' + curr_id + '</div>' + '</li></a><div class="separator-line-thin-gray"></div>';
 	                }
 	            }
 	        }
@@ -37223,7 +37223,7 @@
 	    var normalUpdate = function normalUpdate() {
 	        var finalPrice = contract.sell_price || contract.bid_price,
 	            is_started = !contract.is_forward_starting || contract.current_spot_time > contract.date_start,
-	            user_sold = contract.sell_time && contract.sell_time <= contract.date_expiry,
+	            user_sold = contract.sell_time && contract.sell_time < contract.date_expiry,
 	            is_ended = contract.is_settleable || contract.is_sold || user_sold,
 	            indicative_price = finalPrice && is_ended ? contract.sell_price || contract.bid_price : contract.bid_price ? contract.bid_price : null;
 	
@@ -37234,12 +37234,12 @@
 	            containerSetText('trade_details_barrier', contract.entry_tick_time ? contract.contract_type === 'DIGITMATCH' ? localize('Equals') + ' ' + contract.barrier : contract.contract_type === 'DIGITDIFF' ? localize('Not') + ' ' + contract.barrier : contract.barrier : '-', '', true);
 	        }
 	
-	        var currentSpot = !is_ended ? contract.current_spot : user_sold ? contract.sell_spot : contract.exit_tick;
-	        var currentSpotTime = !is_ended ? contract.current_spot_time : user_sold ? contract.sell_spot_time : contract.exit_tick_time;
+	        var currentSpot = !is_ended ? contract.current_spot : user_sold ? '-' : contract.exit_tick;
+	        var currentSpotTime = !is_ended ? contract.current_spot_time : user_sold ? '' : contract.exit_tick_time;
 	
 	        containerSetText('trade_details_ref_id', contract.transaction_ids.buy + (contract.transaction_ids.sell ? ' - ' + contract.transaction_ids.sell : ''));
-	        containerSetText('trade_details_current_date', toJapanTimeIfNeeded(epochToDateTime(currentSpotTime)));
-	        containerSetText('trade_details_current_spot', currentSpot || localize('not available'));
+	        containerSetText('trade_details_current_date', currentSpotTime ? toJapanTimeIfNeeded(epochToDateTime(currentSpotTime)) : '-');
+	        containerSetText('trade_details_current_spot', currentSpot);
 	        containerSetText('trade_details_indicative_price', indicative_price ? format_money(contract.currency, indicative_price) : '-');
 	
 	        var profit_loss = void 0,
@@ -39104,7 +39104,7 @@
 	            // and we can't update markers if data is empty
 	            time = parseInt(time);
 	            var is_match_entry = time === entry_tick_time,
-	                is_match_exit = time === exit_tick_time || user_sold() && time === sell_spot_time,
+	                is_match_exit = time === exit_tick_time,
 	                tick_type = is_match_entry ? 'entry' : 'exit';
 	            data.push({
 	                x: time * 1000,
@@ -39159,7 +39159,8 @@
 	            type: type,
 	            data: data,
 	            entry_time: entry_tick_time ? entry_tick_time * 1000 : start_time * 1000,
-	            exit_time: exit_time ? exit_time * 1000 : null
+	            exit_time: exit_time ? exit_time * 1000 : null,
+	            user_sold: user_sold()
 	        });
 	        Highcharts.setOptions(HighchartUI.get_highchart_options(JPClient));
 	
@@ -39347,7 +39348,7 @@
 	    };
 	
 	    var update_zone = function update_zone(type) {
-	        if (chart && type) {
+	        if (chart && type && !user_sold()) {
 	            var value = type === 'entry' ? entry_tick_time : exit_time;
 	            chart.series[0].zones[type === 'entry' ? 0 : 1].value = value * 1000;
 	        }
@@ -39488,9 +39489,7 @@
 	    var end_contract = function end_contract() {
 	        if (chart) {
 	            draw_line_x(user_sold() ? sell_time : end_time, '', 'textLeft', 'Dash');
-	            if (sell_spot_time && sell_spot_time < end_time && (sell_spot_time >= start_time || sell_spot_time >= purchase_time)) {
-	                select_tick(sell_spot_time, 'exit');
-	            } else if (exit_tick_time) {
+	            if (exit_tick_time) {
 	                select_tick(exit_tick_time, 'exit');
 	            }
 	            if (!contract.sell_spot && !contract.exit_tick) {
@@ -39692,6 +39691,9 @@
 	            },
 	            rangeSelector: { enabled: false }
 	        };
+	        if (params.user_sold) {
+	            chartOptions.series[0].zones.pop();
+	        }
 	    };
 	
 	    var get_highchart_options = function get_highchart_options(JPClient) {
@@ -47103,7 +47105,7 @@
 	
 	                    // replace span to a, to make it clickable for real
 	                    var span_tm_a = tab_container.find('span.tm-a');
-	                    span_tm_a.replaceWith('<a href="#" class="' + span_tm_a.attr('class') + '">' + span_tm_a.html() + '</a>');
+	                    span_tm_a.replaceWith('<a href="javascript:;" class="' + span_tm_a.attr('class') + '">' + span_tm_a.html() + '</a>');
 	
 	                    var menu_li = selected_tab.parents('li');
 	                    var sub_menu_selected = menu_li.find('.tm-ul-2 .a-active'),
@@ -48421,7 +48423,7 @@
 	        d = this.conf[a],
 	        s = e[t]._c,
 	        i = (e[t]._d, e[t]._e);s.add("header hasheader prev next title titletext"), i.add("updateheader");var o = e[t].glbl;if ("boolean" == typeof r && (r = { add: r, update: r }), "object" != (typeof r === "undefined" ? "undefined" : _typeof(r)) && (r = {}), r = e.extend(!0, {}, e[t].defaults[a], r), r.add) {
-	      var h = r.content ? r.content : '<a class="' + s.prev + '" href="#"></a><span class="' + s.title + '"></span><a class="' + s.next + '" href="#"></a>';e('<div class="' + s.header + '" />').prependTo(this.$menu).append(h);
+	      var h = r.content ? r.content : '<a class="' + s.prev + '" href="javascript:;"></a><span class="' + s.title + '"></span><a class="' + s.next + '" href="javascript:;"></a>';e('<div class="' + s.header + '" />').prependTo(this.$menu).append(h);
 	    }var p = e("div." + s.header, this.$menu);if (p.length && this.$menu.addClass(s.hasheader), r.update && p.length) {
 	      var l = p.find("." + s.title),
 	          u = p.find("." + s.prev),
@@ -48466,7 +48468,7 @@
 	        i = (e[l]._d, e[l]._e);if (t.add("collapsed"), t.add("fixedlabels original clone"), i.add("updatelabels position scroll"), e[l].support.touch && (i.scroll += " " + i.mm("touchmove")), "boolean" == typeof n && (n = { collapse: n }), "object" != (typeof n === "undefined" ? "undefined" : _typeof(n)) && (n = {}), n = e.extend(!0, {}, e[l].defaults[s], n), n.collapse) {
 	      this.__refactorClass(e("li." + this.conf.collapsedClass, this.$menu), "collapsed");var d = e("." + t.label, this.$menu);d.each(function () {
 	        var l = e(this),
-	            s = l.nextUntil("." + t.label, "all" == n.collapse ? null : "." + t.collapsed);"all" == n.collapse && (l.addClass(t.opened), s.removeClass(t.collapsed)), s.length && (l.wrapInner("<span />"), e('<a href="#" class="' + t.subopen + " " + t.fullsubopen + '" />').prependTo(l).on(i.click, function (e) {
+	            s = l.nextUntil("." + t.label, "all" == n.collapse ? null : "." + t.collapsed);"all" == n.collapse && (l.addClass(t.opened), s.removeClass(t.collapsed)), s.length && (l.wrapInner("<span />"), e('<a href="javascript:;" class="' + t.subopen + " " + t.fullsubopen + '" />').prependTo(l).on(i.click, function (e) {
 	          e.preventDefault(), l.toggleClass(t.opened), s[l.hasClass(t.opened) ? "removeClass" : "addClass"](t.collapsed);
 	        }));
 	      });
