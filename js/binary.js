@@ -18050,11 +18050,11 @@
 	var WSTickDisplay = __webpack_require__(454).WSTickDisplay;
 	var TradePage = __webpack_require__(466).TradePage;
 	var Notifications = __webpack_require__(459).Notifications;
-	var TradePage_Beta = __webpack_require__(510).TradePage_Beta;
+	var TradePage_Beta = __webpack_require__(513).TradePage_Beta;
 	var reloadPage = __webpack_require__(457).reloadPage;
-	var MBTradePage = __webpack_require__(529).MBTradePage;
-	var RealityCheck = __webpack_require__(536).RealityCheck;
-	var RealityCheckData = __webpack_require__(538).RealityCheckData;
+	var MBTradePage = __webpack_require__(532).MBTradePage;
+	var RealityCheck = __webpack_require__(491).RealityCheck;
+	var RealityCheckData = __webpack_require__(493).RealityCheckData;
 	var localize = __webpack_require__(424).localize;
 	var getLanguage = __webpack_require__(303).getLanguage;
 	var validate_loginid = __webpack_require__(305).validate_loginid;
@@ -42964,13 +42964,13 @@
 	var displayCurrencies = __webpack_require__(470).displayCurrencies;
 	var Defaults = __webpack_require__(458).Defaults;
 	var TradingEvents = __webpack_require__(471).TradingEvents;
-	var Message = __webpack_require__(495).Message;
+	var Message = __webpack_require__(498).Message;
 	var Notifications = __webpack_require__(459).Notifications;
 	var Price = __webpack_require__(475).Price;
 	var Symbols = __webpack_require__(460).Symbols;
 	var forgetTradingStreams = __webpack_require__(477).forgetTradingStreams;
 	var Content = __webpack_require__(427).Content;
-	var Guide = __webpack_require__(505).Guide;
+	var Guide = __webpack_require__(508).Guide;
 	var japanese_client = __webpack_require__(307).japanese_client;
 	var State = __webpack_require__(304).State;
 	var showPriceOverlay = __webpack_require__(457).showPriceOverlay;
@@ -46844,7 +46844,7 @@
 	var Login = __webpack_require__(302).Login;
 	var page = __webpack_require__(487).page;
 	var japanese_client = __webpack_require__(307).japanese_client;
-	var pjax = __webpack_require__(494);
+	var pjax = __webpack_require__(497);
 	
 	var make_mobile_menu = function make_mobile_menu() {
 	    if ($('#mobile-menu-container').is(':visible')) {
@@ -47264,9 +47264,11 @@
 	var checkLanguage = __webpack_require__(307).checkLanguage;
 	var ViewBalance = __webpack_require__(490).ViewBalance;
 	var Cookies = __webpack_require__(301);
-	__webpack_require__(491);
-	__webpack_require__(492);
-	__webpack_require__(493);
+	var RealityCheck = __webpack_require__(491).RealityCheck;
+	var RealityCheckData = __webpack_require__(493).RealityCheckData;
+	__webpack_require__(494);
+	__webpack_require__(495);
+	__webpack_require__(496);
 	
 	var Page = function Page() {
 	    State.set('is_loaded_by_pjax', false);
@@ -47285,6 +47287,11 @@
 	        Contents.on_load();
 	        if (State.get('is_loaded_by_pjax')) {
 	            this.show_authenticate_message();
+	            if (RealityCheckData.get_value('delay_reality_init')) {
+	                RealityCheck.init();
+	            } else if (RealityCheckData.get_value('delay_reality_check')) {
+	                BinarySocket.send({ reality_check: 1 });
+	            }
 	        }
 	        if (Client.get_boolean('is_logged_in')) {
 	            ViewBalance.init();
@@ -47711,6 +47718,363 @@
 
 /***/ },
 /* 491 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var RealityCheckUI = __webpack_require__(492).RealityCheckUI;
+	var RealityCheckData = __webpack_require__(493).RealityCheckData;
+	var Client = __webpack_require__(305).Client;
+	
+	var RealityCheck = function () {
+	    'use strict';
+	
+	    var realityCheckWSHandler = function realityCheckWSHandler(response) {
+	        RealityCheckUI.initializeValues();
+	        if ($.isEmptyObject(response.reality_check)) {
+	            // not required for reality check
+	            RealityCheckUI.sendAccountStatus();
+	            return;
+	        }
+	        if (/no-reality-check/.test(window.location.hash)) {
+	            RealityCheckData.set_value('delay_reality_check', 1);
+	        } else {
+	            RealityCheckData.set_value('delay_reality_check', 0);
+	            var summary = RealityCheckData.summaryData(response.reality_check);
+	            RealityCheckUI.renderSummaryPopUp(summary);
+	        }
+	    };
+	
+	    var realityStorageEventHandler = function realityStorageEventHandler(ev) {
+	        if (ev.key === 'reality_check.ack' && ev.newValue === '1') {
+	            RealityCheckUI.closePopUp();
+	            RealityCheckUI.startSummaryTimer();
+	        } else if (ev.key === 'reality_check.keep_open' && ev.newValue === '0') {
+	            RealityCheckUI.closePopUp();
+	            RealityCheckUI.startSummaryTimer();
+	        }
+	    };
+	
+	    var init = function init() {
+	        if (/no-reality-check/.test(window.location.hash)) {
+	            RealityCheckData.set_value('delay_reality_init', 1);
+	        } else {
+	            RealityCheckData.set_value('delay_reality_init', 0);
+	            RealityCheckUI.initializeValues();
+	            if (!Client.get_boolean('has_reality_check')) {
+	                RealityCheckData.set_value('loginid', Client.get_value('loginid'));
+	                RealityCheckUI.sendAccountStatus();
+	                return;
+	            }
+	
+	            RealityCheckUI.setLoginTime(Client.get_value('session_start') * 1000);
+	
+	            window.addEventListener('storage', realityStorageEventHandler, false);
+	
+	            if (Client.get_value('loginid') !== RealityCheckData.get_value('loginid')) {
+	                RealityCheckData.clear();
+	            }
+	
+	            RealityCheckData.resetInvalid(); // need to reset after clear
+	
+	            if (!RealityCheckData.get_value('ack')) {
+	                RealityCheckUI.renderFrequencyPopUp();
+	            } else if (RealityCheckData.get_value('keep_open')) {
+	                RealityCheckData.getSummaryAsync();
+	            } else {
+	                RealityCheckUI.startSummaryTimer();
+	            }
+	
+	            RealityCheckData.set_value('loginid', Client.get_value('loginid'));
+	            RealityCheckUI.sendAccountStatus();
+	        }
+	    };
+	
+	    return {
+	        init: init,
+	        realityCheckWSHandler: realityCheckWSHandler
+	    };
+	}();
+	
+	module.exports = {
+	    RealityCheck: RealityCheck
+	};
+
+/***/ },
+/* 492 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var showLocalTimeOnHover = __webpack_require__(440).Clock.showLocalTimeOnHover;
+	var onlyNumericOnKeypress = __webpack_require__(482).onlyNumericOnKeypress;
+	var Content = __webpack_require__(427).Content;
+	var RealityCheckData = __webpack_require__(493).RealityCheckData;
+	var localize = __webpack_require__(424).localize;
+	var Client = __webpack_require__(305).Client;
+	var url_for = __webpack_require__(306).url_for;
+	__webpack_require__(494);
+	__webpack_require__(495);
+	
+	var RealityCheckUI = function () {
+	    'use strict';
+	
+	    var frequency_url = url_for('user/reality_check_frequencyws'),
+	        summary_url = url_for('user/reality_check_summaryws'),
+	        hiddenClass = 'invisible';
+	    var loginTime = void 0,
+	        // milliseconds
+	    getAccountStatus = void 0;
+	
+	    var initializeValues = function initializeValues() {
+	        getAccountStatus = false;
+	    };
+	
+	    var showPopUp = function showPopUp(content) {
+	        if ($('#reality-check').length > 0) {
+	            return;
+	        }
+	
+	        var lightboxDiv = $("<div id='reality-check' class='lightbox'></div>");
+	
+	        var wrapper = $('<div></div>');
+	        wrapper = wrapper.append(content);
+	        wrapper = $('<div></div>').append(wrapper);
+	        wrapper.appendTo(lightboxDiv);
+	        lightboxDiv.appendTo('body');
+	
+	        $('#realityDuration').val(RealityCheckData.get_value('interval')).keypress(onlyNumericOnKeypress);
+	    };
+	
+	    var showIntervalOnPopUp = function showIntervalOnPopUp() {
+	        var intervalMinutes = Math.floor(+RealityCheckData.get_value('interval') / 60 / 1000);
+	        $('#realityDuration').val(intervalMinutes);
+	    };
+	
+	    var getAjax = function getAjax(summary) {
+	        $.ajax({
+	            url: summary ? summary_url : frequency_url,
+	            dataType: 'html',
+	            method: 'GET',
+	            success: function success(realityCheckText) {
+	                ajaxSuccess(realityCheckText, summary);
+	            }
+	        });
+	    };
+	
+	    var ajaxSuccess = function ajaxSuccess(realityCheckText, summary) {
+	        if (realityCheckText.includes('reality-check-content')) {
+	            var payload = $(realityCheckText);
+	            showPopUp(payload.find('#reality-check-content'));
+	            showIntervalOnPopUp();
+	            $('#continue').click(onContinueClick);
+	            $('#statement').click(onStatementClick);
+	            $('button#btn_logout').click(onLogoutClick);
+	            if (summary) {
+	                updateSummary(summary);
+	            }
+	        }
+	    };
+	
+	    var updateSummary = function updateSummary(summary) {
+	        $('#start-time').text(summary.startTimeString);
+	        $('#login-time').text(summary.loginTime);
+	        $('#current-time').text(summary.currentTime);
+	        $('#session-duration').text(summary.sessionDuration);
+	
+	        $('#login-id').text(summary.loginId);
+	        $('#rc_currency').text(summary.currency);
+	        $('#turnover').text(summary.turnover);
+	        $('#profitloss').text(summary.profitLoss);
+	        $('#bought').text(summary.contractsBought);
+	        $('#sold').text(summary.contractsSold);
+	        $('#open').text(summary.openContracts);
+	        $('#potential').text(summary.potentialProfit);
+	
+	        showLocalTimeOnHover('#start-time');
+	        showLocalTimeOnHover('#login-time');
+	        showLocalTimeOnHover('#current-time');
+	    };
+	
+	    var closePopUp = function closePopUp() {
+	        $('#reality-check').remove();
+	        RealityCheckUI.sendAccountStatus();
+	    };
+	
+	    var onContinueClick = function onContinueClick() {
+	        var intervalMinute = +$('#realityDuration').val();
+	
+	        if (!(Math.floor(intervalMinute) === intervalMinute && $.isNumeric(intervalMinute))) {
+	            var shouldBeInteger = localize('Interval should be integer.');
+	            $('#rc-err').text(shouldBeInteger).removeClass(hiddenClass);
+	            return;
+	        }
+	
+	        if (intervalMinute < 10 || intervalMinute > 120) {
+	            Content.populate();
+	            var minimumValueMsg = Content.errorMessage('number_should_between', '10 to 120');
+	            $('#rc-err').text(minimumValueMsg).removeClass(hiddenClass);
+	            return;
+	        }
+	
+	        var intervalMs = intervalMinute * 60 * 1000;
+	        RealityCheckData.set_value('interval', intervalMs);
+	        RealityCheckData.set_value('keep_open', 0);
+	        RealityCheckData.set_value('ack', 1);
+	        RealityCheckUI.closePopUp();
+	        startSummaryTimer();
+	        sendAccountStatus();
+	    };
+	
+	    var onStatementClick = function onStatementClick() {
+	        var win = window.open(url_for('user/statementws') + '#no-reality-check', '_blank');
+	        if (win) {
+	            win.focus();
+	        }
+	    };
+	
+	    var onLogoutClick = function onLogoutClick() {
+	        BinarySocket.send({ logout: '1' });
+	    };
+	
+	    var sendAccountStatus = function sendAccountStatus() {
+	        if (!Client.get_boolean('is_virtual') && Client.get_value('residence') !== 'jp' && !getAccountStatus) {
+	            BinarySocket.send({ get_account_status: 1 });
+	            getAccountStatus = true;
+	        }
+	    };
+	
+	    var startSummaryTimer = function startSummaryTimer() {
+	        var interval = +RealityCheckData.get_value('interval');
+	        var currentTime = Date.now();
+	        var toWait = interval - (currentTime - loginTime) % interval;
+	
+	        window.setTimeout(function () {
+	            RealityCheckData.set_value('keep_open', 1);
+	            RealityCheckData.getSummaryAsync();
+	        }, toWait);
+	    };
+	
+	    return {
+	        renderFrequencyPopUp: function renderFrequencyPopUp() {
+	            getAjax();
+	        },
+	        renderSummaryPopUp: function renderSummaryPopUp(summary) {
+	            getAjax(summary);
+	        },
+	        closePopUp: closePopUp,
+	        sendAccountStatus: sendAccountStatus,
+	        initializeValues: initializeValues,
+	        startSummaryTimer: startSummaryTimer,
+	        setLoginTime: function setLoginTime(time) {
+	            loginTime = time;
+	        }
+	    };
+	}();
+	
+	module.exports = {
+	    RealityCheckUI: RealityCheckUI
+	};
+
+/***/ },
+/* 493 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var template = __webpack_require__(420).template;
+	var LocalStore = __webpack_require__(304).LocalStore;
+	var moment = __webpack_require__(308);
+	
+	var RealityCheckData = function () {
+	    'use strict';
+	
+	    var defaultInterval = 600000;
+	    var durationTemplateString = '[_1] days [_2] hours [_3] minutes';
+	    var tradingTimeTemplate = 'Your trading statistics since [_1].';
+	    var reality_object = {};
+	
+	    var getSummaryAsync = function getSummaryAsync() {
+	        BinarySocket.send({ reality_check: 1 });
+	    };
+	
+	    var resetInvalid = function resetInvalid() {
+	        var ack = get_storage_value('ack');
+	        var interval = +get_storage_value('interval');
+	        if (ack !== 0 && ack !== 1) {
+	            set_storage_value('ack', 0);
+	        }
+	        if (!interval) {
+	            set_storage_value('interval', defaultInterval);
+	        }
+	    };
+	
+	    var summaryData = function summaryData(wsData) {
+	        var startTime = moment.utc(new Date(wsData.start_time * 1000));
+	        var currentTime = moment.utc();
+	
+	        var sessionDuration = moment.duration(currentTime.diff(startTime));
+	        var durationString = template(durationTemplateString, [sessionDuration.get('days'), sessionDuration.get('hours'), sessionDuration.get('minutes')]);
+	
+	        var turnover = +wsData.buy_amount + +wsData.sell_amount;
+	        var profitLoss = +wsData.sell_amount - +wsData.buy_amount;
+	
+	        var startTimeString = template(tradingTimeTemplate, [startTime.format('YYYY-MM-DD HH:mm:ss') + ' GMT']);
+	        return {
+	            startTimeString: startTimeString,
+	            loginTime: startTime.format('YYYY-MM-DD HH:mm:ss') + ' GMT',
+	            currentTime: currentTime.format('YYYY-MM-DD HH:mm:ss') + ' GMT',
+	            sessionDuration: durationString,
+	            loginId: wsData.loginid,
+	            currency: wsData.currency,
+	            turnover: (+turnover).toFixed(2),
+	            profitLoss: (+profitLoss).toFixed(2),
+	            contractsBought: wsData.buy_count,
+	            contractsSold: wsData.sell_count,
+	            openContracts: wsData.open_contract_count,
+	            potentialProfit: (+wsData.potential_profit).toFixed(2)
+	        };
+	    };
+	
+	    var set_storage_value = function set_storage_value(key, value) {
+	        reality_object[key] = value;
+	        return LocalStore.set('reality_check.' + key, value);
+	    };
+	
+	    // use this function to get variables that have values
+	    var get_storage_value = function get_storage_value(key) {
+	        var value = reality_object[key] || LocalStore.get('reality_check.' + key) || '';
+	        if (+value === 1 || +value === 0 || value === 'true' || value === 'false') {
+	            value = JSON.parse(value || false);
+	        }
+	        return value;
+	    };
+	
+	    var clear_storage_values = function clear_storage_values() {
+	        // clear all reality check values from local storage except loginid
+	        Object.keys(localStorage).forEach(function (c) {
+	            if (/^reality_check\.(?!(loginid$))/.test(c)) {
+	                LocalStore.set(c, '');
+	            }
+	        });
+	    };
+	
+	    return {
+	        getSummaryAsync: getSummaryAsync,
+	        clear: clear_storage_values,
+	        resetInvalid: resetInvalid,
+	        summaryData: summaryData,
+	        set_value: set_storage_value,
+	        get_value: get_storage_value
+	    };
+	}();
+	
+	module.exports = {
+	    RealityCheckData: RealityCheckData
+	};
+
+/***/ },
+/* 494 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -47747,7 +48111,7 @@
 	}
 
 /***/ },
-/* 492 */
+/* 495 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -47762,7 +48126,7 @@
 	}
 
 /***/ },
-/* 493 */
+/* 496 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -48189,7 +48553,7 @@
 	}(jQuery);
 
 /***/ },
-/* 494 */
+/* 497 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;var __WEBPACK_AMD_DEFINE_RESULT__;"use strict";
@@ -48802,7 +49166,7 @@
 	}).call({});
 
 /***/ },
-/* 495 */
+/* 498 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -48820,8 +49184,8 @@
 	var processProposal = __webpack_require__(477).processProposal;
 	var processTradingTimes = __webpack_require__(477).processTradingTimes;
 	var PortfolioWS = __webpack_require__(463).PortfolioWS;
-	var ProfitTableWS = __webpack_require__(496).ProfitTableWS;
-	var StatementWS = __webpack_require__(502).StatementWS;
+	var ProfitTableWS = __webpack_require__(499).ProfitTableWS;
+	var StatementWS = __webpack_require__(505).StatementWS;
 	var State = __webpack_require__(304).State;
 	var GTM = __webpack_require__(431).GTM;
 	var Client = __webpack_require__(305).Client;
@@ -48895,7 +49259,7 @@
 	};
 
 /***/ },
-/* 496 */
+/* 499 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -48904,8 +49268,8 @@
 	var addTooltip = __webpack_require__(464).addTooltip;
 	var buildOauthApps = __webpack_require__(464).buildOauthApps;
 	var Content = __webpack_require__(427).Content;
-	var ProfitTableUI = __webpack_require__(497).ProfitTableUI;
-	var ProfitTableData = __webpack_require__(501).ProfitTableData;
+	var ProfitTableUI = __webpack_require__(500).ProfitTableUI;
+	var ProfitTableData = __webpack_require__(504).ProfitTableData;
 	var localize = __webpack_require__(424).localize;
 	
 	var ProfitTableWS = function () {
@@ -49048,7 +49412,7 @@
 	};
 
 /***/ },
-/* 497 */
+/* 500 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49056,14 +49420,14 @@
 	var toJapanTimeIfNeeded = __webpack_require__(440).Clock.toJapanTimeIfNeeded;
 	var localize = __webpack_require__(424).localize;
 	var Client = __webpack_require__(305).Client;
-	var Button = __webpack_require__(498).Button;
+	var Button = __webpack_require__(501).Button;
 	var Content = __webpack_require__(427).Content;
-	var Table = __webpack_require__(499).Table;
+	var Table = __webpack_require__(502).Table;
 	var format_money = __webpack_require__(441).format_money;
 	var showTooltip = __webpack_require__(464).showTooltip;
 	var japanese_client = __webpack_require__(307).japanese_client;
 	var addComma = __webpack_require__(442).addComma;
-	var ProfitTable = __webpack_require__(500).ProfitTable;
+	var ProfitTable = __webpack_require__(503).ProfitTable;
 	var elementTextContent = __webpack_require__(421).elementTextContent;
 	
 	var ProfitTableUI = function () {
@@ -49181,7 +49545,7 @@
 	};
 
 /***/ },
-/* 498 */
+/* 501 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -49207,7 +49571,7 @@
 	};
 
 /***/ },
-/* 499 */
+/* 502 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -49337,7 +49701,7 @@
 	};
 
 /***/ },
-/* 500 */
+/* 503 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49377,7 +49741,7 @@
 	};
 
 /***/ },
-/* 501 */
+/* 504 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -49402,13 +49766,13 @@
 	};
 
 /***/ },
-/* 502 */
+/* 505 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var showLocalTimeOnHover = __webpack_require__(440).Clock.showLocalTimeOnHover;
-	var StatementUI = __webpack_require__(503).StatementUI;
+	var StatementUI = __webpack_require__(506).StatementUI;
 	var addTooltip = __webpack_require__(464).addTooltip;
 	var buildOauthApps = __webpack_require__(464).buildOauthApps;
 	var Content = __webpack_require__(427).Content;
@@ -49611,19 +49975,19 @@
 	};
 
 /***/ },
-/* 503 */
+/* 506 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var toJapanTimeIfNeeded = __webpack_require__(440).Clock.toJapanTimeIfNeeded;
 	var downloadCSV = __webpack_require__(420).downloadCSV;
-	var Button = __webpack_require__(498).Button;
+	var Button = __webpack_require__(501).Button;
 	var Content = __webpack_require__(427).Content;
-	var Table = __webpack_require__(499).Table;
+	var Table = __webpack_require__(502).Table;
 	var showTooltip = __webpack_require__(464).showTooltip;
 	var japanese_client = __webpack_require__(307).japanese_client;
-	var Statement = __webpack_require__(504).Statement;
+	var Statement = __webpack_require__(507).Statement;
 	var localize = __webpack_require__(424).localize;
 	var Client = __webpack_require__(305).Client;
 	
@@ -49719,7 +50083,7 @@
 	};
 
 /***/ },
-/* 504 */
+/* 507 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49788,12 +50152,12 @@
 	};
 
 /***/ },
-/* 505 */
+/* 508 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var EnjoyHint = __webpack_require__(506);
+	var EnjoyHint = __webpack_require__(509);
 	var Cookies = __webpack_require__(301);
 	var localize = __webpack_require__(424).localize;
 	
@@ -49945,7 +50309,7 @@
 	};
 
 /***/ },
-/* 506 */
+/* 509 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49956,7 +50320,7 @@
 	// (+ some custom changes for binary.com)
 	
 	var $ = __webpack_require__(1);
-	var Kinetic = __webpack_require__(507);
+	var Kinetic = __webpack_require__(510);
 	
 	module.exports = function (_options) {
 	    var that = this;
@@ -50940,7 +51304,7 @@
 	};
 
 /***/ },
-/* 507 */
+/* 510 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {
@@ -51546,8 +51910,8 @@
 	            // Node. Does not work with strict CommonJS, but
 	            // only CommonJS-like enviroments that support module.exports,
 	            // like Node.
-	            var Canvas = __webpack_require__(508);
-	            var jsdom = __webpack_require__(509).jsdom;
+	            var Canvas = __webpack_require__(511);
+	            var jsdom = __webpack_require__(512).jsdom;
 	
 	            Kinetic.document = jsdom('<!DOCTYPE html><html><head></head><body></body></html>');
 	            Kinetic.window = Kinetic.document.createWindow();
@@ -66085,37 +66449,37 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 508 */
+/* 511 */
 /***/ function(module, exports) {
 
 	/* (ignored) */
 
 /***/ },
-/* 509 */
+/* 512 */
 /***/ function(module, exports) {
 
 	/* (ignored) */
 
 /***/ },
-/* 510 */
+/* 513 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var TradingAnalysis_Beta = __webpack_require__(511).TradingAnalysis_Beta;
-	var TradingEvents_Beta = __webpack_require__(519).TradingEvents_Beta;
-	var Message_Beta = __webpack_require__(527).Message_Beta;
-	var Price_Beta = __webpack_require__(522).Price_Beta;
-	var forgetTradingStreams_Beta = __webpack_require__(523).forgetTradingStreams_Beta;
+	var TradingAnalysis_Beta = __webpack_require__(514).TradingAnalysis_Beta;
+	var TradingEvents_Beta = __webpack_require__(522).TradingEvents_Beta;
+	var Message_Beta = __webpack_require__(530).Message_Beta;
+	var Price_Beta = __webpack_require__(525).Price_Beta;
+	var forgetTradingStreams_Beta = __webpack_require__(526).forgetTradingStreams_Beta;
 	var displayCurrencies = __webpack_require__(470).displayCurrencies;
 	var Defaults = __webpack_require__(458).Defaults;
 	var Notifications = __webpack_require__(459).Notifications;
 	var Symbols = __webpack_require__(460).Symbols;
 	var Content = __webpack_require__(427).Content;
-	var Guide = __webpack_require__(505).Guide;
+	var Guide = __webpack_require__(508).Guide;
 	var japanese_client = __webpack_require__(307).japanese_client;
 	var PortfolioWS = __webpack_require__(463).PortfolioWS;
-	var ResizeSensor = __webpack_require__(528);
+	var ResizeSensor = __webpack_require__(531);
 	var State = __webpack_require__(304).State;
 	var url_for = __webpack_require__(306).url_for;
 	var showPriceOverlay = __webpack_require__(457).showPriceOverlay;
@@ -66319,15 +66683,15 @@
 	};
 
 /***/ },
-/* 511 */
+/* 514 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var AssetIndexUI = __webpack_require__(512).AssetIndexUI;
-	var MarketTimesUI = __webpack_require__(515).MarketTimesUI;
+	var AssetIndexUI = __webpack_require__(515).AssetIndexUI;
+	var MarketTimesUI = __webpack_require__(518).MarketTimesUI;
 	var japanese_client = __webpack_require__(307).japanese_client;
-	var DigitInfoWS_Beta = __webpack_require__(518).DigitInfoWS_Beta;
+	var DigitInfoWS_Beta = __webpack_require__(521).DigitInfoWS_Beta;
 	var PortfolioWS = __webpack_require__(463).PortfolioWS;
 	var State = __webpack_require__(304).State;
 	var getLanguage = __webpack_require__(303).getLanguage;
@@ -66572,18 +66936,18 @@
 	};
 
 /***/ },
-/* 512 */
+/* 515 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var showLoadingImage = __webpack_require__(420).showLoadingImage;
-	var Table = __webpack_require__(499).Table;
+	var Table = __webpack_require__(502).Table;
 	var jqueryuiTabsToDropdown = __webpack_require__(421).jqueryuiTabsToDropdown;
 	var Content = __webpack_require__(427).Content;
 	var japanese_client = __webpack_require__(307).japanese_client;
-	var AssetIndexData = __webpack_require__(513).AssetIndexData;
-	var AssetIndex = __webpack_require__(514).AssetIndex;
+	var AssetIndexData = __webpack_require__(516).AssetIndexData;
+	var AssetIndex = __webpack_require__(517).AssetIndex;
 	var State = __webpack_require__(304).State;
 	var url_for = __webpack_require__(306).url_for;
 	
@@ -66744,7 +67108,7 @@
 	};
 
 /***/ },
-/* 513 */
+/* 516 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -66769,7 +67133,7 @@
 	};
 
 /***/ },
-/* 514 */
+/* 517 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -66862,18 +67226,18 @@
 	};
 
 /***/ },
-/* 515 */
+/* 518 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var showLoadingImage = __webpack_require__(420).showLoadingImage;
-	var Table = __webpack_require__(499).Table;
+	var Table = __webpack_require__(502).Table;
 	var jqueryuiTabsToDropdown = __webpack_require__(421).jqueryuiTabsToDropdown;
 	var Content = __webpack_require__(427).Content;
 	var japanese_client = __webpack_require__(307).japanese_client;
-	var MarketTimesData = __webpack_require__(516).MarketTimesData;
-	var MarketTimes = __webpack_require__(517).MarketTimes;
+	var MarketTimesData = __webpack_require__(519).MarketTimesData;
+	var MarketTimes = __webpack_require__(520).MarketTimes;
 	var moment = __webpack_require__(308);
 	var State = __webpack_require__(304).State;
 	var DatePicker = __webpack_require__(476).DatePicker;
@@ -67074,7 +67438,7 @@
 	};
 
 /***/ },
-/* 516 */
+/* 519 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -67105,7 +67469,7 @@
 	};
 
 /***/ },
-/* 517 */
+/* 520 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -67136,7 +67500,7 @@
 	};
 
 /***/ },
-/* 518 */
+/* 521 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -67409,21 +67773,21 @@
 	};
 
 /***/ },
-/* 519 */
+/* 522 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var TradingAnalysis_Beta = __webpack_require__(511).TradingAnalysis_Beta;
-	var Barriers_Beta = __webpack_require__(520).Barriers_Beta;
+	var TradingAnalysis_Beta = __webpack_require__(514).TradingAnalysis_Beta;
+	var Barriers_Beta = __webpack_require__(523).Barriers_Beta;
 	var Contract_Beta = __webpack_require__(481).Contract_Beta;
-	var Durations_Beta = __webpack_require__(521).Durations_Beta;
-	var Price_Beta = __webpack_require__(522).Price_Beta;
-	var processMarket_Beta = __webpack_require__(523).processMarket_Beta;
-	var processContractForm_Beta = __webpack_require__(523).processContractForm_Beta;
-	var processForgetTicks_Beta = __webpack_require__(523).processForgetTicks_Beta;
-	var onExpiryTypeChange = __webpack_require__(523).onExpiryTypeChange;
-	var onDurationUnitChange = __webpack_require__(523).onDurationUnitChange;
+	var Durations_Beta = __webpack_require__(524).Durations_Beta;
+	var Price_Beta = __webpack_require__(525).Price_Beta;
+	var processMarket_Beta = __webpack_require__(526).processMarket_Beta;
+	var processContractForm_Beta = __webpack_require__(526).processContractForm_Beta;
+	var processForgetTicks_Beta = __webpack_require__(526).processForgetTicks_Beta;
+	var onExpiryTypeChange = __webpack_require__(526).onExpiryTypeChange;
+	var onDurationUnitChange = __webpack_require__(526).onDurationUnitChange;
 	var Defaults = __webpack_require__(458).Defaults;
 	var Tick = __webpack_require__(455).Tick;
 	var onlyNumericOnKeypress = __webpack_require__(482).onlyNumericOnKeypress;
@@ -67925,7 +68289,7 @@
 	};
 
 /***/ },
-/* 520 */
+/* 523 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -68102,14 +68466,14 @@
 	};
 
 /***/ },
-/* 521 */
+/* 524 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var Barriers_Beta = __webpack_require__(520).Barriers_Beta;
+	var Barriers_Beta = __webpack_require__(523).Barriers_Beta;
 	var Contract_Beta = __webpack_require__(481).Contract_Beta;
-	var Price_Beta = __webpack_require__(522).Price_Beta;
+	var Price_Beta = __webpack_require__(525).Price_Beta;
 	var Defaults = __webpack_require__(458).Defaults;
 	var moment = __webpack_require__(308);
 	var Content = __webpack_require__(427).Content;
@@ -68541,7 +68905,7 @@
 	};
 
 /***/ },
-/* 522 */
+/* 525 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -68906,21 +69270,21 @@
 	};
 
 /***/ },
-/* 523 */
+/* 526 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 	
-	var TradingAnalysis_Beta = __webpack_require__(511).TradingAnalysis_Beta;
-	var Barriers_Beta = __webpack_require__(520).Barriers_Beta;
+	var TradingAnalysis_Beta = __webpack_require__(514).TradingAnalysis_Beta;
+	var Barriers_Beta = __webpack_require__(523).Barriers_Beta;
 	var Contract_Beta = __webpack_require__(481).Contract_Beta;
-	var Durations_Beta = __webpack_require__(521).Durations_Beta;
-	var Price_Beta = __webpack_require__(522).Price_Beta;
-	var Purchase_Beta = __webpack_require__(524).Purchase_Beta;
-	var StartDates_Beta = __webpack_require__(526).StartDates_Beta;
-	var WSTickDisplay_Beta = __webpack_require__(525).WSTickDisplay_Beta;
+	var Durations_Beta = __webpack_require__(524).Durations_Beta;
+	var Price_Beta = __webpack_require__(525).Price_Beta;
+	var Purchase_Beta = __webpack_require__(527).Purchase_Beta;
+	var StartDates_Beta = __webpack_require__(529).StartDates_Beta;
+	var WSTickDisplay_Beta = __webpack_require__(528).WSTickDisplay_Beta;
 	var Defaults = __webpack_require__(458).Defaults;
 	var Symbols = __webpack_require__(460).Symbols;
 	var Tick = __webpack_require__(455).Tick;
@@ -69308,13 +69672,13 @@
 	};
 
 /***/ },
-/* 524 */
+/* 527 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var Contract_Beta = __webpack_require__(481).Contract_Beta;
-	var WSTickDisplay_Beta = __webpack_require__(525).WSTickDisplay_Beta;
+	var WSTickDisplay_Beta = __webpack_require__(528).WSTickDisplay_Beta;
 	var Symbols = __webpack_require__(460).Symbols;
 	var Tick = __webpack_require__(455).Tick;
 	var Content = __webpack_require__(427).Content;
@@ -69598,7 +69962,7 @@
 	};
 
 /***/ },
-/* 525 */
+/* 528 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -70124,13 +70488,13 @@
 	};
 
 /***/ },
-/* 526 */
+/* 529 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var Contract_Beta = __webpack_require__(481).Contract_Beta;
-	var Durations_Beta = __webpack_require__(521).Durations;
+	var Durations_Beta = __webpack_require__(524).Durations;
 	var Defaults = __webpack_require__(458).Defaults;
 	var getStartDateNode = __webpack_require__(456).getStartDateNode;
 	var moment = __webpack_require__(308);
@@ -70247,28 +70611,28 @@
 	};
 
 /***/ },
-/* 527 */
+/* 530 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var TradingAnalysis_Beta = __webpack_require__(511).TradingAnalysis_Beta;
-	var Purchase_Beta = __webpack_require__(524).Purchase_Beta;
-	var processActiveSymbols_Beta = __webpack_require__(523).processActiveSymbols_Beta;
-	var processContract_Beta = __webpack_require__(523).processContract_Beta;
-	var forgetTradingStreams_Beta = __webpack_require__(523).forgetTradingStreams_Beta;
-	var processTick_Beta = __webpack_require__(523).processTick_Beta;
-	var processProposal_Beta = __webpack_require__(523).processProposal_Beta;
-	var processTradingTimes_Beta = __webpack_require__(523).processTradingTimes_Beta;
+	var TradingAnalysis_Beta = __webpack_require__(514).TradingAnalysis_Beta;
+	var Purchase_Beta = __webpack_require__(527).Purchase_Beta;
+	var processActiveSymbols_Beta = __webpack_require__(526).processActiveSymbols_Beta;
+	var processContract_Beta = __webpack_require__(526).processContract_Beta;
+	var forgetTradingStreams_Beta = __webpack_require__(526).forgetTradingStreams_Beta;
+	var processTick_Beta = __webpack_require__(526).processTick_Beta;
+	var processProposal_Beta = __webpack_require__(526).processProposal_Beta;
+	var processTradingTimes_Beta = __webpack_require__(526).processTradingTimes_Beta;
 	var displayCurrencies = __webpack_require__(470).displayCurrencies;
 	var Notifications = __webpack_require__(459).Notifications;
 	var Symbols = __webpack_require__(460).Symbols;
 	var Tick = __webpack_require__(455).Tick;
-	var AssetIndexUI = __webpack_require__(512).AssetIndexUI;
-	var MarketTimesUI = __webpack_require__(515).MarketTimesUI;
+	var AssetIndexUI = __webpack_require__(515).AssetIndexUI;
+	var MarketTimesUI = __webpack_require__(518).MarketTimesUI;
 	var PortfolioWS = __webpack_require__(463).PortfolioWS;
-	var ProfitTableWS = __webpack_require__(496).ProfitTableWS;
-	var StatementWS = __webpack_require__(502).StatementWS;
+	var ProfitTableWS = __webpack_require__(499).ProfitTableWS;
+	var StatementWS = __webpack_require__(505).StatementWS;
 	var State = __webpack_require__(304).State;
 	var GTM = __webpack_require__(431).GTM;
 	var Client = __webpack_require__(305).Client;
@@ -70349,7 +70713,7 @@
 	};
 
 /***/ },
-/* 528 */
+/* 531 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;"use strict";
@@ -70566,22 +70930,22 @@
 	});
 
 /***/ },
-/* 529 */
+/* 532 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var MBContract = __webpack_require__(444).MBContract;
-	var MBDisplayCurrencies = __webpack_require__(530).MBDisplayCurrencies;
-	var MBTradingEvents = __webpack_require__(531).MBTradingEvents;
-	var MBMessage = __webpack_require__(534).MBMessage;
+	var MBDisplayCurrencies = __webpack_require__(533).MBDisplayCurrencies;
+	var MBTradingEvents = __webpack_require__(534).MBTradingEvents;
+	var MBMessage = __webpack_require__(537).MBMessage;
 	var MBSymbols = __webpack_require__(446).MBSymbols;
 	var TradingAnalysis = __webpack_require__(467).TradingAnalysis;
 	var forgetTradingStreams = __webpack_require__(477).forgetTradingStreams;
 	var JapanPortfolio = __webpack_require__(469).JapanPortfolio;
 	var State = __webpack_require__(304).State;
 	var Content = __webpack_require__(427).Content;
-	var MBProcess = __webpack_require__(532).MBProcess;
+	var MBProcess = __webpack_require__(535).MBProcess;
 	var MBNotifications = __webpack_require__(448).MBNotifications;
 	var MBPrice = __webpack_require__(443).MBPrice;
 	var chartFrameCleanup = __webpack_require__(457).chartFrameCleanup;
@@ -70662,7 +71026,7 @@
 	};
 
 /***/ },
-/* 530 */
+/* 533 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -70722,7 +71086,7 @@
 	};
 
 /***/ },
-/* 531 */
+/* 534 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -70730,8 +71094,8 @@
 	var MBContract = __webpack_require__(444).MBContract;
 	var MBDefaults = __webpack_require__(445).MBDefaults;
 	var MBNotifications = __webpack_require__(448).MBNotifications;
-	var MBProcess = __webpack_require__(532).MBProcess;
-	var MBTick = __webpack_require__(533).MBTick;
+	var MBProcess = __webpack_require__(535).MBProcess;
+	var MBTick = __webpack_require__(536).MBTick;
 	var TradingAnalysis = __webpack_require__(467).TradingAnalysis;
 	var japanese_client = __webpack_require__(307).japanese_client;
 	var debounce = __webpack_require__(457).debounce;
@@ -70885,7 +71249,7 @@
 	};
 
 /***/ },
-/* 532 */
+/* 535 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -70895,7 +71259,7 @@
 	var MBNotifications = __webpack_require__(448).MBNotifications;
 	var MBPrice = __webpack_require__(443).MBPrice;
 	var MBSymbols = __webpack_require__(446).MBSymbols;
-	var MBTick = __webpack_require__(533).MBTick;
+	var MBTick = __webpack_require__(536).MBTick;
 	var TradingAnalysis = __webpack_require__(467).TradingAnalysis;
 	var japanese_client = __webpack_require__(307).japanese_client;
 	var displayUnderlyings = __webpack_require__(457).displayUnderlyings;
@@ -71192,7 +71556,7 @@
 	};
 
 /***/ },
-/* 533 */
+/* 536 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -71370,18 +71734,18 @@
 	};
 
 /***/ },
-/* 534 */
+/* 537 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var MBContract = __webpack_require__(444).MBContract;
-	var MBDisplayCurrencies = __webpack_require__(530).MBDisplayCurrencies;
+	var MBDisplayCurrencies = __webpack_require__(533).MBDisplayCurrencies;
 	var MBNotifications = __webpack_require__(448).MBNotifications;
-	var MBProcess = __webpack_require__(532).MBProcess;
-	var MBPurchase = __webpack_require__(535).MBPurchase;
+	var MBProcess = __webpack_require__(535).MBProcess;
+	var MBPurchase = __webpack_require__(538).MBPurchase;
 	var MBSymbols = __webpack_require__(446).MBSymbols;
-	var MBTick = __webpack_require__(533).MBTick;
+	var MBTick = __webpack_require__(536).MBTick;
 	var PortfolioWS = __webpack_require__(463).PortfolioWS;
 	var State = __webpack_require__(304).State;
 	var GTM = __webpack_require__(431).GTM;
@@ -71445,7 +71809,7 @@
 	};
 
 /***/ },
-/* 535 */
+/* 538 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -71479,411 +71843,6 @@
 	
 	module.exports = {
 	    MBPurchase: MBPurchase
-	};
-
-/***/ },
-/* 536 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var RealityCheckUI = __webpack_require__(537).RealityCheckUI;
-	var RealityCheckData = __webpack_require__(538).RealityCheckData;
-	var Client = __webpack_require__(305).Client;
-	
-	var RealityCheck = function () {
-	    'use strict';
-	
-	    var realityCheckWSHandler = function realityCheckWSHandler(response) {
-	        RealityCheckUI.initializeValues();
-	        if ($.isEmptyObject(response.reality_check)) {
-	            // not required for reality check
-	            RealityCheckUI.sendAccountStatus();
-	            return;
-	        }
-	
-	        var summary = RealityCheckData.summaryData(response.reality_check);
-	        RealityCheckUI.renderSummaryPopUp(summary);
-	    };
-	
-	    var realityStorageEventHandler = function realityStorageEventHandler(ev) {
-	        if (ev.key === 'reality_check.ack' && ev.newValue === '1') {
-	            RealityCheckUI.closePopUp();
-	            RealityCheckUI.startSummaryTimer();
-	        } else if (ev.key === 'reality_check.keep_open' && ev.newValue === '0') {
-	            RealityCheckUI.closePopUp();
-	            RealityCheckUI.startSummaryTimer();
-	        }
-	    };
-	
-	    var init = function init() {
-	        RealityCheckUI.initializeValues();
-	        if (!Client.get_boolean('has_reality_check')) {
-	            RealityCheckData.setPreviousLoadLoginId();
-	            RealityCheckUI.sendAccountStatus();
-	            return;
-	        }
-	
-	        RealityCheckUI.setLoginTime(Client.get_value('session_start') * 1000);
-	
-	        window.addEventListener('storage', realityStorageEventHandler, false);
-	
-	        if (Client.get_value('loginid') !== RealityCheckData.getPreviousLoadLoginId()) {
-	            RealityCheckData.clear();
-	        }
-	
-	        RealityCheckData.resetInvalid(); // need to reset after clear
-	
-	        if (RealityCheckData.getAck() !== '1') {
-	            RealityCheckUI.renderFrequencyPopUp();
-	        } else if (RealityCheckData.getOpenSummaryFlag() === '1') {
-	            RealityCheckData.getSummaryAsync();
-	        } else {
-	            RealityCheckUI.startSummaryTimer();
-	        }
-	
-	        RealityCheckData.setPreviousLoadLoginId();
-	        RealityCheckUI.sendAccountStatus();
-	    };
-	
-	    return {
-	        init: init,
-	        realityCheckWSHandler: realityCheckWSHandler
-	    };
-	}();
-	
-	module.exports = {
-	    RealityCheck: RealityCheck
-	};
-
-/***/ },
-/* 537 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var showLocalTimeOnHover = __webpack_require__(440).Clock.showLocalTimeOnHover;
-	var onlyNumericOnKeypress = __webpack_require__(482).onlyNumericOnKeypress;
-	var Content = __webpack_require__(427).Content;
-	var RealityCheckData = __webpack_require__(538).RealityCheckData;
-	var localize = __webpack_require__(424).localize;
-	var Client = __webpack_require__(305).Client;
-	var url_for = __webpack_require__(306).url_for;
-	__webpack_require__(491);
-	__webpack_require__(492);
-	
-	var RealityCheckUI = function () {
-	    'use strict';
-	
-	    var frequency_url = url_for('user/reality_check_frequencyws'),
-	        summary_url = url_for('user/reality_check_summaryws'),
-	        hiddenClass = 'invisible';
-	    var loginTime = void 0,
-	        // milliseconds
-	    getAccountStatus = void 0;
-	
-	    var initializeValues = function initializeValues() {
-	        getAccountStatus = false;
-	    };
-	
-	    var showPopUp = function showPopUp(content) {
-	        if ($('#reality-check').length > 0) {
-	            return;
-	        }
-	
-	        var lightboxDiv = $("<div id='reality-check' class='lightbox'></div>");
-	
-	        var wrapper = $('<div></div>');
-	        wrapper = wrapper.append(content);
-	        wrapper = $('<div></div>').append(wrapper);
-	        wrapper.appendTo(lightboxDiv);
-	        lightboxDiv.appendTo('body');
-	
-	        $('#realityDuration').val(RealityCheckData.getInterval()).keypress(onlyNumericOnKeypress);
-	    };
-	
-	    var showIntervalOnPopUp = function showIntervalOnPopUp() {
-	        var intervalMinutes = Math.floor(RealityCheckData.getInterval() / 60 / 1000);
-	        $('#realityDuration').val(intervalMinutes);
-	    };
-	
-	    var renderFrequencyPopUp = function renderFrequencyPopUp() {
-	        $.ajax({
-	            url: frequency_url,
-	            dataType: 'html',
-	            method: 'GET',
-	            success: function success(realityCheckText) {
-	                if (realityCheckText.includes('reality-check-content')) {
-	                    var payload = $(realityCheckText);
-	                    showPopUp(payload.find('#reality-check-content'));
-	                    showIntervalOnPopUp();
-	                    $('#continue').click(RealityCheckUI.onContinueClick);
-	                }
-	            },
-	            error: function error() {}
-	        });
-	        $('#continue').click(RealityCheckUI.onContinueClick);
-	    };
-	
-	    var updateSummary = function updateSummary(summary) {
-	        $('#start-time').text(summary.startTimeString);
-	        $('#login-time').text(summary.loginTime);
-	        $('#current-time').text(summary.currentTime);
-	        $('#session-duration').text(summary.sessionDuration);
-	
-	        $('#login-id').text(summary.loginId);
-	        $('#rc_currency').text(summary.currency);
-	        $('#turnover').text(summary.turnover);
-	        $('#profitloss').text(summary.profitLoss);
-	        $('#bought').text(summary.contractsBought);
-	        $('#sold').text(summary.contractsSold);
-	        $('#open').text(summary.openContracts);
-	        $('#potential').text(summary.potentialProfit);
-	
-	        showLocalTimeOnHover('#start-time');
-	        showLocalTimeOnHover('#login-time');
-	        showLocalTimeOnHover('#current-time');
-	    };
-	
-	    var renderSummaryPopUp = function renderSummaryPopUp(summary) {
-	        $.ajax({
-	            url: summary_url,
-	            dataType: 'html',
-	            method: 'GET',
-	            success: function success(realityCheckText) {
-	                if (realityCheckText.includes('reality-check-content')) {
-	                    var payload = $(realityCheckText);
-	                    showPopUp(payload.find('#reality-check-content'));
-	                    updateSummary(summary);
-	                    showIntervalOnPopUp();
-	                    $('#continue').click(RealityCheckUI.onContinueClick);
-	                    $('button#btn_logout').click(RealityCheckUI.onLogoutClick);
-	                }
-	            },
-	            error: function error() {}
-	        });
-	    };
-	
-	    var frequencyEventHandler = function frequencyEventHandler() {
-	        $('button#continue').click(function () {
-	            RealityCheckData.updateAck();
-	        });
-	    };
-	
-	    var summaryEventHandler = function summaryEventHandler() {
-	        $('button#continue').click(function () {
-	            RealityCheckData.updateAck();
-	        });
-	
-	        $('button#btn_logout').click(function () {
-	            BinarySocket.send({ logout: 1 });
-	        });
-	    };
-	
-	    var closePopUp = function closePopUp() {
-	        $('#reality-check').remove();
-	        RealityCheckUI.sendAccountStatus();
-	    };
-	
-	    var onContinueClick = function onContinueClick() {
-	        var intervalMinute = +$('#realityDuration').val();
-	
-	        if (!(Math.floor(intervalMinute) === intervalMinute && $.isNumeric(intervalMinute))) {
-	            var shouldBeInteger = localize('Interval should be integer.');
-	            $('#rc-err').text(shouldBeInteger).removeClass(hiddenClass);
-	            return;
-	        }
-	
-	        if (intervalMinute < 10 || intervalMinute > 120) {
-	            Content.populate();
-	            var minimumValueMsg = Content.errorMessage('number_should_between', '10 to 120');
-	            $('#rc-err').text(minimumValueMsg).removeClass(hiddenClass);
-	            return;
-	        }
-	
-	        var intervalMs = intervalMinute * 60 * 1000;
-	        RealityCheckData.updateInterval(intervalMs);
-	        RealityCheckData.triggerCloseEvent();
-	        RealityCheckData.updateAck();
-	        RealityCheckUI.closePopUp();
-	        startSummaryTimer();
-	        sendAccountStatus();
-	    };
-	
-	    var onLogoutClick = function onLogoutClick() {
-	        logout();
-	    };
-	
-	    var logout = function logout() {
-	        BinarySocket.send({ logout: '1' });
-	    };
-	
-	    var sendAccountStatus = function sendAccountStatus() {
-	        if (!Client.get_boolean('is_virtual') && Client.get_value('residence') !== 'jp' && !getAccountStatus) {
-	            BinarySocket.send({ get_account_status: 1 });
-	            getAccountStatus = true;
-	        }
-	    };
-	
-	    var computeIntervalForNextPopup = function computeIntervalForNextPopup(loggedinTime, interval) {
-	        var currentTime = Date.now();
-	        return interval - (currentTime - loggedinTime) % interval;
-	    };
-	
-	    var startSummaryTimer = function startSummaryTimer() {
-	        var interval = RealityCheckData.getInterval();
-	        var toWait = computeIntervalForNextPopup(loginTime, interval);
-	
-	        window.setTimeout(function () {
-	            RealityCheckData.setOpenSummaryFlag();
-	            RealityCheckData.getSummaryAsync();
-	        }, toWait);
-	    };
-	
-	    return {
-	        frequencyEventHandler: frequencyEventHandler,
-	        summaryEventHandler: summaryEventHandler,
-	        renderFrequencyPopUp: renderFrequencyPopUp,
-	        renderSummaryPopUp: renderSummaryPopUp,
-	        closePopUp: closePopUp,
-	        onContinueClick: onContinueClick,
-	        onLogoutClick: onLogoutClick,
-	        sendAccountStatus: sendAccountStatus,
-	        initializeValues: initializeValues,
-	        startSummaryTimer: startSummaryTimer,
-	        setLoginTime: function setLoginTime(time) {
-	            loginTime = time;
-	        }
-	    };
-	}();
-	
-	module.exports = {
-	    RealityCheckUI: RealityCheckUI
-	};
-
-/***/ },
-/* 538 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var template = __webpack_require__(420).template;
-	var LocalStore = __webpack_require__(304).LocalStore;
-	var Client = __webpack_require__(305).Client;
-	var moment = __webpack_require__(308);
-	
-	var RealityCheckData = function () {
-	    'use strict';
-	
-	    var defaultInterval = 600000;
-	    var durationTemplateString = '[_1] days [_2] hours [_3] minutes';
-	    var tradingTimeTemplate = 'Your trading statistics since [_1].';
-	
-	    var getSummaryAsync = function getSummaryAsync() {
-	        BinarySocket.send({ reality_check: 1 });
-	    };
-	
-	    var getAck = function getAck() {
-	        return LocalStore.get('reality_check.ack');
-	    };
-	
-	    var setOpenSummaryFlag = function setOpenSummaryFlag() {
-	        LocalStore.set('reality_check.keep_open', 1);
-	    };
-	
-	    var getOpenSummaryFlag = function getOpenSummaryFlag() {
-	        return LocalStore.get('reality_check.keep_open');
-	    };
-	
-	    var triggerCloseEvent = function triggerCloseEvent() {
-	        LocalStore.set('reality_check.keep_open', 0);
-	    };
-	
-	    var updateAck = function updateAck() {
-	        LocalStore.set('reality_check.ack', 1);
-	    };
-	
-	    var getInterval = function getInterval() {
-	        return LocalStore.get('reality_check.interval');
-	    };
-	
-	    var getPreviousLoadLoginId = function getPreviousLoadLoginId() {
-	        return LocalStore.get('reality_check.loginid');
-	    };
-	
-	    var setPreviousLoadLoginId = function setPreviousLoadLoginId() {
-	        var id = Client.get_value('loginid');
-	        LocalStore.set('reality_check.loginid', id);
-	    };
-	
-	    var updateInterval = function updateInterval(ms) {
-	        LocalStore.set('reality_check.interval', ms);
-	    };
-	
-	    var clear = function clear() {
-	        LocalStore.remove('reality_check.ack');
-	        LocalStore.remove('reality_check.interval');
-	        LocalStore.remove('reality_check.keep_open');
-	    };
-	
-	    var resetInvalid = function resetInvalid() {
-	        var ack = LocalStore.get('reality_check.ack');
-	        var interval = +LocalStore.get('reality_check.interval');
-	        if (ack !== '0' && ack !== '1') {
-	            LocalStore.set('reality_check.ack', 0);
-	        }
-	
-	        if (!interval) {
-	            LocalStore.set('reality_check.interval', defaultInterval);
-	        }
-	    };
-	
-	    var summaryData = function summaryData(wsData) {
-	        var startTime = moment.utc(new Date(wsData.start_time * 1000));
-	        var currentTime = moment.utc();
-	
-	        var sessionDuration = moment.duration(currentTime.diff(startTime));
-	        var durationString = template(durationTemplateString, [sessionDuration.get('days'), sessionDuration.get('hours'), sessionDuration.get('minutes')]);
-	
-	        var turnover = +wsData.buy_amount + +wsData.sell_amount;
-	        var profitLoss = +wsData.sell_amount - +wsData.buy_amount;
-	
-	        var startTimeString = template(tradingTimeTemplate, [startTime.format('YYYY-MM-DD HH:mm:ss') + ' GMT']);
-	        return {
-	            startTimeString: startTimeString,
-	            loginTime: startTime.format('YYYY-MM-DD HH:mm:ss') + ' GMT',
-	            currentTime: currentTime.format('YYYY-MM-DD HH:mm:ss') + ' GMT',
-	            sessionDuration: durationString,
-	            loginId: wsData.loginid,
-	            currency: wsData.currency,
-	            turnover: (+turnover).toFixed(2),
-	            profitLoss: (+profitLoss).toFixed(2),
-	            contractsBought: wsData.buy_count,
-	            contractsSold: wsData.sell_count,
-	            openContracts: wsData.open_contract_count,
-	            potentialProfit: (+wsData.potential_profit).toFixed(2)
-	        };
-	    };
-	
-	    return {
-	        getSummaryAsync: getSummaryAsync,
-	        getAck: getAck,
-	        setOpenSummaryFlag: setOpenSummaryFlag,
-	        getOpenSummaryFlag: getOpenSummaryFlag,
-	        getPreviousLoadLoginId: getPreviousLoadLoginId,
-	        setPreviousLoadLoginId: setPreviousLoadLoginId,
-	        updateAck: updateAck,
-	        getInterval: getInterval,
-	        updateInterval: updateInterval,
-	        clear: clear,
-	        resetInvalid: resetInvalid,
-	        summaryData: summaryData,
-	        triggerCloseEvent: triggerCloseEvent
-	    };
-	}();
-	
-	module.exports = {
-	    RealityCheckData: RealityCheckData
 	};
 
 /***/ },
@@ -84341,13 +84300,13 @@
 	var ForwardWS = __webpack_require__(572).ForwardWS;
 	var PaymentAgentListWS = __webpack_require__(573).PaymentAgentListWS;
 	var PaymentAgentWithdrawWS = __webpack_require__(436).PaymentAgentWithdrawWS;
-	var AssetIndexUI = __webpack_require__(512).AssetIndexUI;
-	var MarketTimesUI = __webpack_require__(515).MarketTimesUI;
+	var AssetIndexUI = __webpack_require__(515).AssetIndexUI;
+	var MarketTimesUI = __webpack_require__(518).MarketTimesUI;
 	var AuthenticateWS = __webpack_require__(574).AuthenticateWS;
 	var PasswordWS = __webpack_require__(575).PasswordWS;
 	var PaymentAgentTransferSocket = __webpack_require__(576).PaymentAgentTransferSocket;
 	var PortfolioWS = __webpack_require__(463).PortfolioWS;
-	var ProfitTableWS = __webpack_require__(496).ProfitTableWS;
+	var ProfitTableWS = __webpack_require__(499).ProfitTableWS;
 	var APITokenWS = __webpack_require__(580).APITokenWS;
 	var AuthorisedApps = __webpack_require__(582).AuthorisedApps;
 	var FinancialAssessmentws = __webpack_require__(434).FinancialAssessmentws;
@@ -84357,7 +84316,7 @@
 	var SettingsDetailsWS = __webpack_require__(594).SettingsDetailsWS;
 	var SecurityWS = __webpack_require__(595).SecurityWS;
 	var SettingsWS = __webpack_require__(596).SettingsWS;
-	var StatementWS = __webpack_require__(502).StatementWS;
+	var StatementWS = __webpack_require__(505).StatementWS;
 	var TopUpVirtualWS = __webpack_require__(597).TopUpVirtualWS;
 	var LostPasswordWS = __webpack_require__(598).LostPasswordWS;
 	var FinancialAccOpening = __webpack_require__(600).FinancialAccOpening;
@@ -84367,8 +84326,8 @@
 	var ResetPasswordWS = __webpack_require__(612).ResetPasswordWS;
 	var TNCApproval = __webpack_require__(438).TNCApproval;
 	var TradePage = __webpack_require__(466).TradePage;
-	var TradePage_Beta = __webpack_require__(510).TradePage_Beta;
-	var MBTradePage = __webpack_require__(529).MBTradePage;
+	var TradePage_Beta = __webpack_require__(513).TradePage_Beta;
+	var MBTradePage = __webpack_require__(532).MBTradePage;
 	var ViewPopupWS = __webpack_require__(439).ViewPopupWS;
 	var KnowledgeTest = __webpack_require__(614).KnowledgeTest;
 	var pjax_config_page_require_auth = __webpack_require__(484).pjax_config_page_require_auth;
@@ -86148,7 +86107,7 @@
 
 	'use strict';
 	
-	var Table = __webpack_require__(499).Table;
+	var Table = __webpack_require__(502).Table;
 	
 	var FlexTableUI = function FlexTableUI(config) {
 	    this.config = config;
@@ -86289,7 +86248,7 @@
 	var showLoadingImage = __webpack_require__(420).showLoadingImage;
 	var showLocalTimeOnHover = __webpack_require__(440).Clock.showLocalTimeOnHover;
 	var localize = __webpack_require__(424).localize;
-	var Button = __webpack_require__(498).Button;
+	var Button = __webpack_require__(501).Button;
 	var FlexTableUI = __webpack_require__(581).FlexTableUI;
 	var ApplicationsData = __webpack_require__(585).ApplicationsData;
 	
@@ -86808,7 +86767,7 @@
 
 	'use strict';
 	
-	var Table = __webpack_require__(499).Table;
+	var Table = __webpack_require__(502).Table;
 	var addComma = __webpack_require__(442).addComma;
 	var localize = __webpack_require__(424).localize;
 	var Client = __webpack_require__(305).Client;
