@@ -19008,7 +19008,7 @@
 	    // use this function to get variables that have values
 	    var get = function get(key) {
 	        var value = client_object[key] || LocalStore.get('client.' + key) || '';
-	        if (+value === 1 || +value === 0 || value === 'true' || value === 'false') {
+	        if (!Array.isArray(value) && (+value === 1 || +value === 0 || value === 'true' || value === 'false')) {
 	            value = JSON.parse(value || false);
 	        }
 	        return value;
