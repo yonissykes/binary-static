@@ -43656,6 +43656,7 @@
 	        if (isTradePage() && isPortfolioActive) {
 	            PortfolioWS.onUnload();
 	            isPortfolioActive = false;
+	            $portfolio = undefined;
 	        }
 	    }
 	
@@ -49468,14 +49469,15 @@
 	    'use strict';
 	
 	    var profitTableID = 'profit-table',
-	        cols = ['buy-date', 'ref', 'payout', 'contract', 'buy-price', 'sell-date', 'sell-price', 'pl', 'details'],
-	        currency = Client.get('currency');
-	    var oauth_apps = {};
+	        cols = ['buy-date', 'ref', 'payout', 'contract', 'buy-price', 'sell-date', 'sell-price', 'pl', 'details'];
+	    var oauth_apps = {},
+	        currency = void 0;
 	
 	    var createEmptyTable = function createEmptyTable() {
 	        var header = [Content.localize().textDate, Content.localize().textRef, localize('Potential Payout'), Content.localize().textContract, Content.localize().textPurchasePrice, Content.localize().textSaleDate, Content.localize().textSalePrice, Content.localize().textProfitLoss, Content.localize().textDetails];
 	
 	        var jpClient = japanese_client();
+	        currency = Client.get('currency');
 	
 	        header[7] += jpClient ? '' : currency ? ' (' + currency + ')' : '';
 	
