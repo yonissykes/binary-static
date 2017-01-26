@@ -18257,6 +18257,7 @@
 	                            }
 	                        });
 	                        if (company) {
+	                            Client.set('default_currency', company.legal_default_currency);
 	                            var has_reality_check = company.has_reality_check;
 	                            if (has_reality_check) {
 	                                Client.set('has_reality_check', has_reality_check);
@@ -86754,7 +86755,7 @@
 	                    txtWithdrawLim = Content.localize().textWithdrawalLimits;
 	                    txtWithdrawAmt = Content.localize().textWithrawalAmount;
 	                    text_CurrentMaxWithdrawal = Content.localize().textCurrentMaxWithdrawal;
-	                    currency = Client.get('currencies');
+	                    currency = Client.get('currency') || Client.get('default_currency');
 	                }
 	                elementTextContent(elWithdrawLimit, template(txtWithdrawLim, [currency, daysLimit]));
 	                elementTextContent(elWithdrawn, template(txtWithdrawAmt, [currency, withdrawn]));
