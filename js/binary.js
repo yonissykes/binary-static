@@ -39097,14 +39097,14 @@
 	        is_chart_delayed = void 0,
 	        is_chart_subscribed = void 0,
 	        is_chart_forget = void 0,
-	        is_contract_ended = void 0,
 	        is_contracts_for_send = void 0,
-	        is_history_send = void 0;
+	        is_history_send = void 0,
+	        is_entry_tick_barrier_selected = void 0;
 	
 	    var init_once = function init_once() {
 	        chart = options = responseID = contract = request = min_point = max_point = '';
 	
-	        is_initialized = is_chart_delayed = is_chart_subscribed = is_chart_forget = is_contract_ended = is_contracts_for_send = is_history_send = false;
+	        is_initialized = is_chart_delayed = is_chart_subscribed = is_chart_forget = is_contracts_for_send = is_history_send = is_entry_tick_barrier_selected = false;
 	    };
 	
 	    // since these values are used in almost every function, make them easy to call
@@ -39263,19 +39263,18 @@
 	                        draw_line_x(start_time);
 	                    }
 	                }
-	                if (is_sold || is_settleable) {
-	                    update_zone('exit');
-	                    end_contract();
-	                }
 	            } else if ((tick || ohlc) && !is_chart_forget) {
 	                if (chart && chart.series) {
 	                    update_chart(options);
 	                }
 	            }
-	            if (entry_tick_time) {
+	            if (entry_tick_time && !is_entry_tick_barrier_selected) {
 	                select_entry_tick_barrier();
 	            }
-	            forget_streams();
+	            if (is_sold || is_settleable) {
+	                update_zone('exit');
+	                end_contract();
+	            }
 	        } else if (type === 'ticks_history' && error) {
 	            HighchartUI.show_error('', error.message);
 	        }
@@ -39289,14 +39288,13 @@
 	        }
 	        if (!chart && !is_history_send) {
 	            request_data(update || '');
-	        } else if (chart && entry_tick_time) {
+	        } else if (chart && entry_tick_time && !is_entry_tick_barrier_selected) {
 	            select_entry_tick_barrier();
 	        }
 	        if (chart && (is_sold || is_settleable)) {
 	            update_zone('exit');
 	            end_contract();
 	        }
-	        forget_streams();
 	    };
 	
 	    var request_data = function request_data(update) {
@@ -39371,7 +39369,8 @@
 	
 	    // update the color zones with the correct entry_tick_time and draw barrier
 	    var select_entry_tick_barrier = function select_entry_tick_barrier() {
-	        if (chart && entry_tick_time) {
+	        if (chart && entry_tick_time && !is_entry_tick_barrier_selected) {
+	            is_entry_tick_barrier_selected = true;
 	            draw_barrier();
 	            update_zone('entry');
 	            select_tick(entry_tick_time, 'entry');
@@ -39401,7 +39400,7 @@
 	
 	    // set an orange circle on the entry/exit tick
 	    var select_tick = function select_tick(value, tick_type) {
-	        if (chart && value && tick_type && (options.tick || options.history) && chart.series[0].data.length !== 0 && !is_contract_ended) {
+	        if (chart && value && tick_type && (options.tick || options.history) && chart.series[0].data.length !== 0) {
 	            var data = chart.series[0].data;
 	            if (!data || data.length === 0) return;
 	            var current_data = void 0;
@@ -39531,16 +39530,16 @@
 	                $('#waiting_exit_tick').remove();
 	            }
 	        }
-	        if (!is_contract_ended) {
+	        if (!is_chart_forget) {
 	            forget_streams();
-	            is_contract_ended = true;
 	        }
 	    };
 	
 	    var forget_streams = function forget_streams() {
-	        if (chart && !is_chart_forget && (is_sold || is_settleable) && responseID && chart.series && chart.series[0].data.length >= 1) {
-	            var data = chart.series[0].data;
-	            var last = parseInt(data[data.length - 1].x);
+	        if (chart && (is_sold || is_settleable) && responseID && chart.series && chart.series[0].options.data.length > 0) {
+	            var data = chart.series[0].options.data;
+	            var last_data = data[data.length - 1];
+	            var last = parseInt(last_data.x || last_data[0]);
 	            if (last > end_time * 1000 || last > sell_time * 1000) {
 	                socketSend({ forget: responseID });
 	                is_chart_forget = true;
