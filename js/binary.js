@@ -61,18 +61,18 @@
 	exportAllFunctions(__webpack_require__(299));
 	
 	// created for handling global onclick
-	exportAllFunctions(__webpack_require__(539));
+	exportAllFunctions(__webpack_require__(536));
 	// used by gtm to update page after a new release
-	exportAllFunctions(__webpack_require__(540));
+	exportAllFunctions(__webpack_require__(537));
 	
+	__webpack_require__(538);
+	__webpack_require__(539);
+	__webpack_require__(540);
 	__webpack_require__(541);
 	__webpack_require__(542);
+	
 	__webpack_require__(543);
 	__webpack_require__(544);
-	__webpack_require__(545);
-	
-	__webpack_require__(546);
-	__webpack_require__(547);
 	__webpack_require__(570);
 
 /***/ },
@@ -18050,11 +18050,11 @@
 	var WSTickDisplay = __webpack_require__(454).WSTickDisplay;
 	var TradePage = __webpack_require__(466).TradePage;
 	var Notifications = __webpack_require__(459).Notifications;
-	var TradePage_Beta = __webpack_require__(513).TradePage_Beta;
+	var TradePage_Beta = __webpack_require__(499).TradePage_Beta;
 	var reloadPage = __webpack_require__(457).reloadPage;
-	var MBTradePage = __webpack_require__(532).MBTradePage;
-	var RealityCheck = __webpack_require__(491).RealityCheck;
-	var RealityCheckData = __webpack_require__(493).RealityCheckData;
+	var MBTradePage = __webpack_require__(518).MBTradePage;
+	var RealityCheck = __webpack_require__(525).RealityCheck;
+	var RealityCheckData = __webpack_require__(527).RealityCheckData;
 	var localize = __webpack_require__(424).localize;
 	var getLanguage = __webpack_require__(303).getLanguage;
 	var validate_loginid = __webpack_require__(305).validate_loginid;
@@ -18063,7 +18063,7 @@
 	var Header = __webpack_require__(430).Header;
 	var LocalStore = __webpack_require__(304).LocalStore;
 	var Client = __webpack_require__(305).Client;
-	var page = __webpack_require__(487).page;
+	var page = __webpack_require__(530).page;
 	var check_risk_classification = __webpack_require__(432).check_risk_classification;
 	var qualify_for_risk_classification = __webpack_require__(432).qualify_for_risk_classification;
 	
@@ -42997,13 +42997,13 @@
 	var displayCurrencies = __webpack_require__(470).displayCurrencies;
 	var Defaults = __webpack_require__(458).Defaults;
 	var TradingEvents = __webpack_require__(471).TradingEvents;
-	var Message = __webpack_require__(498).Message;
+	var Message = __webpack_require__(484).Message;
 	var Notifications = __webpack_require__(459).Notifications;
 	var Price = __webpack_require__(475).Price;
 	var Symbols = __webpack_require__(460).Symbols;
 	var forgetTradingStreams = __webpack_require__(477).forgetTradingStreams;
 	var Content = __webpack_require__(427).Content;
-	var Guide = __webpack_require__(508).Guide;
+	var Guide = __webpack_require__(494).Guide;
 	var japanese_client = __webpack_require__(307).japanese_client;
 	var State = __webpack_require__(304).State;
 	var showPriceOverlay = __webpack_require__(457).showPriceOverlay;
@@ -43766,7 +43766,6 @@
 	var getStartDateNode = __webpack_require__(456).getStartDateNode;
 	var TimePicker = __webpack_require__(483).TimePicker;
 	var dateValueChanged = __webpack_require__(308).dateValueChanged;
-	var load_with_pjax = __webpack_require__(484).load_with_pjax;
 	var Client = __webpack_require__(305).Client;
 	var elementTextContent = __webpack_require__(308).elementTextContent;
 	
@@ -44221,8 +44220,7 @@
 	        var tip = document.getElementById('symbol_tip');
 	        if (init_logo) {
 	            tip.addEventListener('click', debounce(function (e) {
-	                var url = e.target.getAttribute('target');
-	                load_with_pjax(url);
+	                window.location.href = e.target.getAttribute('target');
 	            }));
 	        }
 	    };
@@ -46866,2346 +46864,6 @@
 
 	'use strict';
 	
-	var MenuContent = __webpack_require__(485).MenuContent;
-	var Url = __webpack_require__(306).Url;
-	var url = __webpack_require__(306).url;
-	var GTM = __webpack_require__(431).GTM;
-	var SessionStore = __webpack_require__(304).SessionStore;
-	var State = __webpack_require__(304).State;
-	var Contents = __webpack_require__(486).Contents;
-	var url_for = __webpack_require__(306).url_for;
-	var Client = __webpack_require__(305).Client;
-	var Login = __webpack_require__(302).Login;
-	var page = __webpack_require__(487).page;
-	var japanese_client = __webpack_require__(307).japanese_client;
-	var pjax = __webpack_require__(497);
-	
-	var make_mobile_menu = function make_mobile_menu() {
-	    if ($('#mobile-menu-container').is(':visible')) {
-	        $('#mobile-menu').mmenu({
-	            position: 'right',
-	            zposition: 'front',
-	            slidingSubmenus: false,
-	            searchfield: true,
-	            onClick: {
-	                close: true
-	            }
-	        }, {
-	            selectedClass: 'active'
-	        });
-	    }
-	};
-	
-	// For object shape coherence we create named objects to be inserted into the queue.
-	var URLPjaxQueueElement = function URLPjaxQueueElement(exec_function, new_url) {
-	    this.method = exec_function;
-	    if (new_url) {
-	        this.url = new RegExp(new_url);
-	    } else {
-	        this.url = /.*/;
-	    }
-	};
-	
-	URLPjaxQueueElement.prototype = {
-	    fire: function fire(in_url) {
-	        if (this.url.test(in_url)) {
-	            this.method();
-	        }
-	    }
-	};
-	
-	var IDPjaxQueueElement = function IDPjaxQueueElement(exec_function, id) {
-	    this.method = exec_function;
-	    this.sel = '#' + id;
-	};
-	
-	IDPjaxQueueElement.prototype = {
-	    fire: function fire() {
-	        if ($(this.sel).length > 0) {
-	            this.method();
-	        }
-	    }
-	};
-	
-	var PjaxExecQueue = function PjaxExecQueue() {
-	    this.url_exec_queue = [];
-	    this.id_exec_queue = [];
-	    this.fired = false;
-	    this.content = $('#content');
-	};
-	
-	PjaxExecQueue.prototype = {
-	    queue: function queue(exec_function) {
-	        this.url_exec_queue.unshift(new URLPjaxQueueElement(exec_function));
-	    },
-	    queue_for_url: function queue_for_url(exec_function, url_pattern) {
-	        this.url_exec_queue.unshift(new URLPjaxQueueElement(exec_function, url_pattern));
-	    },
-	    fire: function fire() {
-	        if (!this.fired) {
-	            var match_loc = window.location.href;
-	            var i = this.url_exec_queue.length;
-	            while (i--) {
-	                this.url_exec_queue[i].fire(match_loc);
-	            }
-	
-	            i = this.id_exec_queue.length;
-	            while (i--) {
-	                this.id_exec_queue[i].fire(match_loc);
-	            }
-	        }
-	        this.fired = true;
-	    },
-	    reset: function reset() {
-	        this.fired = false;
-	    },
-	    loading: function loading() {
-	        this.reset();
-	    }
-	};
-	
-	var pjax_config_page = function pjax_config_page(new_url, exec_functions) {
-	    var functions = exec_functions();
-	    if (functions.onLoad) onLoad.queue_for_url(functions.onLoad, new_url);
-	    if (functions.onUnload) onUnload.queue_for_url(functions.onUnload, new_url);
-	};
-	
-	var pjax_config = function pjax_config() {
-	    return {
-	        container: 'content',
-	        beforeSend: function beforeSend() {
-	            onLoad.loading();
-	            onUnload.fire();
-	        },
-	        complete: function complete() {
-	            State.set('is_loaded_by_pjax', true);
-	            onLoad.fire();
-	            onUnload.reset();
-	        },
-	        error: function error() {
-	            var error_text = SessionStore.get('errors.500');
-	            if (error_text) {
-	                $('#content').html(error_text);
-	            } else {
-	                $.get('/errors/500.html').always(function (content) {
-	                    var tmp = document.createElement('div');
-	                    tmp.innerHTML = content;
-	                    var tmpNodes = tmp.getElementsByTagName('div');
-	                    for (var i = 0, l = tmpNodes.length; i < l; i++) {
-	                        if (tmpNodes[i].id === 'content') {
-	                            SessionStore.set('errors.500', tmpNodes[i].innerHTML);
-	                            $('#content').html(tmpNodes[i].innerHTML);
-	                            break;
-	                        }
-	                    }
-	                });
-	            }
-	        },
-	        useClass: 'pjaxload'
-	    };
-	};
-	
-	var init_pjax = function init_pjax() {
-	    if (!$('body').hasClass('BlueTopBack')) {
-	        // No Pjax for BO.
-	        pjax.connect(pjax_config());
-	    }
-	};
-	
-	var load_with_pjax = function load_with_pjax(new_url) {
-	    if (url.is_in(new Url(new_url))) {
-	        return;
-	    }
-	
-	    var config = pjax_config();
-	    config.url = new_url;
-	    config.update_url = new_url;
-	    config.history = true;
-	    pjax.invoke(config);
-	};
-	
-	// Reduce duplication as required Auth is a common pattern
-	var pjax_config_page_require_auth = function pjax_config_page_require_auth(new_url, exec) {
-	    var oldOnLoad = exec().onLoad;
-	    var newOnLoad = function newOnLoad() {
-	        if (!Contents.show_login_if_logout(true)) {
-	            oldOnLoad();
-	        }
-	    };
-	
-	    var newExecFn = function newExecFn() {
-	        return {
-	            onLoad: newOnLoad,
-	            onUnload: exec().onUnload
-	        };
-	    };
-	    pjax_config_page(new_url, newExecFn);
-	};
-	
-	var onLoad = new PjaxExecQueue();
-	var onUnload = new PjaxExecQueue();
-	
-	init_pjax(); // Pjax-standalone will wait for on load event before attaching.
-	$(function () {
-	    onLoad.fire();
-	});
-	
-	onLoad.queue(GTM.push_data_layer);
-	
-	onLoad.queue(function () {
-	    page.on_load();
-	    $('#logo').on('click', function () {
-	        load_with_pjax(url_for(Client.is_logged_in() ? japanese_client() ? 'multi_barriers_trading' : 'trading' : ''));
-	    });
-	    $('#btn_login').on('click', function (e) {
-	        e.preventDefault();
-	        Login.redirect_to_login();
-	    });
-	});
-	
-	onUnload.queue(function () {
-	    page.on_unload();
-	});
-	
-	onLoad.queue(function () {
-	    $('.tm-ul > li').hover(function () {
-	        $(this).addClass('hover');
-	    }, function () {
-	        $(this).removeClass('hover');
-	    });
-	
-	    MenuContent.init($('.content-tab-container').find('.tm-ul'));
-	
-	    make_mobile_menu();
-	
-	    var i = window.location.href.split('#');
-	    if (i.length !== 2) return;
-	    var o = document.getElementsByTagName('a');
-	    for (var t = 0; t < o.length; t++) {
-	        if (o[t].href.substr(o[t].href.length - i[1].length - 1) === '#' + i[1]) {
-	            o[t].click();
-	            break;
-	        }
-	    }
-	});
-	
-	module.exports = {
-	    load_with_pjax: load_with_pjax,
-	    pjax_config_page: pjax_config_page,
-	    pjax_config_page_require_auth: pjax_config_page_require_auth
-	};
-
-/***/ },
-/* 485 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	var MenuContent = function () {
-	    var listeners_events = [];
-	
-	    var that = {
-	        init: function init(_menu_containers) {
-	            if (/trading/.test(window.location.pathname)) return;
-	            _menu_containers.filter(':not(.follow-default)').delegate('.tm-a,.tm-a-2', 'click', function (event) {
-	                event.preventDefault();
-	
-	                var target = $(event.target);
-	                var tab_id = target.parents('li:first').attr('id');
-	
-	                if (tab_id) {
-	                    var tab_container = target.parents('.tm-ul');
-	                    /* eslint-disable newline-per-chained-call */
-	                    var selected_tab =
-	                    // find previously active tab
-	                    tab_container.find('.tm-a, .tm-a-2')
-	                    // remove previously active tab
-	                    .removeClass('a-active').end()
-	                    // unwrap previously active tab
-	                    .find('.menu-wrap-a .tm-a').unwrap().unwrap()
-	                    // go back to selected target
-	                    .end().end()
-	                    // set active class to it
-	                    .addClass('a-active')
-	                    // set active class to its parent as well
-	                    .parents('.tm-li').addClass('active').removeClass('hover').find('.tm-li-2').addClass('active').end()
-	                    // wrap it
-	                    .find('.tm-a').wrap('<span class="menu-wrap-a"><span class="menu-wrap-b"></span></span>').end()
-	                    // remove previously active parent
-	                    .siblings().removeClass('active').find('.tm-li-2').removeClass('active').end().end().end();
-	                    /* eslint-enable newline-per-chained-call */
-	
-	                    // replace span to a, to make it clickable for real
-	                    var span_tm_a = tab_container.find('span.tm-a');
-	                    span_tm_a.replaceWith('<a href="javascript:;" class="' + span_tm_a.attr('class') + '">' + span_tm_a.html() + '</a>');
-	
-	                    var menu_li = selected_tab.parents('li');
-	                    var sub_menu_selected = menu_li.find('.tm-ul-2 .a-active'),
-	                        selected_tab_id = menu_li.attr('id');
-	                    var $selected_tab_content = $('#' + selected_tab_id + '-content');
-	                    var selected_content = $selected_tab_content
-	                    // show selected tab content
-	                    .removeClass('invisible')
-	                    // and hide the rest
-	                    .siblings(':not(.sticky)').addClass('invisible').end();
-	
-	                    if (!sub_menu_selected.length) {
-	                        sub_menu_selected = menu_li.find('.tm-a-2:first').addClass('a-active');
-	
-	                        if (sub_menu_selected.length) {
-	                            selected_tab = sub_menu_selected;
-	                            selected_tab_id = sub_menu_selected.parents('li').attr('id');
-	                            selected_content = $selected_tab_content.removeClass('invisible');
-	                        } else {
-	                            selected_tab_id = menu_li.attr('id');
-	                        }
-	                    }
-	
-	                    that.push_to_listeners({
-	                        id: selected_tab_id,
-	                        target: selected_tab,
-	                        content: selected_content,
-	                        menu: menu_li.parents('ul.tm-ul'),
-	                        event: event
-	                    });
-	                }
-	
-	                return false;
-	            });
-	        },
-	        push_to_listeners: function push_to_listeners(info) {
-	            // push to listeners events
-	            for (var i = 0; i < listeners_events.length; i++) {
-	                listeners_events[i](info);
-	            }
-	        },
-	        trigger: function trigger(id) {
-	            var tab_id = id.tab_id;
-	            var content_id = id.content_id;
-	
-	            if (!tab_id && typeof content_id !== 'undefined') {
-	                var matched = content_id.match(/^(.+)-content$/);
-	                if (matched && matched[1]) {
-	                    tab_id = matched[1];
-	                }
-	            }
-	
-	            if (!tab_id) {
-	                return false;
-	            }
-	
-	            var tab_to_trigger = $('#' + tab_id);
-	
-	            if (!tab_to_trigger.length || tab_to_trigger.hasClass('invisible')) {
-	                return false;
-	            }
-	            // else
-	            var tab = tab_to_trigger.find('.tm-a');
-	            if (tab.length) {
-	                return tab.trigger('click');
-	            }
-	            // else
-	            return tab_to_trigger.find('.tm-a-2').trigger('click');
-	        }
-	    };
-	
-	    return that;
-	}();
-	
-	module.exports = {
-	    MenuContent: MenuContent
-	};
-
-/***/ },
-/* 486 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var localize = __webpack_require__(424).localize;
-	var Client = __webpack_require__(305).Client;
-	var Login = __webpack_require__(302).Login;
-	
-	var Contents = function () {
-	    var on_load = function on_load() {
-	        Client.activate_by_client_type();
-	        update_content_class();
-	        init_draggable();
-	    };
-	
-	    var on_unload = function on_unload() {
-	        var $unbind_later = $('.unbind_later');
-	        if ($unbind_later.length > 0) {
-	            $unbind_later.off();
-	        }
-	    };
-	
-	    var update_content_class = function update_content_class() {
-	        // This is required for our css to work.
-	        $('#content').removeClass().addClass($('#content_class').text());
-	    };
-	
-	    var init_draggable = function init_draggable() {
-	        $('.draggable').draggable();
-	    };
-	
-	    var show_login_if_logout = function show_login_if_logout(shouldReplacePageContents) {
-	        var client_is_logged_in = Client.is_logged_in();
-	        if (!client_is_logged_in && shouldReplacePageContents) {
-	            $('#content').find(' > .container').addClass('center-text').html($('<p/>', {
-	                class: 'notice-msg',
-	                html: localize('Please [_1] to view this page', ['<a class="login_link" href="javascript:;">' + localize('login') + '</a>'])
-	            }));
-	            $('.login_link').click(function () {
-	                Login.redirect_to_login();
-	            });
-	        }
-	        return !client_is_logged_in;
-	    };
-	
-	    return {
-	        on_load: on_load,
-	        on_unload: on_unload,
-	
-	        show_login_if_logout: show_login_if_logout
-	    };
-	}();
-	
-	module.exports = {
-	    Contents: Contents
-	};
-
-/***/ },
-/* 487 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var Login = __webpack_require__(302).Login;
-	var template = __webpack_require__(421).template;
-	var LocalStore = __webpack_require__(304).LocalStore;
-	var State = __webpack_require__(304).State;
-	var localizeForLang = __webpack_require__(424).localizeForLang;
-	var localize = __webpack_require__(424).localize;
-	var getLanguage = __webpack_require__(303).getLanguage;
-	var setCookieLanguage = __webpack_require__(303).setCookieLanguage;
-	var Url = __webpack_require__(306).Url;
-	var url_for = __webpack_require__(306).url_for;
-	var Client = __webpack_require__(305).Client;
-	var Header = __webpack_require__(430).Header;
-	var Menu = __webpack_require__(488).Menu;
-	var Contents = __webpack_require__(486).Contents;
-	var TrafficSource = __webpack_require__(489).TrafficSource;
-	var checkLanguage = __webpack_require__(307).checkLanguage;
-	var ViewBalance = __webpack_require__(490).ViewBalance;
-	var Cookies = __webpack_require__(301);
-	var RealityCheck = __webpack_require__(491).RealityCheck;
-	var RealityCheckData = __webpack_require__(493).RealityCheckData;
-	__webpack_require__(494);
-	__webpack_require__(495);
-	__webpack_require__(496);
-	
-	var Page = function Page() {
-	    State.set('is_loaded_by_pjax', false);
-	    Client.init();
-	    this.url = new Url();
-	    Menu.init(this.url);
-	};
-	
-	Page.prototype = {
-	    on_load: function on_load() {
-	        Client.set_check_tnc();
-	        this.url.reset();
-	        localizeForLang(getLanguage());
-	        Header.on_load();
-	        this.record_affiliate_exposure();
-	        Contents.on_load();
-	        if (State.get('is_loaded_by_pjax')) {
-	            this.show_authenticate_message();
-	            if (RealityCheckData.get('delay_reality_init')) {
-	                RealityCheck.init();
-	            } else if (RealityCheckData.get('delay_reality_check')) {
-	                BinarySocket.send({ reality_check: 1 });
-	            }
-	        }
-	        if (Client.is_logged_in()) {
-	            ViewBalance.init();
-	        } else {
-	            LocalStore.set('reality_check.ack', 0);
-	        }
-	        setCookieLanguage();
-	        if (sessionStorage.getItem('showLoginPage')) {
-	            sessionStorage.removeItem('showLoginPage');
-	            Login.redirect_to_login();
-	        }
-	        checkLanguage();
-	        TrafficSource.setData();
-	        this.endpoint_notification();
-	        BinarySocket.init();
-	        this.show_notification_outdated_browser();
-	    },
-	    on_unload: function on_unload() {
-	        Menu.on_unload();
-	        Contents.on_unload();
-	    },
-	    record_affiliate_exposure: function record_affiliate_exposure() {
-	        var token = this.url.param('t');
-	        if (!token || token.length !== 32) {
-	            return false;
-	        }
-	        var token_length = token.length;
-	        var is_subsidiary = /\w{1}/.test(this.url.param('s'));
-	
-	        var cookie_token = Cookies.getJSON('affiliate_tracking');
-	        if (cookie_token) {
-	            // Already exposed to some other affiliate.
-	            if (is_subsidiary && cookie_token && cookie_token.t) {
-	                return false;
-	            }
-	        }
-	
-	        // Record the affiliate exposure. Overwrite existing cookie, if any.
-	        var cookie_hash = {};
-	        if (token_length === 32) {
-	            cookie_hash.t = token.toString();
-	        }
-	        if (is_subsidiary) {
-	            cookie_hash.s = '1';
-	        }
-	
-	        Cookies.set('affiliate_tracking', cookie_hash, {
-	            expires: 365, // expires in 365 days
-	            path: '/',
-	            domain: '.' + location.hostname.split('.').slice(-2).join('.')
-	        });
-	        return true;
-	    },
-	    reload: function reload(forcedReload) {
-	        window.location.reload(!!forcedReload);
-	    },
-	    endpoint_notification: function endpoint_notification() {
-	        var server = localStorage.getItem('config.server_url');
-	        if (server && server.length > 0) {
-	            var message = (/www\.binary\.com/i.test(window.location.hostname) ? '' : localize('This is a staging server - For testing purposes only') + ' - ') + localize('The server <a href="[_1]">endpoint</a> is: [_2]', [url_for('endpoint'), server]),
-	                $end_note = $('#end-note');
-	            $end_note.html(message).removeClass('invisible');
-	            $('#footer').css('padding-bottom', $end_note.height());
-	        }
-	    },
-	    show_authenticate_message: function show_authenticate_message() {
-	        if ($('.authenticate-msg').length !== 0 || /authenticatews\.html/.test(window.location.pathname)) return;
-	
-	        var p = $('<p/>', { class: 'authenticate-msg notice-msg' });
-	        var span = void 0;
-	
-	        if (Client.status_detected('unwelcome')) {
-	            var purchase_button = $('.purchase_button');
-	            if (purchase_button.length > 0 && !purchase_button.parent().hasClass('button-disabled')) {
-	                $.each(purchase_button, function () {
-	                    $(this).off('click dblclick').removeAttr('data-balloon').parent().addClass('button-disabled');
-	                });
-	            }
-	        }
-	
-	        if (Client.status_detected('unwelcome, cashier_locked', 'any')) {
-	            var if_balance_zero = $('#if-balance-zero');
-	            if (if_balance_zero.length > 0 && !if_balance_zero.hasClass('button-disabled')) {
-	                if_balance_zero.removeAttr('href').addClass('button-disabled');
-	            }
-	        }
-	
-	        var href = window.location.href,
-	            cashier_page = /cashier[\/\w]*\.html/.test(href),
-	            withdrawal_page = cashier_page && !/(deposit|payment_agent_listws)/.test(href);
-	
-	        if (Client.status_detected('authenticated, unwelcome', 'all')) {
-	            span = $('<span/>', { html: template(localize('Your account is currently suspended. Only withdrawals are now permitted. For further information, please contact [_1].', ['<a href="mailto:support@binary.com">support@binary.com</a>'])) });
-	        } else if (Client.status_detected('unwelcome')) {
-	            span = this.general_authentication_message();
-	        } else if (Client.status_detected('authenticated, cashier_locked', 'all') && cashier_page) {
-	            span = $('<span/>', { html: template(localize('Deposits and withdrawal for your account is not allowed at this moment. Please contact [_1] to unlock it.', ['<a href="mailto:support@binary.com">support@binary.com</a>'])) });
-	        } else if (Client.status_detected('cashier_locked') && cashier_page) {
-	            span = this.general_authentication_message();
-	        } else if (Client.status_detected('authenticated, withdrawal_locked', 'all') && withdrawal_page) {
-	            span = $('<span/>', { html: template(localize('Withdrawal for your account is not allowed at this moment. Please contact [_1] to unlock it.', ['<a href="mailto:support@binary.com">support@binary.com</a>'])) });
-	        } else if (Client.status_detected('withdrawal_locked') && withdrawal_page) {
-	            span = this.general_authentication_message();
-	        }
-	        if (span) {
-	            $('#content').find('> .container').prepend(p.append(span));
-	        }
-	    },
-	    general_authentication_message: function general_authentication_message() {
-	        var span = $('<span/>', { html: template(localize('To authenticate your account, kindly email the following to [_1]:', ['<a href="mailto:support@binary.com">support@binary.com</a>'])) });
-	        var ul = $('<ul/>', { class: 'checked' });
-	        var li1 = $('<li/>', { text: localize('A scanned copy of your passport, driving licence (provisional or full) or identity card, showing your name and date of birth. Your document must be valid for at least 6 months after this date.') });
-	        var li2 = $('<li/>', { text: localize('A scanned copy of a utility bill or bank statement (no more than 3 months old)') });
-	        return span.append(ul.append(li1, li2));
-	    },
-	    show_notification_outdated_browser: function show_notification_outdated_browser() {
-	        window.$buoop = {
-	            vs: { i: 11, f: -4, o: -4, s: 9, c: -4 },
-	            api: 4,
-	            l: getLanguage().toLowerCase(),
-	            url: 'https://whatbrowser.org/'
-	        };
-	        $(document).ready(function () {
-	            $('body').append($('<script/>', { src: '//browser-update.org/update.min.js' }));
-	        });
-	    }
-	};
-	
-	var page = new Page();
-	
-	// LocalStorage can be used as a means of communication among
-	// different windows. The problem that is solved here is what
-	// happens if the user logs out or switches loginid in one
-	// window while keeping another window or tab open. This can
-	// lead to unintended trades. The solution is to reload the
-	// page in all windows after switching loginid or after logout.
-	
-	// onLoad.queue does not work on the home page.
-	// jQuery's ready function works always.
-	
-	$(document).ready(function () {
-	    if ($('body').hasClass('BlueTopBack')) return; // exclude BO
-	    // Cookies is not always available.
-	    // So, fall back to a more basic solution.
-	    var match = document.cookie.match(/\bloginid=(\w+)/);
-	    match = match ? match[1] : '';
-	    $(window).on('storage', function (jq_event) {
-	        switch (jq_event.originalEvent.key) {
-	            case 'active_loginid':
-	                if (jq_event.originalEvent.newValue === match) return;
-	                if (jq_event.originalEvent.newValue === '') {
-	                    // logged out
-	                    page.reload();
-	                } else if (!window.is_logging_in) {
-	                    // loginid switch
-	                    page.reload();
-	                }
-	                break;
-	            case 'new_release_reload_time':
-	                if (jq_event.originalEvent.newValue !== jq_event.originalEvent.oldValue) {
-	                    page.reload(true);
-	                }
-	                break;
-	            // no default
-	        }
-	    });
-	    LocalStore.set('active_loginid', match);
-	});
-	
-	module.exports = {
-	    page: page
-	};
-
-/***/ },
-/* 488 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var Url = __webpack_require__(306).Url;
-	var Client = __webpack_require__(305).Client;
-	
-	var Menu = function () {
-	    var page_url = void 0;
-	
-	    var init = function init(url) {
-	        page_url = url;
-	        $(page_url).on('change', function () {
-	            activate();
-	        });
-	    };
-	
-	    var activate = function activate() {
-	        $('#menu-top').find('li').removeClass('active');
-	        hide_main_menu();
-	
-	        var active = active_menu_top();
-	        var trading = new RegExp('\/(jp_|multi_barriers_|)trading\.html');
-	        var trading_is_active = trading.test(window.location.pathname);
-	        if (active) {
-	            active.addClass('active');
-	        }
-	        var is_trading_submenu = /\/cashier|\/resources/.test(window.location.pathname) || trading_is_active;
-	        if (Client.is_logged_in() || trading_is_active || is_trading_submenu) {
-	            show_main_menu();
-	        }
-	    };
-	
-	    var show_main_menu = function show_main_menu() {
-	        $('#main-menu').removeClass('hidden');
-	        activate_main_menu();
-	    };
-	
-	    var hide_main_menu = function hide_main_menu() {
-	        $('#main-menu').addClass('hidden');
-	    };
-	
-	    var activate_main_menu = function activate_main_menu() {
-	        // First unset everything.
-	        var $main_menu = $('#main-menu');
-	        $main_menu.find('li.item').removeClass('active hover');
-	        $main_menu.find('li.sub_item a').removeClass('a-active');
-	
-	        var active = active_main_menu();
-	        if (active.subitem) {
-	            active.subitem.addClass('a-active');
-	        }
-	
-	        if (active.item) {
-	            active.item.addClass('active');
-	            active.item.addClass('hover');
-	        }
-	
-	        on_mouse_hover(active.item);
-	    };
-	
-	    var on_unload = function on_unload() {
-	        $('#main-menu').find('.item').unbind().end().unbind();
-	    };
-	
-	    var on_mouse_hover = function on_mouse_hover(active_item) {
-	        var $main_menu = $('#main-menu');
-	        $main_menu.find('.item').on('mouseenter', function () {
-	            $('#main-menu').find('li.item').removeClass('hover');
-	            $(this).addClass('hover');
-	        });
-	
-	        $main_menu.on('mouseleave', function () {
-	            $main_menu.find('li.item').removeClass('hover');
-	            if (active_item) active_item.addClass('hover');
-	        });
-	    };
-	
-	    var active_menu_top = function active_menu_top() {
-	        var active = '';
-	        var path = window.location.pathname;
-	        $('#menu-top').find('li a').each(function () {
-	            if (path.indexOf(this.pathname.replace(/\.html/i, '')) >= 0) {
-	                active = $(this).closest('li');
-	            }
-	        });
-	
-	        return active;
-	    };
-	
-	    var active_main_menu = function active_main_menu() {
-	        var new_url = page_url;
-	        if (/cashier/i.test(new_url.location.href) && !/cashier_password/.test(new_url.location.href)) {
-	            new_url = new Url($('#topMenuCashier').find('a').attr('href'));
-	        }
-	
-	        var item = '',
-	            subitem = '';
-	        var $main_menu = $('#main-menu');
-	        // Is something selected in main items list
-	        $main_menu.find('.items a').each(function () {
-	            var url = new Url($(this).attr('href'));
-	            if (url.is_in(new_url)) {
-	                item = $(this).closest('.item');
-	            }
-	        });
-	
-	        $main_menu.find('.sub_items a').each(function () {
-	            var link_href = $(this).attr('href');
-	            if (link_href) {
-	                var url = new Url(link_href);
-	                if (url.is_in(new_url)) {
-	                    item = $(this).closest('.item');
-	                    subitem = $(this);
-	                }
-	            }
-	        });
-	
-	        return { item: item, subitem: subitem };
-	    };
-	
-	    return {
-	        init: init,
-	        on_unload: on_unload
-	    };
-	}();
-	
-	module.exports = {
-	    Menu: Menu
-	};
-
-/***/ },
-/* 489 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var CookieStorage = __webpack_require__(304).CookieStorage;
-	var Url = __webpack_require__(306).Url;
-	var url = __webpack_require__(306).url;
-	var Client = __webpack_require__(305).Client;
-	
-	/*
-	 * Handles utm parameters/referrer to use on signup
-	 *
-	 * Priorities:
-	 * 1. Cookie having utm data (utm_source, utm_medium, utm_campaign) [Expires in 3 months]
-	 * 2. Query string utm parameters
-	 * 3. document.referrer
-	 *
-	 */
-	
-	var TrafficSource = function () {
-	    'use strict';
-	
-	    var cookie = void 0;
-	    var expire_months = 3;
-	
-	    var initCookie = function initCookie() {
-	        if (!cookie) {
-	            cookie = new CookieStorage('utm_data');
-	            cookie.read();
-	            // expiration date is used when writing cookie
-	            var now = new Date();
-	            cookie.expires = now.setMonth(now.getMonth() + expire_months);
-	        }
-	    };
-	
-	    var getData = function getData() {
-	        initCookie();
-	        var data = cookie.value;
-	        Object.keys(data).map(function (key) {
-	            data[key] = (data[key] || '').replace(/[^a-zA-Z0-9\s\-\.\_]/gi, '').substring(0, 100);
-	        });
-	        return data;
-	    };
-	
-	    var getSource = function getSource(utm_data) {
-	        if (!utm_data) utm_data = getData();
-	        return utm_data.utm_source || utm_data.referrer || 'direct'; // in order of precedence
-	    };
-	
-	    var setData = function setData() {
-	        if (Client.is_logged_in()) {
-	            clearData();
-	            return;
-	        }
-	
-	        var current_values = getData(),
-	            params = url.params_hash(),
-	            param_keys = ['utm_source', 'utm_medium', 'utm_campaign'];
-	
-	        if (params.utm_source) {
-	            // url params can be stored only if utm_source is available
-	            param_keys.map(function (key) {
-	                if (params[key] && !current_values[key]) {
-	                    cookie.set(key, params[key]);
-	                }
-	            });
-	        }
-	
-	        var doc_ref = document.referrer;
-	        var referrer = localStorage.getItem('index_referrer') || doc_ref;
-	        localStorage.removeItem('index_referrer');
-	        if (doc_ref && !new RegExp(window.location.hostname, 'i').test(doc_ref)) {
-	            referrer = doc_ref;
-	        }
-	        if (referrer && !current_values.referrer && !params.utm_source && !current_values.utm_source) {
-	            cookie.set('referrer', new Url(referrer).location.hostname);
-	        }
-	    };
-	
-	    var clearData = function clearData() {
-	        initCookie();
-	        cookie.remove();
-	    };
-	
-	    return {
-	        getData: getData,
-	        setData: setData,
-	        clearData: clearData,
-	        getSource: getSource
-	    };
-	}();
-	
-	module.exports = {
-	    TrafficSource: TrafficSource
-	};
-
-/***/ },
-/* 490 */
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	var ViewBalance = function () {
-	    var init = function init() {
-	        BinarySocket.init(1);
-	    };
-	
-	    return {
-	        init: init
-	    };
-	}();
-	
-	module.exports = {
-	    ViewBalance: ViewBalance
-	};
-
-/***/ },
-/* 491 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var RealityCheckUI = __webpack_require__(492).RealityCheckUI;
-	var RealityCheckData = __webpack_require__(493).RealityCheckData;
-	var Client = __webpack_require__(305).Client;
-	
-	var RealityCheck = function () {
-	    'use strict';
-	
-	    var realityCheckWSHandler = function realityCheckWSHandler(response) {
-	        RealityCheckUI.initializeValues();
-	        if ($.isEmptyObject(response.reality_check)) {
-	            // not required for reality check
-	            RealityCheckUI.sendAccountStatus();
-	            return;
-	        }
-	        if (/no-reality-check/.test(window.location.hash)) {
-	            RealityCheckData.set('delay_reality_check', 1);
-	        } else {
-	            RealityCheckData.set('delay_reality_check', 0);
-	            var summary = RealityCheckData.summaryData(response.reality_check);
-	            RealityCheckUI.renderSummaryPopUp(summary);
-	        }
-	    };
-	
-	    var realityStorageEventHandler = function realityStorageEventHandler(ev) {
-	        if (ev.key === 'reality_check.ack' && ev.newValue === '1') {
-	            RealityCheckUI.closePopUp();
-	            RealityCheckUI.startSummaryTimer();
-	        } else if (ev.key === 'reality_check.keep_open' && ev.newValue === '0') {
-	            RealityCheckUI.closePopUp();
-	            RealityCheckUI.startSummaryTimer();
-	        }
-	    };
-	
-	    var init = function init() {
-	        if (/no-reality-check/.test(window.location.hash)) {
-	            RealityCheckData.set('delay_reality_init', 1);
-	        } else {
-	            RealityCheckData.set('delay_reality_init', 0);
-	            RealityCheckUI.initializeValues();
-	            if (!Client.get('has_reality_check')) {
-	                RealityCheckData.set('loginid', Client.get('loginid'));
-	                RealityCheckUI.sendAccountStatus();
-	                return;
-	            }
-	
-	            RealityCheckUI.setLoginTime(Client.get('session_start') * 1000);
-	
-	            window.addEventListener('storage', realityStorageEventHandler, false);
-	
-	            if (Client.get('loginid') !== RealityCheckData.get('loginid')) {
-	                RealityCheckData.clear();
-	            }
-	
-	            RealityCheckData.resetInvalid(); // need to reset after clear
-	
-	            if (!RealityCheckData.get('ack')) {
-	                RealityCheckUI.renderFrequencyPopUp();
-	            } else if (RealityCheckData.get('keep_open')) {
-	                RealityCheckData.getSummaryAsync();
-	            } else {
-	                RealityCheckUI.startSummaryTimer();
-	            }
-	
-	            RealityCheckData.set('loginid', Client.get('loginid'));
-	            RealityCheckUI.sendAccountStatus();
-	        }
-	    };
-	
-	    return {
-	        init: init,
-	        realityCheckWSHandler: realityCheckWSHandler
-	    };
-	}();
-	
-	module.exports = {
-	    RealityCheck: RealityCheck
-	};
-
-/***/ },
-/* 492 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var showLocalTimeOnHover = __webpack_require__(440).Clock.showLocalTimeOnHover;
-	var onlyNumericOnKeypress = __webpack_require__(482).onlyNumericOnKeypress;
-	var Content = __webpack_require__(427).Content;
-	var RealityCheckData = __webpack_require__(493).RealityCheckData;
-	var localize = __webpack_require__(424).localize;
-	var Client = __webpack_require__(305).Client;
-	var url_for = __webpack_require__(306).url_for;
-	__webpack_require__(494);
-	__webpack_require__(495);
-	
-	var RealityCheckUI = function () {
-	    'use strict';
-	
-	    var frequency_url = url_for('user/reality_check_frequencyws'),
-	        summary_url = url_for('user/reality_check_summaryws'),
-	        hiddenClass = 'invisible';
-	    var loginTime = void 0,
-	        // milliseconds
-	    getAccountStatus = void 0;
-	
-	    var initializeValues = function initializeValues() {
-	        getAccountStatus = false;
-	    };
-	
-	    var showPopUp = function showPopUp(content) {
-	        if ($('#reality-check').length > 0) {
-	            return;
-	        }
-	
-	        var lightboxDiv = $("<div id='reality-check' class='lightbox'></div>");
-	
-	        var wrapper = $('<div></div>');
-	        wrapper = wrapper.append(content);
-	        wrapper = $('<div></div>').append(wrapper);
-	        wrapper.appendTo(lightboxDiv);
-	        lightboxDiv.appendTo('body');
-	
-	        $('#realityDuration').val(RealityCheckData.get('interval')).keypress(onlyNumericOnKeypress);
-	    };
-	
-	    var showIntervalOnPopUp = function showIntervalOnPopUp() {
-	        var intervalMinutes = Math.floor(+RealityCheckData.get('interval') / 60 / 1000);
-	        $('#realityDuration').val(intervalMinutes);
-	    };
-	
-	    var getAjax = function getAjax(summary) {
-	        $.ajax({
-	            url: summary ? summary_url : frequency_url,
-	            dataType: 'html',
-	            method: 'GET',
-	            success: function success(realityCheckText) {
-	                ajaxSuccess(realityCheckText, summary);
-	            }
-	        });
-	    };
-	
-	    var ajaxSuccess = function ajaxSuccess(realityCheckText, summary) {
-	        if (realityCheckText.includes('reality-check-content')) {
-	            var payload = $(realityCheckText);
-	            showPopUp(payload.find('#reality-check-content'));
-	            showIntervalOnPopUp();
-	            $('#continue').click(onContinueClick);
-	            $('#statement').click(onStatementClick);
-	            $('button#btn_logout').click(onLogoutClick);
-	            if (summary) {
-	                updateSummary(summary);
-	            }
-	        }
-	    };
-	
-	    var updateSummary = function updateSummary(summary) {
-	        $('#start-time').text(summary.startTimeString);
-	        $('#login-time').text(summary.loginTime);
-	        $('#current-time').text(summary.currentTime);
-	        $('#session-duration').text(summary.sessionDuration);
-	
-	        $('#login-id').text(summary.loginId);
-	        $('#rc_currency').text(summary.currency);
-	        $('#turnover').text(summary.turnover);
-	        $('#profitloss').text(summary.profitLoss);
-	        $('#bought').text(summary.contractsBought);
-	        $('#sold').text(summary.contractsSold);
-	        $('#open').text(summary.openContracts);
-	        $('#potential').text(summary.potentialProfit);
-	
-	        showLocalTimeOnHover('#start-time');
-	        showLocalTimeOnHover('#login-time');
-	        showLocalTimeOnHover('#current-time');
-	    };
-	
-	    var closePopUp = function closePopUp() {
-	        $('#reality-check').remove();
-	        RealityCheckUI.sendAccountStatus();
-	    };
-	
-	    var onContinueClick = function onContinueClick() {
-	        var intervalMinute = +$('#realityDuration').val();
-	
-	        if (!(Math.floor(intervalMinute) === intervalMinute && $.isNumeric(intervalMinute))) {
-	            var shouldBeInteger = localize('Interval should be integer.');
-	            $('#rc-err').text(shouldBeInteger).removeClass(hiddenClass);
-	            return;
-	        }
-	
-	        if (intervalMinute < 10 || intervalMinute > 120) {
-	            Content.populate();
-	            var minimumValueMsg = Content.errorMessage('number_should_between', '10 to 120');
-	            $('#rc-err').text(minimumValueMsg).removeClass(hiddenClass);
-	            return;
-	        }
-	
-	        var intervalMs = intervalMinute * 60 * 1000;
-	        RealityCheckData.set('interval', intervalMs);
-	        RealityCheckData.set('keep_open', 0);
-	        RealityCheckData.set('ack', 1);
-	        RealityCheckUI.closePopUp();
-	        startSummaryTimer();
-	        sendAccountStatus();
-	    };
-	
-	    var onStatementClick = function onStatementClick() {
-	        var win = window.open(url_for('user/statementws') + '#no-reality-check', '_blank');
-	        if (win) {
-	            win.focus();
-	        }
-	    };
-	
-	    var onLogoutClick = function onLogoutClick() {
-	        BinarySocket.send({ logout: '1' });
-	    };
-	
-	    var sendAccountStatus = function sendAccountStatus() {
-	        if (!Client.get('is_virtual') && Client.get('residence') !== 'jp' && !getAccountStatus) {
-	            BinarySocket.send({ get_account_status: 1 });
-	            getAccountStatus = true;
-	        }
-	    };
-	
-	    var startSummaryTimer = function startSummaryTimer() {
-	        var interval = +RealityCheckData.get('interval');
-	        var currentTime = Date.now();
-	        var toWait = interval - (currentTime - loginTime) % interval;
-	
-	        window.setTimeout(function () {
-	            RealityCheckData.set('keep_open', 1);
-	            RealityCheckData.getSummaryAsync();
-	        }, toWait);
-	    };
-	
-	    return {
-	        renderFrequencyPopUp: function renderFrequencyPopUp() {
-	            getAjax();
-	        },
-	        renderSummaryPopUp: function renderSummaryPopUp(summary) {
-	            getAjax(summary);
-	        },
-	        closePopUp: closePopUp,
-	        sendAccountStatus: sendAccountStatus,
-	        initializeValues: initializeValues,
-	        startSummaryTimer: startSummaryTimer,
-	        setLoginTime: function setLoginTime(time) {
-	            loginTime = time;
-	        }
-	    };
-	}();
-	
-	module.exports = {
-	    RealityCheckUI: RealityCheckUI
-	};
-
-/***/ },
-/* 493 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var template = __webpack_require__(421).template;
-	var LocalStore = __webpack_require__(304).LocalStore;
-	var moment = __webpack_require__(309);
-	
-	var RealityCheckData = function () {
-	    'use strict';
-	
-	    var defaultInterval = 600000;
-	    var durationTemplateString = '[_1] days [_2] hours [_3] minutes';
-	    var tradingTimeTemplate = 'Your trading statistics since [_1].';
-	    var reality_object = {};
-	
-	    var getSummaryAsync = function getSummaryAsync() {
-	        BinarySocket.send({ reality_check: 1 });
-	    };
-	
-	    var resetInvalid = function resetInvalid() {
-	        var ack = get('ack');
-	        var interval = +get('interval');
-	        if (ack !== 0 && ack !== 1) {
-	            set('ack', 0);
-	        }
-	        if (!interval) {
-	            set('interval', defaultInterval);
-	        }
-	    };
-	
-	    var summaryData = function summaryData(wsData) {
-	        var startTime = moment.utc(new Date(wsData.start_time * 1000));
-	        var currentTime = moment.utc();
-	
-	        var sessionDuration = moment.duration(currentTime.diff(startTime));
-	        var durationString = template(durationTemplateString, [sessionDuration.get('days'), sessionDuration.get('hours'), sessionDuration.get('minutes')]);
-	
-	        var turnover = +wsData.buy_amount + +wsData.sell_amount;
-	        var profitLoss = +wsData.sell_amount - +wsData.buy_amount;
-	
-	        var startTimeString = template(tradingTimeTemplate, [startTime.format('YYYY-MM-DD HH:mm:ss') + ' GMT']);
-	        return {
-	            startTimeString: startTimeString,
-	            loginTime: startTime.format('YYYY-MM-DD HH:mm:ss') + ' GMT',
-	            currentTime: currentTime.format('YYYY-MM-DD HH:mm:ss') + ' GMT',
-	            sessionDuration: durationString,
-	            loginId: wsData.loginid,
-	            currency: wsData.currency,
-	            turnover: (+turnover).toFixed(2),
-	            profitLoss: (+profitLoss).toFixed(2),
-	            contractsBought: wsData.buy_count,
-	            contractsSold: wsData.sell_count,
-	            openContracts: wsData.open_contract_count,
-	            potentialProfit: (+wsData.potential_profit).toFixed(2)
-	        };
-	    };
-	
-	    var set = function set(key, value) {
-	        reality_object[key] = value;
-	        return LocalStore.set('reality_check.' + key, value);
-	    };
-	
-	    // use this function to get variables that have values
-	    var get = function get(key) {
-	        var value = reality_object[key] || LocalStore.get('reality_check.' + key) || '';
-	        if (+value === 1 || +value === 0 || value === 'true' || value === 'false') {
-	            value = JSON.parse(value || false);
-	        }
-	        return value;
-	    };
-	
-	    var clear_storage_values = function clear_storage_values() {
-	        // clear all reality check values from local storage except loginid
-	        Object.keys(localStorage).forEach(function (c) {
-	            if (/^reality_check\.(?!(loginid$))/.test(c)) {
-	                LocalStore.set(c, '');
-	            }
-	        });
-	    };
-	
-	    return {
-	        getSummaryAsync: getSummaryAsync,
-	        clear: clear_storage_values,
-	        resetInvalid: resetInvalid,
-	        summaryData: summaryData,
-	        set: set,
-	        get: get
-	    };
-	}();
-	
-	module.exports = {
-	    RealityCheckData: RealityCheckData
-	};
-
-/***/ },
-/* 494 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	if (!('includes' in Array.prototype)) {
-	    Array.prototype.includes = function includes(searchElement /*, fromIndex*/) {
-	        'use strict';
-	
-	        var O = Object(this);
-	        var len = parseInt(O.length) || 0;
-	        if (len === 0) {
-	            return false;
-	        }
-	        var n = parseInt(arguments[1]) || 0;
-	        var k;
-	        if (n >= 0) {
-	            k = n;
-	        } else {
-	            k = len + n;
-	            if (k < 0) {
-	                k = 0;
-	            }
-	        }
-	        var currentElement;
-	        while (k < len) {
-	            currentElement = O[k];
-	            if (searchElement === currentElement || searchElement !== searchElement && currentElement !== currentElement) {
-	                return true;
-	            }
-	            k++;
-	        }
-	        return false;
-	    };
-	}
-
-/***/ },
-/* 495 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-	
-	if (!('includes' in String.prototype)) {
-	    String.prototype.includes = function (string, index) {
-	        if ((typeof string === 'undefined' ? 'undefined' : _typeof(string)) === 'object' && string instanceof RegExp) throw new TypeError("First argument to String.prototype.includes must not be a regular expression");
-	        return this.indexOf(string, index) !== -1;
-	    };
-	}
-
-/***/ },
-/* 496 */
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-	
-	/*	
-	 * jQuery mmenu v4.2.2
-	 * @requires jQuery 1.7.0 or later
-	 *
-	 * mmenu.frebsite.nl
-	 *	
-	 * Copyright (c) Fred Heusschen
-	 * www.frebsite.nl
-	 *
-	 * Dual licensed under the MIT and GPL licenses.
-	 * http://en.wikipedia.org/wiki/MIT_License
-	 * http://en.wikipedia.org/wiki/GNU_General_Public_License
-	 */
-	!function (e) {
-	  function t(t, n, s) {
-	    if (s) {
-	      if ("object" != (typeof t === "undefined" ? "undefined" : _typeof(t)) && (t = {}), "boolean" != typeof t.isMenu) {
-	        var o = s.children();t.isMenu = 1 == o.length && o.is(n.panelNodetype);
-	      }return t;
-	    }return t = e.extend(!0, {}, e[a].defaults, t), ("top" == t.position || "bottom" == t.position) && ("back" == t.zposition || "next" == t.zposition) && (e[a].deprecated('Using position "' + t.position + '" in combination with zposition "' + t.zposition + '"', 'zposition "front"'), t.zposition = "front"), t;
-	  }function n(t) {
-	    return t = e.extend(!0, {}, e[a].configuration, t), "string" != typeof t.pageSelector && (t.pageSelector = "> " + t.pageNodetype), t;
-	  }function s() {
-	    r.$wndw = e(window), r.$html = e("html"), r.$body = e("body"), r.$allMenus = e(), e.each([d, c, u], function (e, t) {
-	      t.add = function (e) {
-	        e = e.split(" ");for (var n in e) {
-	          t[e[n]] = t.mm(e[n]);
-	        }
-	      };
-	    }), d.mm = function (e) {
-	      return "mm-" + e;
-	    }, d.add("menu ismenu panel list subtitle selected label spacer current highest hidden page blocker modal background opened opening subopened subopen fullsubopen subclose"), d.umm = function (e) {
-	      return "mm-" == e.slice(0, 3) && (e = e.slice(3)), e;
-	    }, c.mm = function (e) {
-	      return "mm-" + e;
-	    }, c.add("parent style"), u.mm = function (e) {
-	      return e + ".mm";
-	    }, u.add("toggle open opening opened close closing closed update setPage setSelected transitionend webkitTransitionEnd mousedown touchstart mouseup touchend scroll touchmove click keydown keyup resize"), r.$wndw.on(u.keydown, function (e) {
-	      return r.$html.hasClass(d.opened) && 9 == e.keyCode ? (e.preventDefault(), !1) : void 0;
-	    });var t = 0;r.$wndw.on(u.resize, function (e, n) {
-	      if (n || r.$html.hasClass(d.opened)) {
-	        var s = r.$wndw.height();(n || s != t) && (t = s, r.$page.css("minHeight", s));
-	      }
-	    }), e[a]._c = d, e[a]._d = c, e[a]._e = u, e[a].glbl = r;
-	  }function o(t, n) {
-	    if (t.hasClass(d.current)) return !1;var s = e("." + d.panel, n),
-	        o = s.filter("." + d.current);return s.removeClass(d.highest).removeClass(d.current).not(t).not(o).addClass(d.hidden), t.hasClass(d.opened) ? o.addClass(d.highest).removeClass(d.opened).removeClass(d.subopened) : (t.addClass(d.highest), o.addClass(d.subopened)), t.removeClass(d.hidden).removeClass(d.subopened).addClass(d.current).addClass(d.opened), "open";
-	  }function i(e, t, n) {
-	    var s = !1,
-	        o = function o() {
-	      s || t.call(e[0]), s = !0;
-	    };e.one(u.transitionend, o), e.one(u.webkitTransitionEnd, o), setTimeout(o, 1.1 * n);
-	  }var a = "mmenu",
-	      l = "4.2.2";if (!e[a]) {
-	    var r = { $wndw: null, $html: null, $body: null, $page: null, $blck: null, $allMenus: null },
-	        d = {},
-	        c = {},
-	        u = {},
-	        p = 0,
-	        h = 0;e[a] = function (e, t, n) {
-	      return r.$allMenus = r.$allMenus.add(e), this.$menu = e, this.opts = t, this.conf = n, this.serialnr = p++, this._init(), this;
-	    }, e[a].prototype = { open: function open() {
-	        var e = this;return this._openSetup(), setTimeout(function () {
-	          e._openFinish();
-	        }, 50), "open";
-	      }, _openSetup: function _openSetup() {
-	        h = r.$wndw.scrollTop(), this.$menu.addClass(d.current), r.$allMenus.not(this.$menu).trigger(u.close), r.$page.data(c.style, r.$page.attr("style") || ""), r.$wndw.trigger(u.resize, [!0]), this.opts.modal && r.$html.addClass(d.modal), this.opts.moveBackground && r.$html.addClass(d.background), "left" != this.opts.position && r.$html.addClass(d.mm(this.opts.position)), "back" != this.opts.zposition && r.$html.addClass(d.mm(this.opts.zposition)), this.opts.classes && r.$html.addClass(this.opts.classes), r.$html.addClass(d.opened), this.$menu.addClass(d.opened);
-	      }, _openFinish: function _openFinish() {
-	        var e = this;i(r.$page, function () {
-	          e.$menu.trigger(u.opened);
-	        }, this.conf.transitionDuration), r.$html.addClass(d.opening), this.$menu.trigger(u.opening);
-	      }, close: function close() {
-	        var e = this;return i(r.$page, function () {
-	          e.$menu.removeClass(d.current).removeClass(d.opened), r.$html.removeClass(d.opened).removeClass(d.modal).removeClass(d.background).removeClass(d.mm(e.opts.position)).removeClass(d.mm(e.opts.zposition)), e.opts.classes && r.$html.removeClass(e.opts.classes), r.$page.attr("style", r.$page.data(c.style)), e.$menu.trigger(u.closed);
-	        }, this.conf.transitionDuration), r.$html.removeClass(d.opening), this.$menu.trigger(u.closing), "close";
-	      }, _init: function _init() {
-	        if (this.opts = t(this.opts, this.conf, this.$menu), this.direction = this.opts.slidingSubmenus ? "horizontal" : "vertical", this._initPage(r.$page), this._initMenu(), this._initBlocker(), this._initPanles(), this._initLinks(), this._initOpenClose(), this._bindCustomEvents(), e[a].addons) for (var n = 0; n < e[a].addons.length; n++) {
-	          "function" == typeof this["_addon_" + e[a].addons[n]] && this["_addon_" + e[a].addons[n]]();
-	        }
-	      }, _bindCustomEvents: function _bindCustomEvents() {
-	        var t = this;this.$menu.off(u.open + " " + u.close + " " + u.setPage + " " + u.update).on(u.open + " " + u.close + " " + u.setPage + " " + u.update, function (e) {
-	          e.stopPropagation();
-	        }), this.$menu.on(u.open, function (n) {
-	          return e(this).hasClass(d.current) ? (n.stopImmediatePropagation(), !1) : t.open();
-	        }).on(u.close, function (n) {
-	          return e(this).hasClass(d.current) ? t.close() : (n.stopImmediatePropagation(), !1);
-	        }).on(u.setPage, function (e, n) {
-	          t._initPage(n), t._initOpenClose();
-	        });var n = this.$menu.find(this.opts.isMenu && "horizontal" != this.direction ? "ul, ol" : "." + d.panel);n.off(u.toggle + " " + u.open + " " + u.close).on(u.toggle + " " + u.open + " " + u.close, function (e) {
-	          e.stopPropagation();
-	        }), "horizontal" == this.direction ? n.on(u.open, function () {
-	          return o(e(this), t.$menu);
-	        }) : n.on(u.toggle, function () {
-	          var t = e(this);return t.triggerHandler(t.parent().hasClass(d.opened) ? u.close : u.open);
-	        }).on(u.open, function () {
-	          return e(this).parent().addClass(d.opened), "open";
-	        }).on(u.close, function () {
-	          return e(this).parent().removeClass(d.opened), "close";
-	        });
-	      }, _initBlocker: function _initBlocker() {
-	        var t = this;r.$blck || (r.$blck = e('<div id="' + d.blocker + '" />').appendTo(r.$body)), r.$blck.off(u.touchstart).on(u.touchstart, function (e) {
-	          e.preventDefault(), e.stopPropagation(), r.$blck.trigger(u.mousedown);
-	        }).on(u.mousedown, function (e) {
-	          e.preventDefault(), r.$html.hasClass(d.modal) || t.$menu.trigger(u.close);
-	        });
-	      }, _initPage: function _initPage(t) {
-	        t || (t = e(this.conf.pageSelector, r.$body), t.length > 1 && (e[a].debug("Multiple nodes found for the page-node, all nodes are wrapped in one <" + this.conf.pageNodetype + ">."), t = t.wrapAll("<" + this.conf.pageNodetype + " />").parent())), t.addClass(d.page), r.$page = t;
-	      }, _initMenu: function _initMenu() {
-	        this.conf.clone && (this.$menu = this.$menu.clone(!0), this.$menu.add(this.$menu.find("*")).filter("[id]").each(function () {
-	          e(this).attr("id", d.mm(e(this).attr("id")));
-	        })), this.$menu.contents().each(function () {
-	          3 == e(this)[0].nodeType && e(this).remove();
-	        }), this.$menu.prependTo("body").addClass(d.menu), this.$menu.addClass(d.mm(this.direction)), this.opts.classes && this.$menu.addClass(this.opts.classes), this.opts.isMenu && this.$menu.addClass(d.ismenu), "left" != this.opts.position && this.$menu.addClass(d.mm(this.opts.position)), "back" != this.opts.zposition && this.$menu.addClass(d.mm(this.opts.zposition));
-	      }, _initPanles: function _initPanles() {
-	        var t = this;this.__refactorClass(e("." + this.conf.listClass, this.$menu), "list"), this.opts.isMenu && e("ul, ol", this.$menu).not(".mm-nolist").addClass(d.list);var n = e("." + d.list + " > li", this.$menu);this.__refactorClass(n.filter("." + this.conf.selectedClass), "selected"), this.__refactorClass(n.filter("." + this.conf.labelClass), "label"), this.__refactorClass(n.filter("." + this.conf.spacerClass), "spacer"), n.off(u.setSelected).on(u.setSelected, function (t, s) {
-	          t.stopPropagation(), n.removeClass(d.selected), "boolean" != typeof s && (s = !0), s && e(this).addClass(d.selected);
-	        }), this.__refactorClass(e("." + this.conf.panelClass, this.$menu), "panel"), this.$menu.children().filter(this.conf.panelNodetype).add(this.$menu.find("." + d.list).children().children().filter(this.conf.panelNodetype)).addClass(d.panel);var s = e("." + d.panel, this.$menu);s.each(function (n) {
-	          var s = e(this),
-	              o = s.attr("id") || d.mm("m" + t.serialnr + "-p" + n);s.attr("id", o);
-	        }), s.find("." + d.panel).each(function () {
-	          var n = e(this),
-	              s = n.is("ul, ol") ? n : n.find("ul ,ol").first(),
-	              o = n.parent(),
-	              i = o.find("> a, > span"),
-	              a = o.closest("." + d.panel);if (n.data(c.parent, o), o.parent().is("." + d.list)) {
-	            var l = e('<a class="' + d.subopen + '" href="#' + n.attr("id") + '" />').insertBefore(i);i.is("a") || l.addClass(d.fullsubopen), "horizontal" == t.direction && s.prepend('<li class="' + d.subtitle + '"><a class="' + d.subclose + '" href="#' + a.attr("id") + '">' + i.text() + "</a></li>");
-	          }
-	        });var o = "horizontal" == this.direction ? u.open : u.toggle;if (s.each(function () {
-	          var n = e(this),
-	              s = n.attr("id");e('a[href="#' + s + '"]', t.$menu).off(u.click).on(u.click, function (e) {
-	            e.preventDefault(), n.trigger(o);
-	          });
-	        }), "horizontal" == this.direction) {
-	          var i = e("." + d.list + " > li." + d.selected, this.$menu);i.add(i.parents("li")).parents("li").removeClass(d.selected).end().each(function () {
-	            var t = e(this),
-	                n = t.find("> ." + d.panel);n.length && (t.parents("." + d.panel).addClass(d.subopened), n.addClass(d.opened));
-	          }).closest("." + d.panel).addClass(d.opened).parents("." + d.panel).addClass(d.subopened);
-	        } else e("li." + d.selected, this.$menu).addClass(d.opened).parents("." + d.selected).removeClass(d.selected);var a = s.filter("." + d.opened);a.length || (a = s.first()), a.addClass(d.opened).last().addClass(d.current), "horizontal" == this.direction && s.find("." + d.panel).appendTo(this.$menu);
-	      }, _initLinks: function _initLinks() {
-	        var t = this;e("." + d.list + " > li > a", this.$menu).not("." + d.subopen).not("." + d.subclose).not('[rel="external"]').not('[target="_blank"]').off(u.click).on(u.click, function (n) {
-	          var s = e(this),
-	              o = s.attr("href");t.__valueOrFn(t.opts.onClick.setSelected, s) && s.parent().trigger(u.setSelected);var i = t.__valueOrFn(t.opts.onClick.preventDefault, s, "#" == o.slice(0, 1));i && n.preventDefault(), t.__valueOrFn(t.opts.onClick.blockUI, s, !i) && r.$html.addClass(d.blocking), t.__valueOrFn(t.opts.onClick.close, s, i) && t.$menu.triggerHandler(u.close);
-	        });
-	      }, _initOpenClose: function _initOpenClose() {
-	        var t = this,
-	            n = this.$menu.attr("id");n && n.length && (this.conf.clone && (n = d.umm(n)), e('a[href="#' + n + '"]').off(u.click).on(u.click, function (e) {
-	          e.preventDefault(), t.$menu.trigger(u.open);
-	        }));var n = r.$page.attr("id");n && n.length && e('a[href="#' + n + '"]').off(u.click).on(u.click, function (e) {
-	          e.preventDefault(), t.$menu.trigger(u.close);
-	        });
-	      }, __valueOrFn: function __valueOrFn(e, t, n) {
-	        return "function" == typeof e ? e.call(t[0]) : "undefined" == typeof e && "undefined" != typeof n ? n : e;
-	      }, __refactorClass: function __refactorClass(e, t) {
-	        e.removeClass(this.conf[t + "Class"]).addClass(d[t]);
-	      } }, e.fn[a] = function (o, i) {
-	      return r.$wndw || s(), o = t(o, i), i = n(i), this.each(function () {
-	        var t = e(this);t.data(a) || t.data(a, new e[a](t, o, i));
-	      });
-	    }, e[a].version = l, e[a].defaults = { position: "left", zposition: "back", moveBackground: !0, slidingSubmenus: !0, modal: !1, classes: "", onClick: { setSelected: !0 } }, e[a].configuration = { preventTabbing: !0, panelClass: "Panel", listClass: "List", selectedClass: "Selected", labelClass: "Label", spacerClass: "Spacer", pageNodetype: "div", panelNodetype: "ul, ol, div", transitionDuration: 400 }, function () {
-	      var t = window.document,
-	          n = window.navigator.userAgent,
-	          s = (document.createElement("div").style, "ontouchstart" in t),
-	          o = "WebkitOverflowScrolling" in t.documentElement.style,
-	          i = function () {
-	        return n.indexOf("Android") >= 0 ? 2.4 > parseFloat(n.slice(n.indexOf("Android") + 8)) : !1;
-	      }();e[a].support = { touch: s, oldAndroidBrowser: i, overflowscrolling: function () {
-	          return s ? o ? !0 : i ? !1 : !0 : !0;
-	        }() };
-	    }(), e[a].debug = function () {}, e[a].deprecated = function (e, t) {
-	      "undefined" != typeof console && "undefined" != typeof console.warn && console.warn("MMENU: " + e + " is deprecated, use " + t + " instead.");
-	    };
-	  }
-	}(jQuery);
-	/*	
-	 * jQuery mmenu counters addon
-	 * @requires mmenu 4.0.0 or later
-	 *
-	 * mmenu.frebsite.nl
-	 *	
-	 * Copyright (c) Fred Heusschen
-	 * www.frebsite.nl
-	 *
-	 * Dual licensed under the MIT and GPL licenses.
-	 * http://en.wikipedia.org/wiki/MIT_License
-	 * http://en.wikipedia.org/wiki/GNU_General_Public_License
-	 */
-	!function (t) {
-	  var e = "mmenu",
-	      n = "counters";t[e].prototype["_addon_" + n] = function () {
-	    var o = this,
-	        u = this.opts[n],
-	        a = t[e]._c,
-	        r = t[e]._d,
-	        d = t[e]._e;a.add("counter noresults"), d.add("updatecounters"), "boolean" == typeof u && (u = { add: u, update: u }), "object" != (typeof u === "undefined" ? "undefined" : _typeof(u)) && (u = {}), u = t.extend(!0, {}, t[e].defaults[n], u), u.count && (t[e].deprecated('the option "count" for counters, the option "update"'), u.update = u.count), this.__refactorClass(t("em." + this.conf.counterClass, this.$menu), "counter");var s = t("." + a.panel, this.$menu);if (u.add && s.each(function () {
-	      var e = t(this),
-	          n = e.data(r.parent);if (n) {
-	        var o = t('<em class="' + a.counter + '" />'),
-	            u = n.find("> a." + a.subopen);u.parent().find("em." + a.counter).length || u.before(o);
-	      }
-	    }), u.update) {
-	      var c = t("em." + a.counter, this.$menu);c.off(d.updatecounters).on(d.updatecounters, function (t) {
-	        t.stopPropagation();
-	      }).each(function () {
-	        var e = t(this),
-	            n = t(e.next().attr("href"), o.$menu);n.is("." + a.list) || (n = n.find("> ." + a.list)), n.length && e.on(d.updatecounters, function () {
-	          var t = n.children().not("." + a.label).not("." + a.subtitle).not("." + a.hidden).not("." + a.noresults);e.html(t.length);
-	        });
-	      }).trigger(d.updatecounters), this.$menu.on(d.update, function () {
-	        c.trigger(d.updatecounters);
-	      });
-	    }
-	  }, t[e].defaults[n] = { add: !1, update: !1 }, t[e].configuration.counterClass = "Counter", t[e].addons = t[e].addons || [], t[e].addons.push(n);
-	}(jQuery);
-	/*	
-	 * jQuery mmenu dragOpen addon
-	 * @requires mmenu 4.0.0 or later
-	 *
-	 * mmenu.frebsite.nl
-	 *	
-	 * Copyright (c) Fred Heusschen
-	 * www.frebsite.nl
-	 *
-	 * Dual licensed under the MIT and GPL licenses.
-	 * http://en.wikipedia.org/wiki/MIT_License
-	 * http://en.wikipedia.org/wiki/GNU_General_Public_License
-	 */
-	!function (e) {
-	  function t(e, t, a) {
-	    return t > e && (e = t), e > a && (e = a), e;
-	  }var a = "mmenu",
-	      o = "dragOpen";e[a].prototype["_addon_" + o] = function () {
-	    var n = this,
-	        r = this.opts[o];if (e.fn.hammer) {
-	      var i = e[a]._c,
-	          s = (e[a]._d, e[a]._e);i.add("dragging"), s.add("dragleft dragright dragup dragdown dragend");var d = e[a].glbl;if ("boolean" == typeof r && (r = { open: r }), "object" != (typeof r === "undefined" ? "undefined" : _typeof(r)) && (r = {}), "number" != typeof r.maxStartPos && (r.maxStartPos = "left" == this.opts.position || "right" == this.opts.position ? 150 : 75), r = e.extend(!0, {}, e[a].defaults[o], r), r.open) {
-	        var p = 0,
-	            g = !1,
-	            c = 0,
-	            h = 0,
-	            l = "width";switch (this.opts.position) {case "left":case "right":
-	            l = "width";break;default:
-	            l = "height";}switch (this.opts.position) {case "left":
-	            var f = { events: s.dragleft + " " + s.dragright, open_dir: "right", close_dir: "left", delta: "deltaX", page: "pageX", negative: !1 };break;case "right":
-	            var f = { events: s.dragleft + " " + s.dragright, open_dir: "left", close_dir: "right", delta: "deltaX", page: "pageX", negative: !0 };break;case "top":
-	            var f = { events: s.dragup + " " + s.dragdown, open_dir: "down", close_dir: "up", delta: "deltaY", page: "pageY", negative: !1 };break;case "bottom":
-	            var f = { events: s.dragup + " " + s.dragdown, open_dir: "up", close_dir: "down", delta: "deltaY", page: "pageY", negative: !0 };}var u = this.__valueOrFn(r.pageNode, this.$menu, d.$page);"string" == typeof u && (u = e(u));var m = d.$page.find("." + i.mm("fixed-top") + ", ." + i.mm("fixed-bottom")),
-	            v = d.$page;switch (n.opts.zposition) {case "back":
-	            v = v.add(m);break;case "front":
-	            v = n.$menu;break;case "next":
-	            v = v.add(n.$menu).add(m);}u.hammer().on(s.touchstart + " " + s.mousedown, function (e) {
-	          if ("touchstart" == e.type) var t = e.originalEvent.touches[0] || e.originalEvent.changedTouches[0],
-	              a = t[f.page];else if ("mousedown" == e.type) var a = e[f.page];switch (n.opts.position) {case "right":case "bottom":
-	              a >= d.$wndw[l]() - r.maxStartPos && (p = 1);break;default:
-	              a <= r.maxStartPos && (p = 1);}
-	        }).on(f.events + " " + s.dragend, function (e) {
-	          p > 0 && (e.gesture.preventDefault(), e.stopPropagation());
-	        }).on(f.events, function (e) {
-	          var a = f.negative ? -e.gesture[f.delta] : e.gesture[f.delta];if (g = a > c ? f.open_dir : f.close_dir, c = a, c > r.threshold && 1 == p) {
-	            if (d.$html.hasClass(i.opened)) return;p = 2, n._openSetup(), d.$html.addClass(i.dragging), h = t(d.$wndw[l]() * n.conf[o][l].perc, n.conf[o][l].min, n.conf[o][l].max);
-	          }2 == p && v.css(n.opts.position, t(c, 10, h) - ("front" == n.opts.zposition ? h : 0));
-	        }).on(s.dragend, function () {
-	          2 == p && (d.$html.removeClass(i.dragging), v.css(n.opts.position, ""), g == f.open_dir ? n._openFinish() : n.close()), p = 0;
-	        });
-	      }
-	    }
-	  }, e[a].defaults[o] = { open: !1, threshold: 50 }, e[a].configuration[o] = { width: { perc: .8, min: 140, max: 440 }, height: { perc: .8, min: 140, max: 880 } }, e[a].addons = e[a].addons || [], e[a].addons.push(o);
-	}(jQuery);
-	/*	
-	 * jQuery mmenu header addon
-	 * @requires mmenu 4.0.0 or later
-	 *
-	 * mmenu.frebsite.nl
-	 *	
-	 * Copyright (c) Fred Heusschen
-	 * www.frebsite.nl
-	 *
-	 * Dual licensed under the MIT and GPL licenses.
-	 * http://en.wikipedia.org/wiki/MIT_License
-	 * http://en.wikipedia.org/wiki/GNU_General_Public_License
-	 */
-	!function (e) {
-	  var t = "mmenu",
-	      a = "header";e[t].prototype["_addon_" + a] = function () {
-	    var n = this,
-	        r = this.opts[a],
-	        d = this.conf[a],
-	        s = e[t]._c,
-	        i = (e[t]._d, e[t]._e);s.add("header hasheader prev next title titletext"), i.add("updateheader");var o = e[t].glbl;if ("boolean" == typeof r && (r = { add: r, update: r }), "object" != (typeof r === "undefined" ? "undefined" : _typeof(r)) && (r = {}), r = e.extend(!0, {}, e[t].defaults[a], r), r.add) {
-	      var h = r.content ? r.content : '<a class="' + s.prev + '" href="javascript:;"></a><span class="' + s.title + '"></span><a class="' + s.next + '" href="javascript:;"></a>';e('<div class="' + s.header + '" />').prependTo(this.$menu).append(h);
-	    }var p = e("div." + s.header, this.$menu);if (p.length && this.$menu.addClass(s.hasheader), r.update && p.length) {
-	      var l = p.find("." + s.title),
-	          u = p.find("." + s.prev),
-	          f = p.find("." + s.next),
-	          c = "#" + o.$page.attr("id");u.add(f).on(i.click, function (t) {
-	        t.preventDefault(), t.stopPropagation();var a = e(this).attr("href");"#" !== a && (a == c ? n.$menu.trigger(i.close) : e(a, n.$menu).trigger(i.open));
-	      }), e("." + s.panel, this.$menu).each(function () {
-	        var t = e(this),
-	            a = e("." + d.panelHeaderClass, t).text(),
-	            n = e("." + d.panelPrevClass, t).attr("href"),
-	            o = e("." + d.panelNextClass, t).attr("href");a || (a = e("." + s.subclose, t).text()), a || (a = r.title), n || (n = e("." + s.subclose, t).attr("href")), t.off(i.updateheader).on(i.updateheader, function (e) {
-	          e.stopPropagation(), l[a ? "show" : "hide"]().text(a), u[n ? "show" : "hide"]().attr("href", n), f[o ? "show" : "hide"]().attr("href", o);
-	        }), t.on(i.open, function () {
-	          e(this).trigger(i.updateheader);
-	        });
-	      }).filter("." + s.current).trigger(i.updateheader);
-	    }
-	  }, e[t].defaults[a] = { add: !1, content: !1, update: !1, title: "Menu" }, e[t].configuration[a] = { panelHeaderClass: "Header", panelNextClass: "Next", panelPrevClass: "Prev" }, e[t].addons = e[t].addons || [], e[t].addons.push(a);
-	}(jQuery);
-	/*	
-	 * jQuery mmenu labels addon
-	 * @requires mmenu 4.1.0 or later
-	 *
-	 * mmenu.frebsite.nl
-	 *	
-	 * Copyright (c) Fred Heusschen
-	 * www.frebsite.nl
-	 *
-	 * Dual licensed under the MIT and GPL licenses.
-	 * http://en.wikipedia.org/wiki/MIT_License
-	 * http://en.wikipedia.org/wiki/GNU_General_Public_License
-	 */
-	!function (e) {
-	  var l = "mmenu",
-	      s = "labels";e[l].prototype["_addon_" + s] = function () {
-	    function a() {
-	      var e = t.hassearch && o.$menu.hasClass(t.hassearch),
-	          l = t.hasheader && o.$menu.hasClass(t.hasheader);return e ? l ? 100 : 50 : l ? 60 : 0;
-	    }var o = this,
-	        n = this.opts[s],
-	        t = e[l]._c,
-	        i = (e[l]._d, e[l]._e);if (t.add("collapsed"), t.add("fixedlabels original clone"), i.add("updatelabels position scroll"), e[l].support.touch && (i.scroll += " " + i.mm("touchmove")), "boolean" == typeof n && (n = { collapse: n }), "object" != (typeof n === "undefined" ? "undefined" : _typeof(n)) && (n = {}), n = e.extend(!0, {}, e[l].defaults[s], n), n.collapse) {
-	      this.__refactorClass(e("li." + this.conf.collapsedClass, this.$menu), "collapsed");var d = e("." + t.label, this.$menu);d.each(function () {
-	        var l = e(this),
-	            s = l.nextUntil("." + t.label, "all" == n.collapse ? null : "." + t.collapsed);"all" == n.collapse && (l.addClass(t.opened), s.removeClass(t.collapsed)), s.length && (l.wrapInner("<span />"), e('<a href="javascript:;" class="' + t.subopen + " " + t.fullsubopen + '" />').prependTo(l).on(i.click, function (e) {
-	          e.preventDefault(), l.toggleClass(t.opened), s[l.hasClass(t.opened) ? "removeClass" : "addClass"](t.collapsed);
-	        }));
-	      });
-	    } else if (n.fixed) {
-	      if ("horizontal" != this.direction) return;this.$menu.addClass(t.fixedlabels);var r = e("." + t.panel, this.$menu),
-	          d = e("." + t.label, this.$menu);r.add(d).off(i.updatelabels + " " + i.position + " " + i.scroll).on(i.updatelabels + " " + i.position + " " + i.scroll, function (e) {
-	        e.stopPropagation();
-	      });var p = a();r.each(function () {
-	        var l = e(this),
-	            s = l.find("." + t.label);if (s.length) {
-	          var o = l.scrollTop();s.each(function () {
-	            var s = e(this);s.wrapInner("<div />").wrapInner("<div />");var a,
-	                n,
-	                d,
-	                r = s.find("> div"),
-	                c = e();s.on(i.updatelabels, function () {
-	              o = l.scrollTop(), s.hasClass(t.hidden) || (c = s.nextAll("." + t.label).not("." + t.hidden).first(), a = s.offset().top + o, n = c.length ? c.offset().top + o : !1, d = r.height(), s.trigger(i.position));
-	            }), s.on(i.position, function () {
-	              var e = 0;n && o + p > n - d ? e = n - a - d : o + p > a && (e = o - a + p), r.css("top", e);
-	            });
-	          }), l.on(i.updatelabels, function () {
-	            o = l.scrollTop(), p = a(), s.trigger(i.position);
-	          }).on(i.scroll, function () {
-	            s.trigger(i.updatelabels);
-	          });
-	        }
-	      }), this.$menu.on(i.update, function () {
-	        r.trigger(i.updatelabels);
-	      }).on(i.opening, function () {
-	        r.trigger(i.updatelabels).trigger(i.scroll);
-	      });
-	    }
-	  }, e[l].defaults[s] = { fixed: !1, collapse: !1 }, e[l].configuration.collapsedClass = "Collapsed", e[l].addons = e[l].addons || [], e[l].addons.push(s);
-	}(jQuery);
-	/*	
-	 * jQuery mmenu searchfield addon
-	 * @requires mmenu 4.0.0 or later
-	 *
-	 * mmenu.frebsite.nl
-	 *	
-	 * Copyright (c) Fred Heusschen
-	 * www.frebsite.nl
-	 *
-	 * Dual licensed under the MIT and GPL licenses.
-	 * http://en.wikipedia.org/wiki/MIT_License
-	 * http://en.wikipedia.org/wiki/GNU_General_Public_License
-	 */
-	!function (e) {
-	  function s(e) {
-	    switch (e) {case 9:case 16:case 17:case 18:case 37:case 38:case 39:case 40:
-	        return !0;}return !1;
-	  }var n = "mmenu",
-	      t = "searchfield";e[n].prototype["_addon_" + t] = function () {
-	    var a = this,
-	        r = this.opts[t],
-	        o = e[n]._c,
-	        l = e[n]._d,
-	        d = e[n]._e;if (o.add("search hassearch noresults nosubresults counter"), d.add("search reset change"), "boolean" == typeof r && (r = { add: r, search: r }), "object" != (typeof r === "undefined" ? "undefined" : _typeof(r)) && (r = {}), r = e.extend(!0, {}, e[n].defaults[t], r), r.add && (e('<div class="' + o.search + '" />').prependTo(this.$menu).append('<input placeholder="' + r.placeholder + '" type="text" autocomplete="off" />'), r.noResults && e("ul, ol", this.$menu).first().append('<li class="' + o.noresults + '">' + r.noResults + "</li>")), e("div." + o.search, this.$menu).length && this.$menu.addClass(o.hassearch), r.search) {
-	      var i = e("div." + o.search, this.$menu).find("input");if (i.length) {
-	        var u = e("." + o.panel, this.$menu),
-	            h = e("." + o.list + "> li." + o.label, this.$menu),
-	            c = e("." + o.list + "> li", this.$menu).not("." + o.subtitle).not("." + o.label).not("." + o.noresults),
-	            f = "> a";r.showLinksOnly || (f += ", > span"), i.off(d.keyup + " " + d.change).on(d.keyup, function (e) {
-	          s(e.keyCode) || a.$menu.trigger(d.search);
-	        }).on(d.change, function () {
-	          a.$menu.trigger(d.search);
-	        }), this.$menu.off(d.reset + " " + d.search).on(d.reset + " " + d.search, function (e) {
-	          e.stopPropagation();
-	        }).on(d.reset, function () {
-	          a.$menu.trigger(d.search, [""]);
-	        }).on(d.search, function (s, n) {
-	          "string" == typeof n ? i.val(n) : n = i.val(), n = n.toLowerCase(), u.scrollTop(0), c.add(h).addClass(o.hidden), c.each(function () {
-	            var s = e(this);e(f, s).text().toLowerCase().indexOf(n) > -1 && s.add(s.prevAll("." + o.label).first()).removeClass(o.hidden);
-	          }), e(u.get().reverse()).each(function () {
-	            var s = e(this),
-	                n = s.data(l.parent);if (n) {
-	              var t = s.add(s.find("> ." + o.list)).find("> li").not("." + o.subtitle).not("." + o.label).not("." + o.hidden);t.length ? n.removeClass(o.hidden).removeClass(o.nosubresults).prevAll("." + o.label).first().removeClass(o.hidden) : (s.hasClass(o.current) && n.trigger(d.open), n.addClass(o.nosubresults));
-	            }
-	          }), a.$menu[c.not("." + o.hidden).length ? "removeClass" : "addClass"](o.noresults), a.$menu.trigger(d.update);
-	        });
-	      }
-	    }
-	  }, e[n].defaults[t] = { add: !1, search: !1, showLinksOnly: !0, placeholder: "Search", noResults: "No results found." }, e[n].addons = e[n].addons || [], e[n].addons.push(t);
-	}(jQuery);
-
-/***/ },
-/* 497 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __WEBPACK_AMD_DEFINE_RESULT__;var __WEBPACK_AMD_DEFINE_RESULT__;"use strict";
-	
-	var getLanguage = __webpack_require__(303).getLanguage;
-	
-	/**!
-	 * PJAX- Standalone (+ several custom changes for binary.com)
-	 *
-	 * A standalone implementation of Pushstate AJAX, for non-jQuery web pages.
-	 * jQuery are recommended to use the original implementation at: http://github.com/defunkt/jquery-pjax
-	 *
-	 * @version 0.6.1
-	 * @author Carl
-	 * @source https://github.com/thybag/PJAX-Standalone
-	 * @license MIT
-	 */
-	(function () {
-	
-		// Object to store private values/methods.
-		var internal = {
-			// Is this the first usage of PJAX? (Ensure history entry has required values if so.)
-			"firstrun": true,
-			// Borrowed wholesale from https://github.com/defunkt/jquery-pjax
-			// Attempt to check that a device supports pushstate before attempting to use it.
-			"is_supported": window.history && window.history.pushState && window.history.replaceState && !navigator.userAgent.match(/((iPod|iPhone|iPad).+\bOS\s+[1-4]|WebApps\/.+CFNetwork)/),
-			// Track which scripts have been included in to the page. (used if e)
-			"loaded_scripts": []
-		};
-	
-		// If PJAX isn't supported we can skip setting up the library all together
-		// So as not to break any code expecting PJAX to be there, return a shell object containing
-		// IE7 + compatible versions of connect (which needs to do nothing) and invoke ( which just changes the page)
-		if (!internal.is_supported) {
-			// PJAX shell, so any code expecting PJAX will work
-			var pjax_shell = {
-				"connect": function connect() {
-					return;
-				},
-				"invoke": function invoke() {
-					var url = arguments.length === 2 ? arguments[0] : arguments.url || arguments[0].url;
-					document.location = url;
-					return;
-				}
-			};
-			// AMD support
-			if (true) {
-				!(__WEBPACK_AMD_DEFINE_RESULT__ = function () {
-					return pjax_shell;
-				}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-			} else {
-				window.pjax = pjax_shell;
-			}
-			return;
-		}
-	
-		/**
-	  * AddEvent
-	  *
-	  * @scope private
-	  * @param obj Object to listen on
-	  * @param event Event to listen for.
-	  * @param callback Method to run when event is detected.
-	  */
-		internal.addEvent = function (obj, event, callback) {
-			obj.addEventListener(event, callback, false);
-		};
-	
-		/**
-	  * Clone
-	  * Util method to create copies of the options object (so they do not share references)
-	  * This allows custom settings on different links.
-	  *
-	  * @scope private
-	  * @param obj
-	  * @return obj
-	  */
-		internal.clone = function (obj) {
-			var object = {};
-			// For every option in object, create it in the duplicate.
-			for (var i in obj) {
-				object[i] = obj[i];
-			}
-			return object;
-		};
-	
-		/**
-	  * triggerEvent
-	  * Fire an event on a given object (used for callbacks)
-	  *
-	  * @scope private
-	  * @param node. Objects to fire event on
-	  * @return event_name. type of event
-	  */
-		internal.triggerEvent = function (node, event_name, data) {
-			// Good browsers
-			var evt = document.createEvent("HTMLEvents");
-			evt.initEvent(event_name, true, true);
-			// If additional data was provided, add it to event
-			if (typeof data !== 'undefined') evt.data = data;
-			node.dispatchEvent(evt);
-		};
-	
-		/**
-	  * popstate listener
-	  * Listens for back/forward button events and updates page accordingly.
-	  */
-		internal.addEvent(window, 'popstate', function (st) {
-			if (st.state !== null) {
-	
-				var opt = {
-					'url': st.state.url,
-					'container': st.state.container,
-					'useClass': st.state.useClass,
-					'loggedin': st.state.loggedin,
-					'title': st.state.title,
-					'history': false
-				};
-	
-				// Merge original in original connect options
-				if (typeof internal.options !== 'undefined') {
-					for (var a in internal.options) {
-						if (typeof opt[a] === 'undefined') opt[a] = internal.options[a];
-					}
-				}
-	
-				// Convert state data to PJAX options
-				var options = internal.parseOptions(opt);
-				// If something went wrong, return.
-				if (options === false) return;
-				// If there is a state object, handle it as a page load.
-				internal.handle(options);
-			}
-		});
-	
-		/**
-	  * attach
-	  * Attach PJAX listeners to a link.
-	  * @scope private
-	  * @param link_node. link that will be clicked.
-	  * @param content_node.
-	  */
-		internal.attach = function (node, options) {
-	
-			// Ignore external links.
-			if (node.protocol !== document.location.protocol || node.host !== document.location.host) {
-				return;
-			}
-	
-			// Ignore anchors on the same page
-			if (node.pathname === location.pathname && node.hash.length > 0) {
-				return;
-			}
-	
-			// Ignore common non-PJAX loadable media types (pdf/doc/zips & images) unless user provides alternate array
-			var ignoreFileTypes = ['pdf', 'doc', 'docx', 'zip', 'rar', '7z', 'gif', 'jpeg', 'jpg', 'png'];
-			if (typeof options.ignoreFileTypes === 'undefined') options.ignoreFileTypes = ignoreFileTypes;
-			// Skip link if file type is within ignored types array
-			if (options.ignoreFileTypes.indexOf(node.pathname.split('.').pop().toLowerCase()) !== -1) {
-				return;
-			}
-	
-			// Add link HREF to object
-			options.url = node.href;
-			options.update_url = node.pathname + node.search + node.hash;
-			options.loggedin = node.classList.contains('with_login_cookies');
-	
-			// If PJAX data is specified, use as container
-			if (node.getAttribute('data-pjax')) {
-				options.container = node.getAttribute('data-pjax');
-			}
-	
-			// If data-title is specified, use as title.
-			if (node.getAttribute('data-title')) {
-				options.title = node.getAttribute('data-title');
-			}
-	
-			// Check options are valid.
-			options = internal.parseOptions(options);
-			if (options === false) return;
-	
-			// Attach event.
-			internal.addEvent(node, 'click', function (event) {
-				// Allow middle click (pages in new windows)
-				if (event.which > 1 || event.metaKey || event.ctrlKey) return;
-				// Don't fire normal event
-				if (event.preventDefault) {
-					event.preventDefault();
-				} else {
-					event.returnValue = false;
-				}
-				// Take no action if we are already on said page?
-				if (document.location.href === options.url) return false;
-				// handle the load.
-				internal.handle(options);
-			});
-		};
-	
-		/**
-	  * parseLinks
-	  * Parse all links within a DOM node, using settings provided in options.
-	  * @scope private
-	  * @param dom_obj. Dom node to parse for links.
-	  * @param options. Valid Options object.
-	  */
-		internal.parseLinks = function (dom_obj, options) {
-	
-			var nodes;
-	
-			if (typeof options.useClass !== 'undefined') {
-				// Get all nodes with the provided class name.
-				nodes = dom_obj.getElementsByClassName(options.useClass);
-			} else {
-				// If no class was provided, just get all the links
-				nodes = dom_obj.getElementsByTagName('a');
-			}
-	
-			// For all returned nodes
-			for (var i = 0, tmp_opt; i < nodes.length; i++) {
-				var node = nodes[i];
-				if (typeof options.excludeClass !== 'undefined') {
-					if (node.className.indexOf(options.excludeClass) !== -1) continue;
-				}
-				// Override options history to true, else link parsing could be triggered by back button (which runs in no-history mode)
-				tmp_opt = internal.clone(options);
-				tmp_opt.history = true;
-				internal.attach(node, tmp_opt);
-			}
-	
-			if (internal.firstrun) {
-				// Store array or all currently included script src's to avoid PJAX accidentally reloading existing libraries
-				var scripts = document.getElementsByTagName('script');
-				for (var c = 0; c < scripts.length; c++) {
-					if (scripts[c].src && internal.loaded_scripts.indexOf(scripts[c].src) === -1) {
-						internal.loaded_scripts.push(scripts[c].src);
-					}
-				}
-	
-				// Fire ready event once all links are connected
-				internal.triggerEvent(internal.get_container_node(options.container), 'ready');
-			}
-		};
-	
-		/**
-	  * SmartLoad
-	  * Smartload checks the returned HTML to ensure PJAX ready content has been provided rather than
-	  * a full HTML page. If a full HTML has been returned, it will attempt to scan the page and extract
-	  * the correct HTML to update our container with in order to ensure PJAX still functions as expected.
-	  *
-	  * @scope private
-	  * @param HTML (HTML returned from AJAX)
-	  * @param options (Options object used to request page)
-	  * @return HTML to append to our page.
-	  */
-		internal.smartLoad = function (html, options) {
-			// Grab the title if there is one
-			var title = html.getElementsByTagName('title')[0];
-			if (title) document.title = title.innerHTML;
-	
-			// Going by caniuse all browsers that support the pushstate API also support querySelector's
-			// see: http://caniuse.com/#search=push
-			// see: http://caniuse.com/#search=querySelector
-			var container = html.querySelector("#" + options.container.id);
-			if (container !== null) return container;
-	
-			// If our container was not found, HTML will be returned as is.
-			return html;
-		};
-	
-		/**
-	  * Update Content
-	  * Updates DOM with content loaded via PJAX
-	  *
-	  * @param html DOM fragment of loaded container
-	  * @param options PJAX configuration options
-	  * return options
-	  */
-		internal.updateContent = function (html, options) {
-			// Create in memory DOM node, to make parsing returned data easier
-			var tmp = document.createElement('div');
-			tmp.innerHTML = html;
-	
-			// Ensure we have the correct HTML to apply to our container.
-			if (options.smartLoad) tmp = internal.smartLoad(tmp, options);
-	
-			// If no title was provided, extract it
-			if (typeof options.title === 'undefined') {
-				// Use current doc title (this will be updated via smart load if its enabled)
-				options.title = document.title;
-	
-				// Attempt to grab title from non-smart loaded page contents
-				if (!options.smartLoad) {
-					var tmpTitle = tmp.getElementsByTagName('title');
-					if (tmpTitle.length !== 0) options.title = tmpTitle[0].innerHTML;
-				}
-			}
-	
-			// Update the DOM with the new content
-			options.container.innerHTML = tmp.innerHTML;
-	
-			// Run included JS?
-			if (options.parseJS) internal.runScripts(tmp);
-	
-			// Send data back to handle
-			return options;
-		};
-	
-		/**
-	  * runScripts
-	  * Execute JavaScript on pages loaded via PJAX
-	  *
-	  * Note: In-line JavaScript is run each time a page is hit, while external JavaScript
-	  *		is only loaded once (Although remains loaded while the user continues browsing)
-	  *
-	  * @param html DOM fragment of loaded container
-	  * return void
-	  */
-		internal.runScripts = function (html) {
-			// Extract JavaScript & eval it (if enabled)
-			var scripts = html.getElementsByTagName('script');
-			for (var sc = 0; sc < scripts.length; sc++) {
-				// If has an src & src isn't in "loaded_scripts", load the script.
-				if (scripts[sc].src && internal.loaded_scripts.indexOf(scripts[sc].src) === -1) {
-					// Append to head to include
-					var s = document.createElement("script");
-					s.src = scripts[sc].src;
-					document.head.appendChild(s);
-					// Add to loaded list
-					internal.loaded_scripts.push(scripts[sc].src);
-				} else {
-					// If raw JS, eval it.
-					eval(scripts[sc].innerHTML);
-				}
-			}
-		};
-	
-		/**
-	  * handle
-	  * Handle requests to load content via PJAX.
-	  * @scope private
-	  * @param url. Page to load.
-	  * @param node. Dom node to add returned content in to.
-	  * @param addtohistory. Does this load require a history event.
-	  */
-		internal.handle = function (options) {
-	
-			// Fire beforeSend Event.
-			internal.triggerEvent(options.container, 'beforeSend', options);
-	
-			// Do the request
-			internal.request(options.url, function (html) {
-	
-				// Fail if unable to load HTML via AJAX
-				if (html === false) {
-					internal.triggerEvent(options.container, 'complete', options);
-					internal.triggerEvent(options.container, 'error', options);
-					return;
-				}
-	
-				// Parse page & update DOM
-				options = internal.updateContent(html, options);
-	
-				// Do we need to add this to the history?
-				if (options.history) {
-					// If this is the first time pjax has run, create a state object for the current page.
-					if (internal.firstrun) {
-						window.history.replaceState({ 'url': document.location.href, 'container': options.container.id, 'useClass': options.useClass, 'loggedin': options.loggedin, 'title': document.title }, document.title);
-						internal.firstrun = false;
-					}
-					// Update browser history
-					window.history.pushState({ 'url': options.url, 'container': options.container.id, 'useClass': options.useClass, 'loggedin': options.loggedin, 'title': options.title }, options.title, options.url);
-				}
-	
-				// Initialize any new links found within document (if enabled).
-				if (options.parseLinksOnload) {
-					internal.parseLinks(options.container, options);
-				}
-	
-				// Fire Events
-				internal.triggerEvent(options.container, 'complete', options);
-				internal.triggerEvent(options.container, 'success', options);
-	
-				// Don't track if page isn't part of history, or if autoAnalytics is disabled
-				if (options.autoAnalytics && options.history) {
-					// If autoAnalytics is enabled and a Google analytics tracker is detected push
-					// a trackPageView, so PJAX loaded pages can be tracked successfully.
-					if (window._gaq) _gaq.push(['_trackPageview']);
-					if (window.ga) ga('send', 'pageview', { 'page': options.url, 'title': options.title });
-				}
-	
-				// Set new title
-				document.title = options.title;
-	
-				// Scroll page to top on new page load
-				if (options.returnToTop) {
-					window.scrollTo(0, 0);
-				}
-			});
-		};
-	
-		/**
-	  * Request
-	  * Performs AJAX request to page and returns the result..
-	  *
-	  * @scope private
-	  * @param location. Page to request.
-	  * @param callback. Method to call when a page is loaded.
-	  */
-		internal.request = function (location, callback) {
-			// Create xmlHttpRequest object.
-			var xmlhttp;
-			try {
-				xmlhttp = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP");
-			} catch (e) {
-				console.log("Unable to create XMLHTTP Request");
-				return;
-			}
-			// Add state listener.
-			xmlhttp.onreadystatechange = function () {
-				if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
-					// Success, Return HTML
-					callback(xmlhttp.responseText);
-				} else if (xmlhttp.readyState === 4 && (xmlhttp.status === 404 || xmlhttp.status === 500)) {
-					// error (return false)
-					callback(false);
-				}
-			};
-			// Secret pjax ?get param so browser doesn't return pjax content from cache when we don't want it to
-			// Switch between ? and & so as not to break any URL params (Based on change by zmasek https://github.com/zmasek/)
-			var lang = getLanguage();
-			xmlhttp.open("GET", location.replace(new RegExp('\/' + lang + '\/', 'i'), '/' + lang.toLowerCase() + '/pjax/'), true);
-			// Add headers so things can tell the request is being performed via AJAX.
-			xmlhttp.setRequestHeader('X-PJAX', 'true'); // PJAX header
-			xmlhttp.setRequestHeader('X-Requested-With', 'XMLHttpRequest'); // Standard AJAX header.
-	
-			xmlhttp.send(null);
-		};
-	
-		/**
-	  * parseOptions
-	  * Validate and correct options object while connecting up any listeners.
-	  *
-	  * @scope private
-	  * @param options
-	  * @return false | valid options object
-	  */
-		internal.parseOptions = function (options) {
-	
-			/**  Defaults parse options. (if something isn't provided)
-	   *
-	   * - history: track event to history (on by default, set to off when performing back operation)
-	   * - parseLinksOnload: Enabled by default. Process pages loaded via PJAX and setup PJAX on any links found.
-	   * - smartLoad: Tries to ensure the correct HTML is loaded. If you are certain your back end
-	   *		will only return PJAX ready content this can be disabled for a slight performance boost.
-	   * - autoAnalytics: Automatically attempt to log events to Google analytics (if tracker is available)
-	   * - returnToTop: Scroll user back to top of page, when new page is opened by PJAX
-	   * - parseJS: Disabled by default, when enabled PJAX will automatically run returned JavaScript
-	   */
-			var defaults = {
-				"history": true,
-				"parseLinksOnload": true,
-				"smartLoad": true,
-				"autoAnalytics": true,
-				"returnToTop": true,
-				"parseJS": false
-			};
-	
-			// Ensure a URL and container have been provided.
-			if (typeof options.url === 'undefined' || typeof options.container === 'undefined' || options.container === null) {
-				console.log("URL and Container must be provided.");
-				return false;
-			}
-	
-			// Check required options are defined, if not, use default
-			for (var o in defaults) {
-				if (typeof options[o] === 'undefined') options[o] = defaults[o];
-			}
-	
-			// Ensure history setting is a boolean.
-			options.history = options.history === false ? false : true;
-	
-			// Get container (if its an id, convert it to a DOM node.)
-			options.container = internal.get_container_node(options.container);
-	
-			// Events
-			var events = ['ready', 'beforeSend', 'complete', 'error', 'success'];
-	
-			// If everything went okay thus far, connect up listeners
-			for (var e in events) {
-				var evt = events[e];
-				if (typeof options[evt] === 'function') {
-					internal.addEvent(options.container, evt, options[evt]);
-				}
-			}
-	
-			// Return valid options
-			return options;
-		};
-	
-		/**
-	  * get_container_node
-	  * Returns container node
-	  *
-	  * @param container - (string) container ID | container DOM node.
-	  * @return container DOM node | false
-	  */
-		internal.get_container_node = function (container) {
-			if (typeof container === 'string') {
-				container = document.getElementById(container);
-				if (container === null) {
-					console.log("Could not find container with id:" + container);
-					return false;
-				}
-			}
-			return container;
-		};
-	
-		/**
-	  * connect
-	  * Attach links to PJAX handlers.
-	  * @scope public
-	  *
-	  * Can be called in 3 ways.
-	  * Calling as connect();
-	  *		Will look for links with the data-pjax attribute.
-	  *
-	  * Calling as connect(container_id)
-	  *		Will try to attach to all links, using the container_id as the target.
-	  *
-	  * Calling as connect(container_id, class_name)
-	  *		Will try to attach any links with the given class name, using container_id as the target.
-	  *
-	  * Calling as connect({
-	  *						'url':'somepage.php',
-	  *						'container':'somecontainer',
-	  *						'beforeSend': function(){console.log("sending");}
-	  *					})
-	  *		Will use the provided JSON to configure the script in full (including callbacks)
-	  */
-		this.connect = function () /* options */{
-			// connect();
-			var options = {};
-			// connect(container, class_to_apply_to)
-			if (arguments.length === 2) {
-				options.container = arguments[0];
-				options.useClass = arguments[1];
-			}
-			// Either JSON or container id
-			if (arguments.length === 1) {
-				if (typeof arguments[0] === 'string') {
-					//connect(container_id)
-					options.container = arguments[0];
-				} else {
-					//Else connect({url:'', container: ''});
-					options = arguments[0];
-				}
-			}
-			// Delete history and title if provided. These options should only be provided via invoke();
-			delete options.title;
-			delete options.history;
-	
-			internal.options = options;
-			if (document.readyState === 'complete') {
-				internal.parseLinks(document, options);
-			} else {
-				//Don't run until the window is ready.
-				internal.addEvent(window, 'load', function () {
-					//Parse links using specified options
-					internal.parseLinks(document, options);
-				});
-			}
-		};
-	
-		/**
-	  * invoke
-	  * Directly invoke a pjax page load.
-	  * invoke({url: 'file.php', 'container':'content'});
-	  *
-	  * @scope public
-	  * @param options
-	  */
-		this.invoke = function () /* options */{
-	
-			var options = {};
-			// url, container
-			if (arguments.length === 2) {
-				options.url = arguments[0];
-				options.container = arguments[1];
-			} else {
-				options = arguments[0];
-			}
-	
-			// Process options
-			options = internal.parseOptions(options);
-			// If everything went okay, activate pjax.
-			if (options !== false) internal.handle(options);
-		};
-	
-		// Make object usable
-		var pjax_obj = this;
-		if (true) {
-			// Register pjax as AMD module
-			!(__WEBPACK_AMD_DEFINE_RESULT__ = function () {
-				return pjax_obj;
-			}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-		} else {
-			// Make PJAX object accessible in global name space
-			window.pjax = pjax_obj;
-		}
-	}).call({});
-
-/***/ },
-/* 498 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
 	var TradingAnalysis = __webpack_require__(467).TradingAnalysis;
 	var displayCurrencies = __webpack_require__(470).displayCurrencies;
 	var Notifications = __webpack_require__(459).Notifications;
@@ -49219,8 +46877,8 @@
 	var processProposal = __webpack_require__(477).processProposal;
 	var processTradingTimes = __webpack_require__(477).processTradingTimes;
 	var PortfolioWS = __webpack_require__(463).PortfolioWS;
-	var ProfitTableWS = __webpack_require__(499).ProfitTableWS;
-	var StatementWS = __webpack_require__(505).StatementWS;
+	var ProfitTableWS = __webpack_require__(485).ProfitTableWS;
+	var StatementWS = __webpack_require__(491).StatementWS;
 	var State = __webpack_require__(304).State;
 	var GTM = __webpack_require__(431).GTM;
 	var Client = __webpack_require__(305).Client;
@@ -49294,7 +46952,7 @@
 	};
 
 /***/ },
-/* 499 */
+/* 485 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49303,8 +46961,8 @@
 	var addTooltip = __webpack_require__(464).addTooltip;
 	var buildOauthApps = __webpack_require__(464).buildOauthApps;
 	var Content = __webpack_require__(427).Content;
-	var ProfitTableUI = __webpack_require__(500).ProfitTableUI;
-	var ProfitTableData = __webpack_require__(504).ProfitTableData;
+	var ProfitTableUI = __webpack_require__(486).ProfitTableUI;
+	var ProfitTableData = __webpack_require__(490).ProfitTableData;
 	var localize = __webpack_require__(424).localize;
 	
 	var ProfitTableWS = function () {
@@ -49447,7 +47105,7 @@
 	};
 
 /***/ },
-/* 500 */
+/* 486 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49455,14 +47113,14 @@
 	var toJapanTimeIfNeeded = __webpack_require__(440).Clock.toJapanTimeIfNeeded;
 	var localize = __webpack_require__(424).localize;
 	var Client = __webpack_require__(305).Client;
-	var Button = __webpack_require__(501).Button;
+	var Button = __webpack_require__(487).Button;
 	var Content = __webpack_require__(427).Content;
-	var Table = __webpack_require__(502).Table;
+	var Table = __webpack_require__(488).Table;
 	var format_money = __webpack_require__(441).format_money;
 	var showTooltip = __webpack_require__(464).showTooltip;
 	var japanese_client = __webpack_require__(307).japanese_client;
 	var addComma = __webpack_require__(442).addComma;
-	var ProfitTable = __webpack_require__(503).ProfitTable;
+	var ProfitTable = __webpack_require__(489).ProfitTable;
 	var elementTextContent = __webpack_require__(308).elementTextContent;
 	
 	var ProfitTableUI = function () {
@@ -49581,7 +47239,7 @@
 	};
 
 /***/ },
-/* 501 */
+/* 487 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -49607,7 +47265,7 @@
 	};
 
 /***/ },
-/* 502 */
+/* 488 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -49737,7 +47395,7 @@
 	};
 
 /***/ },
-/* 503 */
+/* 489 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49777,7 +47435,7 @@
 	};
 
 /***/ },
-/* 504 */
+/* 490 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -49802,13 +47460,13 @@
 	};
 
 /***/ },
-/* 505 */
+/* 491 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var showLocalTimeOnHover = __webpack_require__(440).Clock.showLocalTimeOnHover;
-	var StatementUI = __webpack_require__(506).StatementUI;
+	var StatementUI = __webpack_require__(492).StatementUI;
 	var addTooltip = __webpack_require__(464).addTooltip;
 	var buildOauthApps = __webpack_require__(464).buildOauthApps;
 	var Content = __webpack_require__(427).Content;
@@ -50011,19 +47669,19 @@
 	};
 
 /***/ },
-/* 506 */
+/* 492 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var toJapanTimeIfNeeded = __webpack_require__(440).Clock.toJapanTimeIfNeeded;
 	var downloadCSV = __webpack_require__(421).downloadCSV;
-	var Button = __webpack_require__(501).Button;
+	var Button = __webpack_require__(487).Button;
 	var Content = __webpack_require__(427).Content;
-	var Table = __webpack_require__(502).Table;
+	var Table = __webpack_require__(488).Table;
 	var showTooltip = __webpack_require__(464).showTooltip;
 	var japanese_client = __webpack_require__(307).japanese_client;
-	var Statement = __webpack_require__(507).Statement;
+	var Statement = __webpack_require__(493).Statement;
 	var localize = __webpack_require__(424).localize;
 	var Client = __webpack_require__(305).Client;
 	
@@ -50119,7 +47777,7 @@
 	};
 
 /***/ },
-/* 507 */
+/* 493 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -50188,12 +47846,12 @@
 	};
 
 /***/ },
-/* 508 */
+/* 494 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var EnjoyHint = __webpack_require__(509);
+	var EnjoyHint = __webpack_require__(495);
 	var Cookies = __webpack_require__(301);
 	var localize = __webpack_require__(424).localize;
 	
@@ -50345,7 +48003,7 @@
 	};
 
 /***/ },
-/* 509 */
+/* 495 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -50356,7 +48014,7 @@
 	// (+ some custom changes for binary.com)
 	
 	var $ = __webpack_require__(1);
-	var Kinetic = __webpack_require__(510);
+	var Kinetic = __webpack_require__(496);
 	
 	module.exports = function (_options) {
 	    var that = this;
@@ -51340,7 +48998,7 @@
 	};
 
 /***/ },
-/* 510 */
+/* 496 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {
@@ -51946,8 +49604,8 @@
 	            // Node. Does not work with strict CommonJS, but
 	            // only CommonJS-like enviroments that support module.exports,
 	            // like Node.
-	            var Canvas = __webpack_require__(511);
-	            var jsdom = __webpack_require__(512).jsdom;
+	            var Canvas = __webpack_require__(497);
+	            var jsdom = __webpack_require__(498).jsdom;
 	
 	            Kinetic.document = jsdom('<!DOCTYPE html><html><head></head><body></body></html>');
 	            Kinetic.window = Kinetic.document.createWindow();
@@ -66485,37 +64143,37 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 511 */
+/* 497 */
 /***/ function(module, exports) {
 
 	/* (ignored) */
 
 /***/ },
-/* 512 */
+/* 498 */
 /***/ function(module, exports) {
 
 	/* (ignored) */
 
 /***/ },
-/* 513 */
+/* 499 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var TradingAnalysis_Beta = __webpack_require__(514).TradingAnalysis_Beta;
-	var TradingEvents_Beta = __webpack_require__(522).TradingEvents_Beta;
-	var Message_Beta = __webpack_require__(530).Message_Beta;
-	var Price_Beta = __webpack_require__(525).Price_Beta;
-	var forgetTradingStreams_Beta = __webpack_require__(526).forgetTradingStreams_Beta;
+	var TradingAnalysis_Beta = __webpack_require__(500).TradingAnalysis_Beta;
+	var TradingEvents_Beta = __webpack_require__(508).TradingEvents_Beta;
+	var Message_Beta = __webpack_require__(516).Message_Beta;
+	var Price_Beta = __webpack_require__(511).Price_Beta;
+	var forgetTradingStreams_Beta = __webpack_require__(512).forgetTradingStreams_Beta;
 	var displayCurrencies = __webpack_require__(470).displayCurrencies;
 	var Defaults = __webpack_require__(458).Defaults;
 	var Notifications = __webpack_require__(459).Notifications;
 	var Symbols = __webpack_require__(460).Symbols;
 	var Content = __webpack_require__(427).Content;
-	var Guide = __webpack_require__(508).Guide;
+	var Guide = __webpack_require__(494).Guide;
 	var japanese_client = __webpack_require__(307).japanese_client;
 	var PortfolioWS = __webpack_require__(463).PortfolioWS;
-	var ResizeSensor = __webpack_require__(531);
+	var ResizeSensor = __webpack_require__(517);
 	var State = __webpack_require__(304).State;
 	var url_for = __webpack_require__(306).url_for;
 	var showPriceOverlay = __webpack_require__(457).showPriceOverlay;
@@ -66719,15 +64377,15 @@
 	};
 
 /***/ },
-/* 514 */
+/* 500 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var AssetIndexUI = __webpack_require__(515).AssetIndexUI;
-	var MarketTimesUI = __webpack_require__(518).MarketTimesUI;
+	var AssetIndexUI = __webpack_require__(501).AssetIndexUI;
+	var MarketTimesUI = __webpack_require__(504).MarketTimesUI;
 	var japanese_client = __webpack_require__(307).japanese_client;
-	var DigitInfoWS_Beta = __webpack_require__(521).DigitInfoWS_Beta;
+	var DigitInfoWS_Beta = __webpack_require__(507).DigitInfoWS_Beta;
 	var PortfolioWS = __webpack_require__(463).PortfolioWS;
 	var State = __webpack_require__(304).State;
 	var getLanguage = __webpack_require__(303).getLanguage;
@@ -66972,18 +64630,18 @@
 	};
 
 /***/ },
-/* 515 */
+/* 501 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var showLoadingImage = __webpack_require__(421).showLoadingImage;
-	var Table = __webpack_require__(502).Table;
+	var Table = __webpack_require__(488).Table;
 	var jqueryuiTabsToDropdown = __webpack_require__(308).jqueryuiTabsToDropdown;
 	var Content = __webpack_require__(427).Content;
 	var japanese_client = __webpack_require__(307).japanese_client;
-	var AssetIndexData = __webpack_require__(516).AssetIndexData;
-	var AssetIndex = __webpack_require__(517).AssetIndex;
+	var AssetIndexData = __webpack_require__(502).AssetIndexData;
+	var AssetIndex = __webpack_require__(503).AssetIndex;
 	var State = __webpack_require__(304).State;
 	var url_for = __webpack_require__(306).url_for;
 	
@@ -67144,7 +64802,7 @@
 	};
 
 /***/ },
-/* 516 */
+/* 502 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -67169,7 +64827,7 @@
 	};
 
 /***/ },
-/* 517 */
+/* 503 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -67262,18 +64920,18 @@
 	};
 
 /***/ },
-/* 518 */
+/* 504 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var showLoadingImage = __webpack_require__(421).showLoadingImage;
-	var Table = __webpack_require__(502).Table;
+	var Table = __webpack_require__(488).Table;
 	var jqueryuiTabsToDropdown = __webpack_require__(308).jqueryuiTabsToDropdown;
 	var Content = __webpack_require__(427).Content;
 	var japanese_client = __webpack_require__(307).japanese_client;
-	var MarketTimesData = __webpack_require__(519).MarketTimesData;
-	var MarketTimes = __webpack_require__(520).MarketTimes;
+	var MarketTimesData = __webpack_require__(505).MarketTimesData;
+	var MarketTimes = __webpack_require__(506).MarketTimes;
 	var moment = __webpack_require__(309);
 	var State = __webpack_require__(304).State;
 	var DatePicker = __webpack_require__(476).DatePicker;
@@ -67474,7 +65132,7 @@
 	};
 
 /***/ },
-/* 519 */
+/* 505 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -67505,7 +65163,7 @@
 	};
 
 /***/ },
-/* 520 */
+/* 506 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -67536,7 +65194,7 @@
 	};
 
 /***/ },
-/* 521 */
+/* 507 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -67809,21 +65467,21 @@
 	};
 
 /***/ },
-/* 522 */
+/* 508 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var TradingAnalysis_Beta = __webpack_require__(514).TradingAnalysis_Beta;
-	var Barriers_Beta = __webpack_require__(523).Barriers_Beta;
+	var TradingAnalysis_Beta = __webpack_require__(500).TradingAnalysis_Beta;
+	var Barriers_Beta = __webpack_require__(509).Barriers_Beta;
 	var Contract_Beta = __webpack_require__(481).Contract_Beta;
-	var Durations_Beta = __webpack_require__(524).Durations_Beta;
-	var Price_Beta = __webpack_require__(525).Price_Beta;
-	var processMarket_Beta = __webpack_require__(526).processMarket_Beta;
-	var processContractForm_Beta = __webpack_require__(526).processContractForm_Beta;
-	var processForgetTicks_Beta = __webpack_require__(526).processForgetTicks_Beta;
-	var onExpiryTypeChange = __webpack_require__(526).onExpiryTypeChange;
-	var onDurationUnitChange = __webpack_require__(526).onDurationUnitChange;
+	var Durations_Beta = __webpack_require__(510).Durations_Beta;
+	var Price_Beta = __webpack_require__(511).Price_Beta;
+	var processMarket_Beta = __webpack_require__(512).processMarket_Beta;
+	var processContractForm_Beta = __webpack_require__(512).processContractForm_Beta;
+	var processForgetTicks_Beta = __webpack_require__(512).processForgetTicks_Beta;
+	var onExpiryTypeChange = __webpack_require__(512).onExpiryTypeChange;
+	var onDurationUnitChange = __webpack_require__(512).onDurationUnitChange;
 	var Defaults = __webpack_require__(458).Defaults;
 	var Tick = __webpack_require__(455).Tick;
 	var onlyNumericOnKeypress = __webpack_require__(482).onlyNumericOnKeypress;
@@ -67843,7 +65501,6 @@
 	var isVisible = __webpack_require__(308).isVisible;
 	var dateValueChanged = __webpack_require__(308).dateValueChanged;
 	var TimePicker = __webpack_require__(483).TimePicker;
-	var load_with_pjax = __webpack_require__(484).load_with_pjax;
 	var Client = __webpack_require__(305).Client;
 	var elementTextContent = __webpack_require__(308).elementTextContent;
 	
@@ -68300,8 +65957,7 @@
 	        var tip = document.getElementById('symbol_tip');
 	        if (init_logo) {
 	            tip.addEventListener('click', debounce(function (e) {
-	                var url = e.target.getAttribute('target');
-	                load_with_pjax(url);
+	                window.location.href = e.target.getAttribute('target');
 	            }));
 	        }
 	    };
@@ -68325,7 +65981,7 @@
 	};
 
 /***/ },
-/* 523 */
+/* 509 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -68502,14 +66158,14 @@
 	};
 
 /***/ },
-/* 524 */
+/* 510 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var Barriers_Beta = __webpack_require__(523).Barriers_Beta;
+	var Barriers_Beta = __webpack_require__(509).Barriers_Beta;
 	var Contract_Beta = __webpack_require__(481).Contract_Beta;
-	var Price_Beta = __webpack_require__(525).Price_Beta;
+	var Price_Beta = __webpack_require__(511).Price_Beta;
 	var Defaults = __webpack_require__(458).Defaults;
 	var moment = __webpack_require__(309);
 	var Content = __webpack_require__(427).Content;
@@ -68941,7 +66597,7 @@
 	};
 
 /***/ },
-/* 525 */
+/* 511 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -69306,21 +66962,21 @@
 	};
 
 /***/ },
-/* 526 */
+/* 512 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 	
-	var TradingAnalysis_Beta = __webpack_require__(514).TradingAnalysis_Beta;
-	var Barriers_Beta = __webpack_require__(523).Barriers_Beta;
+	var TradingAnalysis_Beta = __webpack_require__(500).TradingAnalysis_Beta;
+	var Barriers_Beta = __webpack_require__(509).Barriers_Beta;
 	var Contract_Beta = __webpack_require__(481).Contract_Beta;
-	var Durations_Beta = __webpack_require__(524).Durations_Beta;
-	var Price_Beta = __webpack_require__(525).Price_Beta;
-	var Purchase_Beta = __webpack_require__(527).Purchase_Beta;
-	var StartDates_Beta = __webpack_require__(529).StartDates_Beta;
-	var WSTickDisplay_Beta = __webpack_require__(528).WSTickDisplay_Beta;
+	var Durations_Beta = __webpack_require__(510).Durations_Beta;
+	var Price_Beta = __webpack_require__(511).Price_Beta;
+	var Purchase_Beta = __webpack_require__(513).Purchase_Beta;
+	var StartDates_Beta = __webpack_require__(515).StartDates_Beta;
+	var WSTickDisplay_Beta = __webpack_require__(514).WSTickDisplay_Beta;
 	var Defaults = __webpack_require__(458).Defaults;
 	var Symbols = __webpack_require__(460).Symbols;
 	var Tick = __webpack_require__(455).Tick;
@@ -69708,13 +67364,13 @@
 	};
 
 /***/ },
-/* 527 */
+/* 513 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var Contract_Beta = __webpack_require__(481).Contract_Beta;
-	var WSTickDisplay_Beta = __webpack_require__(528).WSTickDisplay_Beta;
+	var WSTickDisplay_Beta = __webpack_require__(514).WSTickDisplay_Beta;
 	var Symbols = __webpack_require__(460).Symbols;
 	var Tick = __webpack_require__(455).Tick;
 	var Content = __webpack_require__(427).Content;
@@ -69998,7 +67654,7 @@
 	};
 
 /***/ },
-/* 528 */
+/* 514 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -70524,13 +68180,13 @@
 	};
 
 /***/ },
-/* 529 */
+/* 515 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var Contract_Beta = __webpack_require__(481).Contract_Beta;
-	var Durations_Beta = __webpack_require__(524).Durations;
+	var Durations_Beta = __webpack_require__(510).Durations;
 	var Defaults = __webpack_require__(458).Defaults;
 	var getStartDateNode = __webpack_require__(456).getStartDateNode;
 	var moment = __webpack_require__(309);
@@ -70647,28 +68303,28 @@
 	};
 
 /***/ },
-/* 530 */
+/* 516 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var TradingAnalysis_Beta = __webpack_require__(514).TradingAnalysis_Beta;
-	var Purchase_Beta = __webpack_require__(527).Purchase_Beta;
-	var processActiveSymbols_Beta = __webpack_require__(526).processActiveSymbols_Beta;
-	var processContract_Beta = __webpack_require__(526).processContract_Beta;
-	var forgetTradingStreams_Beta = __webpack_require__(526).forgetTradingStreams_Beta;
-	var processTick_Beta = __webpack_require__(526).processTick_Beta;
-	var processProposal_Beta = __webpack_require__(526).processProposal_Beta;
-	var processTradingTimes_Beta = __webpack_require__(526).processTradingTimes_Beta;
+	var TradingAnalysis_Beta = __webpack_require__(500).TradingAnalysis_Beta;
+	var Purchase_Beta = __webpack_require__(513).Purchase_Beta;
+	var processActiveSymbols_Beta = __webpack_require__(512).processActiveSymbols_Beta;
+	var processContract_Beta = __webpack_require__(512).processContract_Beta;
+	var forgetTradingStreams_Beta = __webpack_require__(512).forgetTradingStreams_Beta;
+	var processTick_Beta = __webpack_require__(512).processTick_Beta;
+	var processProposal_Beta = __webpack_require__(512).processProposal_Beta;
+	var processTradingTimes_Beta = __webpack_require__(512).processTradingTimes_Beta;
 	var displayCurrencies = __webpack_require__(470).displayCurrencies;
 	var Notifications = __webpack_require__(459).Notifications;
 	var Symbols = __webpack_require__(460).Symbols;
 	var Tick = __webpack_require__(455).Tick;
-	var AssetIndexUI = __webpack_require__(515).AssetIndexUI;
-	var MarketTimesUI = __webpack_require__(518).MarketTimesUI;
+	var AssetIndexUI = __webpack_require__(501).AssetIndexUI;
+	var MarketTimesUI = __webpack_require__(504).MarketTimesUI;
 	var PortfolioWS = __webpack_require__(463).PortfolioWS;
-	var ProfitTableWS = __webpack_require__(499).ProfitTableWS;
-	var StatementWS = __webpack_require__(505).StatementWS;
+	var ProfitTableWS = __webpack_require__(485).ProfitTableWS;
+	var StatementWS = __webpack_require__(491).StatementWS;
 	var State = __webpack_require__(304).State;
 	var GTM = __webpack_require__(431).GTM;
 	var Client = __webpack_require__(305).Client;
@@ -70749,7 +68405,7 @@
 	};
 
 /***/ },
-/* 531 */
+/* 517 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;"use strict";
@@ -70966,22 +68622,22 @@
 	});
 
 /***/ },
-/* 532 */
+/* 518 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var MBContract = __webpack_require__(444).MBContract;
-	var MBDisplayCurrencies = __webpack_require__(533).MBDisplayCurrencies;
-	var MBTradingEvents = __webpack_require__(534).MBTradingEvents;
-	var MBMessage = __webpack_require__(537).MBMessage;
+	var MBDisplayCurrencies = __webpack_require__(519).MBDisplayCurrencies;
+	var MBTradingEvents = __webpack_require__(520).MBTradingEvents;
+	var MBMessage = __webpack_require__(523).MBMessage;
 	var MBSymbols = __webpack_require__(446).MBSymbols;
 	var TradingAnalysis = __webpack_require__(467).TradingAnalysis;
 	var forgetTradingStreams = __webpack_require__(477).forgetTradingStreams;
 	var JapanPortfolio = __webpack_require__(469).JapanPortfolio;
 	var State = __webpack_require__(304).State;
 	var Content = __webpack_require__(427).Content;
-	var MBProcess = __webpack_require__(535).MBProcess;
+	var MBProcess = __webpack_require__(521).MBProcess;
 	var MBNotifications = __webpack_require__(448).MBNotifications;
 	var MBPrice = __webpack_require__(443).MBPrice;
 	var chartFrameCleanup = __webpack_require__(457).chartFrameCleanup;
@@ -71062,7 +68718,7 @@
 	};
 
 /***/ },
-/* 533 */
+/* 519 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -71122,7 +68778,7 @@
 	};
 
 /***/ },
-/* 534 */
+/* 520 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -71130,8 +68786,8 @@
 	var MBContract = __webpack_require__(444).MBContract;
 	var MBDefaults = __webpack_require__(445).MBDefaults;
 	var MBNotifications = __webpack_require__(448).MBNotifications;
-	var MBProcess = __webpack_require__(535).MBProcess;
-	var MBTick = __webpack_require__(536).MBTick;
+	var MBProcess = __webpack_require__(521).MBProcess;
+	var MBTick = __webpack_require__(522).MBTick;
 	var TradingAnalysis = __webpack_require__(467).TradingAnalysis;
 	var japanese_client = __webpack_require__(307).japanese_client;
 	var debounce = __webpack_require__(457).debounce;
@@ -71285,7 +68941,7 @@
 	};
 
 /***/ },
-/* 535 */
+/* 521 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -71295,7 +68951,7 @@
 	var MBNotifications = __webpack_require__(448).MBNotifications;
 	var MBPrice = __webpack_require__(443).MBPrice;
 	var MBSymbols = __webpack_require__(446).MBSymbols;
-	var MBTick = __webpack_require__(536).MBTick;
+	var MBTick = __webpack_require__(522).MBTick;
 	var TradingAnalysis = __webpack_require__(467).TradingAnalysis;
 	var japanese_client = __webpack_require__(307).japanese_client;
 	var displayUnderlyings = __webpack_require__(457).displayUnderlyings;
@@ -71592,7 +69248,7 @@
 	};
 
 /***/ },
-/* 536 */
+/* 522 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -71770,18 +69426,18 @@
 	};
 
 /***/ },
-/* 537 */
+/* 523 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var MBContract = __webpack_require__(444).MBContract;
-	var MBDisplayCurrencies = __webpack_require__(533).MBDisplayCurrencies;
+	var MBDisplayCurrencies = __webpack_require__(519).MBDisplayCurrencies;
 	var MBNotifications = __webpack_require__(448).MBNotifications;
-	var MBProcess = __webpack_require__(535).MBProcess;
-	var MBPurchase = __webpack_require__(538).MBPurchase;
+	var MBProcess = __webpack_require__(521).MBProcess;
+	var MBPurchase = __webpack_require__(524).MBPurchase;
 	var MBSymbols = __webpack_require__(446).MBSymbols;
-	var MBTick = __webpack_require__(536).MBTick;
+	var MBTick = __webpack_require__(522).MBTick;
 	var PortfolioWS = __webpack_require__(463).PortfolioWS;
 	var State = __webpack_require__(304).State;
 	var GTM = __webpack_require__(431).GTM;
@@ -71845,7 +69501,7 @@
 	};
 
 /***/ },
-/* 538 */
+/* 524 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -71882,7 +69538,1378 @@
 	};
 
 /***/ },
-/* 539 */
+/* 525 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var RealityCheckUI = __webpack_require__(526).RealityCheckUI;
+	var RealityCheckData = __webpack_require__(527).RealityCheckData;
+	var Client = __webpack_require__(305).Client;
+	
+	var RealityCheck = function () {
+	    'use strict';
+	
+	    var realityCheckWSHandler = function realityCheckWSHandler(response) {
+	        RealityCheckUI.initializeValues();
+	        if ($.isEmptyObject(response.reality_check)) {
+	            // not required for reality check
+	            RealityCheckUI.sendAccountStatus();
+	            return;
+	        }
+	        if (/no-reality-check/.test(window.location.hash)) {
+	            RealityCheckData.set('delay_reality_check', 1);
+	        } else {
+	            RealityCheckData.set('delay_reality_check', 0);
+	            var summary = RealityCheckData.summaryData(response.reality_check);
+	            RealityCheckUI.renderSummaryPopUp(summary);
+	        }
+	    };
+	
+	    var realityStorageEventHandler = function realityStorageEventHandler(ev) {
+	        if (ev.key === 'reality_check.ack' && ev.newValue === '1') {
+	            RealityCheckUI.closePopUp();
+	            RealityCheckUI.startSummaryTimer();
+	        } else if (ev.key === 'reality_check.keep_open' && ev.newValue === '0') {
+	            RealityCheckUI.closePopUp();
+	            RealityCheckUI.startSummaryTimer();
+	        }
+	    };
+	
+	    var init = function init() {
+	        if (/no-reality-check/.test(window.location.hash)) {
+	            RealityCheckData.set('delay_reality_init', 1);
+	        } else {
+	            RealityCheckData.set('delay_reality_init', 0);
+	            RealityCheckUI.initializeValues();
+	            if (!Client.get('has_reality_check')) {
+	                RealityCheckData.set('loginid', Client.get('loginid'));
+	                RealityCheckUI.sendAccountStatus();
+	                return;
+	            }
+	
+	            RealityCheckUI.setLoginTime(Client.get('session_start') * 1000);
+	
+	            window.addEventListener('storage', realityStorageEventHandler, false);
+	
+	            if (Client.get('loginid') !== RealityCheckData.get('loginid')) {
+	                RealityCheckData.clear();
+	            }
+	
+	            RealityCheckData.resetInvalid(); // need to reset after clear
+	
+	            if (!RealityCheckData.get('ack')) {
+	                RealityCheckUI.renderFrequencyPopUp();
+	            } else if (RealityCheckData.get('keep_open')) {
+	                RealityCheckData.getSummaryAsync();
+	            } else {
+	                RealityCheckUI.startSummaryTimer();
+	            }
+	
+	            RealityCheckData.set('loginid', Client.get('loginid'));
+	            RealityCheckUI.sendAccountStatus();
+	        }
+	    };
+	
+	    return {
+	        init: init,
+	        realityCheckWSHandler: realityCheckWSHandler
+	    };
+	}();
+	
+	module.exports = {
+	    RealityCheck: RealityCheck
+	};
+
+/***/ },
+/* 526 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var showLocalTimeOnHover = __webpack_require__(440).Clock.showLocalTimeOnHover;
+	var onlyNumericOnKeypress = __webpack_require__(482).onlyNumericOnKeypress;
+	var Content = __webpack_require__(427).Content;
+	var RealityCheckData = __webpack_require__(527).RealityCheckData;
+	var localize = __webpack_require__(424).localize;
+	var Client = __webpack_require__(305).Client;
+	var url_for = __webpack_require__(306).url_for;
+	__webpack_require__(528);
+	__webpack_require__(529);
+	
+	var RealityCheckUI = function () {
+	    'use strict';
+	
+	    var frequency_url = url_for('user/reality_check_frequencyws'),
+	        summary_url = url_for('user/reality_check_summaryws'),
+	        hiddenClass = 'invisible';
+	    var loginTime = void 0,
+	        // milliseconds
+	    getAccountStatus = void 0;
+	
+	    var initializeValues = function initializeValues() {
+	        getAccountStatus = false;
+	    };
+	
+	    var showPopUp = function showPopUp(content) {
+	        if ($('#reality-check').length > 0) {
+	            return;
+	        }
+	
+	        var lightboxDiv = $("<div id='reality-check' class='lightbox'></div>");
+	
+	        var wrapper = $('<div></div>');
+	        wrapper = wrapper.append(content);
+	        wrapper = $('<div></div>').append(wrapper);
+	        wrapper.appendTo(lightboxDiv);
+	        lightboxDiv.appendTo('body');
+	
+	        $('#realityDuration').val(RealityCheckData.get('interval')).keypress(onlyNumericOnKeypress);
+	    };
+	
+	    var showIntervalOnPopUp = function showIntervalOnPopUp() {
+	        var intervalMinutes = Math.floor(+RealityCheckData.get('interval') / 60 / 1000);
+	        $('#realityDuration').val(intervalMinutes);
+	    };
+	
+	    var getAjax = function getAjax(summary) {
+	        $.ajax({
+	            url: summary ? summary_url : frequency_url,
+	            dataType: 'html',
+	            method: 'GET',
+	            success: function success(realityCheckText) {
+	                ajaxSuccess(realityCheckText, summary);
+	            }
+	        });
+	    };
+	
+	    var ajaxSuccess = function ajaxSuccess(realityCheckText, summary) {
+	        if (realityCheckText.includes('reality-check-content')) {
+	            var payload = $(realityCheckText);
+	            showPopUp(payload.find('#reality-check-content'));
+	            showIntervalOnPopUp();
+	            $('#continue').click(onContinueClick);
+	            $('#statement').click(onStatementClick);
+	            $('button#btn_logout').click(onLogoutClick);
+	            if (summary) {
+	                updateSummary(summary);
+	            }
+	        }
+	    };
+	
+	    var updateSummary = function updateSummary(summary) {
+	        $('#start-time').text(summary.startTimeString);
+	        $('#login-time').text(summary.loginTime);
+	        $('#current-time').text(summary.currentTime);
+	        $('#session-duration').text(summary.sessionDuration);
+	
+	        $('#login-id').text(summary.loginId);
+	        $('#rc_currency').text(summary.currency);
+	        $('#turnover').text(summary.turnover);
+	        $('#profitloss').text(summary.profitLoss);
+	        $('#bought').text(summary.contractsBought);
+	        $('#sold').text(summary.contractsSold);
+	        $('#open').text(summary.openContracts);
+	        $('#potential').text(summary.potentialProfit);
+	
+	        showLocalTimeOnHover('#start-time');
+	        showLocalTimeOnHover('#login-time');
+	        showLocalTimeOnHover('#current-time');
+	    };
+	
+	    var closePopUp = function closePopUp() {
+	        $('#reality-check').remove();
+	        RealityCheckUI.sendAccountStatus();
+	    };
+	
+	    var onContinueClick = function onContinueClick() {
+	        var intervalMinute = +$('#realityDuration').val();
+	
+	        if (!(Math.floor(intervalMinute) === intervalMinute && $.isNumeric(intervalMinute))) {
+	            var shouldBeInteger = localize('Interval should be integer.');
+	            $('#rc-err').text(shouldBeInteger).removeClass(hiddenClass);
+	            return;
+	        }
+	
+	        if (intervalMinute < 10 || intervalMinute > 120) {
+	            Content.populate();
+	            var minimumValueMsg = Content.errorMessage('number_should_between', '10 to 120');
+	            $('#rc-err').text(minimumValueMsg).removeClass(hiddenClass);
+	            return;
+	        }
+	
+	        var intervalMs = intervalMinute * 60 * 1000;
+	        RealityCheckData.set('interval', intervalMs);
+	        RealityCheckData.set('keep_open', 0);
+	        RealityCheckData.set('ack', 1);
+	        RealityCheckUI.closePopUp();
+	        startSummaryTimer();
+	        sendAccountStatus();
+	    };
+	
+	    var onStatementClick = function onStatementClick() {
+	        var win = window.open(url_for('user/statementws') + '#no-reality-check', '_blank');
+	        if (win) {
+	            win.focus();
+	        }
+	    };
+	
+	    var onLogoutClick = function onLogoutClick() {
+	        BinarySocket.send({ logout: '1' });
+	    };
+	
+	    var sendAccountStatus = function sendAccountStatus() {
+	        if (!Client.get('is_virtual') && Client.get('residence') !== 'jp' && !getAccountStatus) {
+	            BinarySocket.send({ get_account_status: 1 });
+	            getAccountStatus = true;
+	        }
+	    };
+	
+	    var startSummaryTimer = function startSummaryTimer() {
+	        var interval = +RealityCheckData.get('interval');
+	        var currentTime = Date.now();
+	        var toWait = interval - (currentTime - loginTime) % interval;
+	
+	        window.setTimeout(function () {
+	            RealityCheckData.set('keep_open', 1);
+	            RealityCheckData.getSummaryAsync();
+	        }, toWait);
+	    };
+	
+	    return {
+	        renderFrequencyPopUp: function renderFrequencyPopUp() {
+	            getAjax();
+	        },
+	        renderSummaryPopUp: function renderSummaryPopUp(summary) {
+	            getAjax(summary);
+	        },
+	        closePopUp: closePopUp,
+	        sendAccountStatus: sendAccountStatus,
+	        initializeValues: initializeValues,
+	        startSummaryTimer: startSummaryTimer,
+	        setLoginTime: function setLoginTime(time) {
+	            loginTime = time;
+	        }
+	    };
+	}();
+	
+	module.exports = {
+	    RealityCheckUI: RealityCheckUI
+	};
+
+/***/ },
+/* 527 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var template = __webpack_require__(421).template;
+	var LocalStore = __webpack_require__(304).LocalStore;
+	var moment = __webpack_require__(309);
+	
+	var RealityCheckData = function () {
+	    'use strict';
+	
+	    var defaultInterval = 600000;
+	    var durationTemplateString = '[_1] days [_2] hours [_3] minutes';
+	    var tradingTimeTemplate = 'Your trading statistics since [_1].';
+	    var reality_object = {};
+	
+	    var getSummaryAsync = function getSummaryAsync() {
+	        BinarySocket.send({ reality_check: 1 });
+	    };
+	
+	    var resetInvalid = function resetInvalid() {
+	        var ack = get('ack');
+	        var interval = +get('interval');
+	        if (ack !== 0 && ack !== 1) {
+	            set('ack', 0);
+	        }
+	        if (!interval) {
+	            set('interval', defaultInterval);
+	        }
+	    };
+	
+	    var summaryData = function summaryData(wsData) {
+	        var startTime = moment.utc(new Date(wsData.start_time * 1000));
+	        var currentTime = moment.utc();
+	
+	        var sessionDuration = moment.duration(currentTime.diff(startTime));
+	        var durationString = template(durationTemplateString, [sessionDuration.get('days'), sessionDuration.get('hours'), sessionDuration.get('minutes')]);
+	
+	        var turnover = +wsData.buy_amount + +wsData.sell_amount;
+	        var profitLoss = +wsData.sell_amount - +wsData.buy_amount;
+	
+	        var startTimeString = template(tradingTimeTemplate, [startTime.format('YYYY-MM-DD HH:mm:ss') + ' GMT']);
+	        return {
+	            startTimeString: startTimeString,
+	            loginTime: startTime.format('YYYY-MM-DD HH:mm:ss') + ' GMT',
+	            currentTime: currentTime.format('YYYY-MM-DD HH:mm:ss') + ' GMT',
+	            sessionDuration: durationString,
+	            loginId: wsData.loginid,
+	            currency: wsData.currency,
+	            turnover: (+turnover).toFixed(2),
+	            profitLoss: (+profitLoss).toFixed(2),
+	            contractsBought: wsData.buy_count,
+	            contractsSold: wsData.sell_count,
+	            openContracts: wsData.open_contract_count,
+	            potentialProfit: (+wsData.potential_profit).toFixed(2)
+	        };
+	    };
+	
+	    var set = function set(key, value) {
+	        reality_object[key] = value;
+	        return LocalStore.set('reality_check.' + key, value);
+	    };
+	
+	    // use this function to get variables that have values
+	    var get = function get(key) {
+	        var value = reality_object[key] || LocalStore.get('reality_check.' + key) || '';
+	        if (+value === 1 || +value === 0 || value === 'true' || value === 'false') {
+	            value = JSON.parse(value || false);
+	        }
+	        return value;
+	    };
+	
+	    var clear_storage_values = function clear_storage_values() {
+	        // clear all reality check values from local storage except loginid
+	        Object.keys(localStorage).forEach(function (c) {
+	            if (/^reality_check\.(?!(loginid$))/.test(c)) {
+	                LocalStore.set(c, '');
+	            }
+	        });
+	    };
+	
+	    return {
+	        getSummaryAsync: getSummaryAsync,
+	        clear: clear_storage_values,
+	        resetInvalid: resetInvalid,
+	        summaryData: summaryData,
+	        set: set,
+	        get: get
+	    };
+	}();
+	
+	module.exports = {
+	    RealityCheckData: RealityCheckData
+	};
+
+/***/ },
+/* 528 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	if (!('includes' in Array.prototype)) {
+	    Array.prototype.includes = function includes(searchElement /*, fromIndex*/) {
+	        'use strict';
+	
+	        var O = Object(this);
+	        var len = parseInt(O.length) || 0;
+	        if (len === 0) {
+	            return false;
+	        }
+	        var n = parseInt(arguments[1]) || 0;
+	        var k;
+	        if (n >= 0) {
+	            k = n;
+	        } else {
+	            k = len + n;
+	            if (k < 0) {
+	                k = 0;
+	            }
+	        }
+	        var currentElement;
+	        while (k < len) {
+	            currentElement = O[k];
+	            if (searchElement === currentElement || searchElement !== searchElement && currentElement !== currentElement) {
+	                return true;
+	            }
+	            k++;
+	        }
+	        return false;
+	    };
+	}
+
+/***/ },
+/* 529 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+	
+	if (!('includes' in String.prototype)) {
+	    String.prototype.includes = function (string, index) {
+	        if ((typeof string === 'undefined' ? 'undefined' : _typeof(string)) === 'object' && string instanceof RegExp) throw new TypeError("First argument to String.prototype.includes must not be a regular expression");
+	        return this.indexOf(string, index) !== -1;
+	    };
+	}
+
+/***/ },
+/* 530 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var Login = __webpack_require__(302).Login;
+	var template = __webpack_require__(421).template;
+	var LocalStore = __webpack_require__(304).LocalStore;
+	var State = __webpack_require__(304).State;
+	var localizeForLang = __webpack_require__(424).localizeForLang;
+	var localize = __webpack_require__(424).localize;
+	var getLanguage = __webpack_require__(303).getLanguage;
+	var setCookieLanguage = __webpack_require__(303).setCookieLanguage;
+	var Url = __webpack_require__(306).Url;
+	var url_for = __webpack_require__(306).url_for;
+	var Client = __webpack_require__(305).Client;
+	var Header = __webpack_require__(430).Header;
+	var Menu = __webpack_require__(531).Menu;
+	var Contents = __webpack_require__(532).Contents;
+	var TrafficSource = __webpack_require__(533).TrafficSource;
+	var checkLanguage = __webpack_require__(307).checkLanguage;
+	var ViewBalance = __webpack_require__(534).ViewBalance;
+	var Cookies = __webpack_require__(301);
+	var RealityCheck = __webpack_require__(525).RealityCheck;
+	var RealityCheckData = __webpack_require__(527).RealityCheckData;
+	__webpack_require__(528);
+	__webpack_require__(529);
+	__webpack_require__(535);
+	
+	var Page = function Page() {
+	    State.set('is_loaded_by_pjax', false);
+	    Client.init();
+	    this.url = new Url();
+	    Menu.init(this.url);
+	};
+	
+	Page.prototype = {
+	    on_load: function on_load() {
+	        Client.set_check_tnc();
+	        this.url.reset();
+	        localizeForLang(getLanguage());
+	        Header.on_load();
+	        this.record_affiliate_exposure();
+	        Contents.on_load();
+	        if (State.get('is_loaded_by_pjax')) {
+	            this.show_authenticate_message();
+	            if (RealityCheckData.get('delay_reality_init')) {
+	                RealityCheck.init();
+	            } else if (RealityCheckData.get('delay_reality_check')) {
+	                BinarySocket.send({ reality_check: 1 });
+	            }
+	        }
+	        if (Client.is_logged_in()) {
+	            ViewBalance.init();
+	        } else {
+	            LocalStore.set('reality_check.ack', 0);
+	        }
+	        setCookieLanguage();
+	        if (sessionStorage.getItem('showLoginPage')) {
+	            sessionStorage.removeItem('showLoginPage');
+	            Login.redirect_to_login();
+	        }
+	        checkLanguage();
+	        TrafficSource.setData();
+	        this.endpoint_notification();
+	        BinarySocket.init();
+	        this.show_notification_outdated_browser();
+	    },
+	    on_unload: function on_unload() {
+	        Menu.on_unload();
+	        Contents.on_unload();
+	    },
+	    record_affiliate_exposure: function record_affiliate_exposure() {
+	        var token = this.url.param('t');
+	        if (!token || token.length !== 32) {
+	            return false;
+	        }
+	        var token_length = token.length;
+	        var is_subsidiary = /\w{1}/.test(this.url.param('s'));
+	
+	        var cookie_token = Cookies.getJSON('affiliate_tracking');
+	        if (cookie_token) {
+	            // Already exposed to some other affiliate.
+	            if (is_subsidiary && cookie_token && cookie_token.t) {
+	                return false;
+	            }
+	        }
+	
+	        // Record the affiliate exposure. Overwrite existing cookie, if any.
+	        var cookie_hash = {};
+	        if (token_length === 32) {
+	            cookie_hash.t = token.toString();
+	        }
+	        if (is_subsidiary) {
+	            cookie_hash.s = '1';
+	        }
+	
+	        Cookies.set('affiliate_tracking', cookie_hash, {
+	            expires: 365, // expires in 365 days
+	            path: '/',
+	            domain: '.' + location.hostname.split('.').slice(-2).join('.')
+	        });
+	        return true;
+	    },
+	    reload: function reload(forcedReload) {
+	        window.location.reload(!!forcedReload);
+	    },
+	    endpoint_notification: function endpoint_notification() {
+	        var server = localStorage.getItem('config.server_url');
+	        if (server && server.length > 0) {
+	            var message = (/www\.binary\.com/i.test(window.location.hostname) ? '' : localize('This is a staging server - For testing purposes only') + ' - ') + localize('The server <a href="[_1]">endpoint</a> is: [_2]', [url_for('endpoint'), server]),
+	                $end_note = $('#end-note');
+	            $end_note.html(message).removeClass('invisible');
+	            $('#footer').css('padding-bottom', $end_note.height());
+	        }
+	    },
+	    show_authenticate_message: function show_authenticate_message() {
+	        if ($('.authenticate-msg').length !== 0 || /authenticatews\.html/.test(window.location.pathname)) return;
+	
+	        var p = $('<p/>', { class: 'authenticate-msg notice-msg' });
+	        var span = void 0;
+	
+	        if (Client.status_detected('unwelcome')) {
+	            var purchase_button = $('.purchase_button');
+	            if (purchase_button.length > 0 && !purchase_button.parent().hasClass('button-disabled')) {
+	                $.each(purchase_button, function () {
+	                    $(this).off('click dblclick').removeAttr('data-balloon').parent().addClass('button-disabled');
+	                });
+	            }
+	        }
+	
+	        if (Client.status_detected('unwelcome, cashier_locked', 'any')) {
+	            var if_balance_zero = $('#if-balance-zero');
+	            if (if_balance_zero.length > 0 && !if_balance_zero.hasClass('button-disabled')) {
+	                if_balance_zero.removeAttr('href').addClass('button-disabled');
+	            }
+	        }
+	
+	        var href = window.location.href,
+	            cashier_page = /cashier[\/\w]*\.html/.test(href),
+	            withdrawal_page = cashier_page && !/(deposit|payment_agent_listws)/.test(href);
+	
+	        if (Client.status_detected('authenticated, unwelcome', 'all')) {
+	            span = $('<span/>', { html: template(localize('Your account is currently suspended. Only withdrawals are now permitted. For further information, please contact [_1].', ['<a href="mailto:support@binary.com">support@binary.com</a>'])) });
+	        } else if (Client.status_detected('unwelcome')) {
+	            span = this.general_authentication_message();
+	        } else if (Client.status_detected('authenticated, cashier_locked', 'all') && cashier_page) {
+	            span = $('<span/>', { html: template(localize('Deposits and withdrawal for your account is not allowed at this moment. Please contact [_1] to unlock it.', ['<a href="mailto:support@binary.com">support@binary.com</a>'])) });
+	        } else if (Client.status_detected('cashier_locked') && cashier_page) {
+	            span = this.general_authentication_message();
+	        } else if (Client.status_detected('authenticated, withdrawal_locked', 'all') && withdrawal_page) {
+	            span = $('<span/>', { html: template(localize('Withdrawal for your account is not allowed at this moment. Please contact [_1] to unlock it.', ['<a href="mailto:support@binary.com">support@binary.com</a>'])) });
+	        } else if (Client.status_detected('withdrawal_locked') && withdrawal_page) {
+	            span = this.general_authentication_message();
+	        }
+	        if (span) {
+	            $('#content').find('> .container').prepend(p.append(span));
+	        }
+	    },
+	    general_authentication_message: function general_authentication_message() {
+	        var span = $('<span/>', { html: template(localize('To authenticate your account, kindly email the following to [_1]:', ['<a href="mailto:support@binary.com">support@binary.com</a>'])) });
+	        var ul = $('<ul/>', { class: 'checked' });
+	        var li1 = $('<li/>', { text: localize('A scanned copy of your passport, driving licence (provisional or full) or identity card, showing your name and date of birth. Your document must be valid for at least 6 months after this date.') });
+	        var li2 = $('<li/>', { text: localize('A scanned copy of a utility bill or bank statement (no more than 3 months old)') });
+	        return span.append(ul.append(li1, li2));
+	    },
+	    show_notification_outdated_browser: function show_notification_outdated_browser() {
+	        window.$buoop = {
+	            vs: { i: 11, f: -4, o: -4, s: 9, c: -4 },
+	            api: 4,
+	            l: getLanguage().toLowerCase(),
+	            url: 'https://whatbrowser.org/'
+	        };
+	        $(document).ready(function () {
+	            $('body').append($('<script/>', { src: '//browser-update.org/update.min.js' }));
+	        });
+	    }
+	};
+	
+	var page = new Page();
+	
+	// LocalStorage can be used as a means of communication among
+	// different windows. The problem that is solved here is what
+	// happens if the user logs out or switches loginid in one
+	// window while keeping another window or tab open. This can
+	// lead to unintended trades. The solution is to reload the
+	// page in all windows after switching loginid or after logout.
+	
+	// onLoad.queue does not work on the home page.
+	// jQuery's ready function works always.
+	
+	$(document).ready(function () {
+	    if ($('body').hasClass('BlueTopBack')) return; // exclude BO
+	    // Cookies is not always available.
+	    // So, fall back to a more basic solution.
+	    var match = document.cookie.match(/\bloginid=(\w+)/);
+	    match = match ? match[1] : '';
+	    $(window).on('storage', function (jq_event) {
+	        switch (jq_event.originalEvent.key) {
+	            case 'active_loginid':
+	                if (jq_event.originalEvent.newValue === match) return;
+	                if (jq_event.originalEvent.newValue === '') {
+	                    // logged out
+	                    page.reload();
+	                } else if (!window.is_logging_in) {
+	                    // loginid switch
+	                    page.reload();
+	                }
+	                break;
+	            case 'new_release_reload_time':
+	                if (jq_event.originalEvent.newValue !== jq_event.originalEvent.oldValue) {
+	                    page.reload(true);
+	                }
+	                break;
+	            // no default
+	        }
+	    });
+	    LocalStore.set('active_loginid', match);
+	});
+	
+	module.exports = {
+	    page: page
+	};
+
+/***/ },
+/* 531 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var Url = __webpack_require__(306).Url;
+	var Client = __webpack_require__(305).Client;
+	
+	var Menu = function () {
+	    var page_url = void 0;
+	
+	    var init = function init(url) {
+	        page_url = url;
+	        $(page_url).on('change', function () {
+	            activate();
+	        });
+	    };
+	
+	    var activate = function activate() {
+	        $('#menu-top').find('li').removeClass('active');
+	        hide_main_menu();
+	
+	        var active = active_menu_top();
+	        var trading = new RegExp('\/(jp_|multi_barriers_|)trading\.html');
+	        var trading_is_active = trading.test(window.location.pathname);
+	        if (active) {
+	            active.addClass('active');
+	        }
+	        var is_trading_submenu = /\/cashier|\/resources/.test(window.location.pathname) || trading_is_active;
+	        if (Client.is_logged_in() || trading_is_active || is_trading_submenu) {
+	            show_main_menu();
+	        }
+	    };
+	
+	    var show_main_menu = function show_main_menu() {
+	        $('#main-menu').removeClass('hidden');
+	        activate_main_menu();
+	    };
+	
+	    var hide_main_menu = function hide_main_menu() {
+	        $('#main-menu').addClass('hidden');
+	    };
+	
+	    var activate_main_menu = function activate_main_menu() {
+	        // First unset everything.
+	        var $main_menu = $('#main-menu');
+	        $main_menu.find('li.item').removeClass('active hover');
+	        $main_menu.find('li.sub_item a').removeClass('a-active');
+	
+	        var active = active_main_menu();
+	        if (active.subitem) {
+	            active.subitem.addClass('a-active');
+	        }
+	
+	        if (active.item) {
+	            active.item.addClass('active');
+	            active.item.addClass('hover');
+	        }
+	
+	        on_mouse_hover(active.item);
+	    };
+	
+	    var on_unload = function on_unload() {
+	        $('#main-menu').find('.item').unbind().end().unbind();
+	    };
+	
+	    var on_mouse_hover = function on_mouse_hover(active_item) {
+	        var $main_menu = $('#main-menu');
+	        $main_menu.find('.item').on('mouseenter', function () {
+	            $('#main-menu').find('li.item').removeClass('hover');
+	            $(this).addClass('hover');
+	        });
+	
+	        $main_menu.on('mouseleave', function () {
+	            $main_menu.find('li.item').removeClass('hover');
+	            if (active_item) active_item.addClass('hover');
+	        });
+	    };
+	
+	    var active_menu_top = function active_menu_top() {
+	        var active = '';
+	        var path = window.location.pathname;
+	        $('#menu-top').find('li a').each(function () {
+	            if (path.indexOf(this.pathname.replace(/\.html/i, '')) >= 0) {
+	                active = $(this).closest('li');
+	            }
+	        });
+	
+	        return active;
+	    };
+	
+	    var active_main_menu = function active_main_menu() {
+	        var new_url = page_url;
+	        if (/cashier/i.test(new_url.location.href) && !/cashier_password/.test(new_url.location.href)) {
+	            new_url = new Url($('#topMenuCashier').find('a').attr('href'));
+	        }
+	
+	        var item = '',
+	            subitem = '';
+	        var $main_menu = $('#main-menu');
+	        // Is something selected in main items list
+	        $main_menu.find('.items a').each(function () {
+	            var url = new Url($(this).attr('href'));
+	            if (url.is_in(new_url)) {
+	                item = $(this).closest('.item');
+	            }
+	        });
+	
+	        $main_menu.find('.sub_items a').each(function () {
+	            var link_href = $(this).attr('href');
+	            if (link_href) {
+	                var url = new Url(link_href);
+	                if (url.is_in(new_url)) {
+	                    item = $(this).closest('.item');
+	                    subitem = $(this);
+	                }
+	            }
+	        });
+	
+	        return { item: item, subitem: subitem };
+	    };
+	
+	    return {
+	        init: init,
+	        on_unload: on_unload
+	    };
+	}();
+	
+	module.exports = {
+	    Menu: Menu
+	};
+
+/***/ },
+/* 532 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var localize = __webpack_require__(424).localize;
+	var Client = __webpack_require__(305).Client;
+	var Login = __webpack_require__(302).Login;
+	
+	var Contents = function () {
+	    var on_load = function on_load() {
+	        Client.activate_by_client_type();
+	        update_content_class();
+	        init_draggable();
+	    };
+	
+	    var on_unload = function on_unload() {
+	        var $unbind_later = $('.unbind_later');
+	        if ($unbind_later.length > 0) {
+	            $unbind_later.off();
+	        }
+	    };
+	
+	    var update_content_class = function update_content_class() {
+	        // This is required for our css to work.
+	        $('#content').removeClass().addClass($('#content_class').text());
+	    };
+	
+	    var init_draggable = function init_draggable() {
+	        $('.draggable').draggable();
+	    };
+	
+	    var show_login_if_logout = function show_login_if_logout(shouldReplacePageContents) {
+	        var client_is_logged_in = Client.is_logged_in();
+	        if (!client_is_logged_in && shouldReplacePageContents) {
+	            $('#content').find(' > .container').addClass('center-text').html($('<p/>', {
+	                class: 'notice-msg',
+	                html: localize('Please [_1] to view this page', ['<a class="login_link" href="javascript:;">' + localize('login') + '</a>'])
+	            }));
+	            $('.login_link').click(function () {
+	                Login.redirect_to_login();
+	            });
+	        }
+	        return !client_is_logged_in;
+	    };
+	
+	    return {
+	        on_load: on_load,
+	        on_unload: on_unload,
+	
+	        show_login_if_logout: show_login_if_logout
+	    };
+	}();
+	
+	module.exports = {
+	    Contents: Contents
+	};
+
+/***/ },
+/* 533 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var CookieStorage = __webpack_require__(304).CookieStorage;
+	var Url = __webpack_require__(306).Url;
+	var url = __webpack_require__(306).url;
+	var Client = __webpack_require__(305).Client;
+	
+	/*
+	 * Handles utm parameters/referrer to use on signup
+	 *
+	 * Priorities:
+	 * 1. Cookie having utm data (utm_source, utm_medium, utm_campaign) [Expires in 3 months]
+	 * 2. Query string utm parameters
+	 * 3. document.referrer
+	 *
+	 */
+	
+	var TrafficSource = function () {
+	    'use strict';
+	
+	    var cookie = void 0;
+	    var expire_months = 3;
+	
+	    var initCookie = function initCookie() {
+	        if (!cookie) {
+	            cookie = new CookieStorage('utm_data');
+	            cookie.read();
+	            // expiration date is used when writing cookie
+	            var now = new Date();
+	            cookie.expires = now.setMonth(now.getMonth() + expire_months);
+	        }
+	    };
+	
+	    var getData = function getData() {
+	        initCookie();
+	        var data = cookie.value;
+	        Object.keys(data).map(function (key) {
+	            data[key] = (data[key] || '').replace(/[^a-zA-Z0-9\s\-\.\_]/gi, '').substring(0, 100);
+	        });
+	        return data;
+	    };
+	
+	    var getSource = function getSource(utm_data) {
+	        if (!utm_data) utm_data = getData();
+	        return utm_data.utm_source || utm_data.referrer || 'direct'; // in order of precedence
+	    };
+	
+	    var setData = function setData() {
+	        if (Client.is_logged_in()) {
+	            clearData();
+	            return;
+	        }
+	
+	        var current_values = getData(),
+	            params = url.params_hash(),
+	            param_keys = ['utm_source', 'utm_medium', 'utm_campaign'];
+	
+	        if (params.utm_source) {
+	            // url params can be stored only if utm_source is available
+	            param_keys.map(function (key) {
+	                if (params[key] && !current_values[key]) {
+	                    cookie.set(key, params[key]);
+	                }
+	            });
+	        }
+	
+	        var doc_ref = document.referrer;
+	        var referrer = localStorage.getItem('index_referrer') || doc_ref;
+	        localStorage.removeItem('index_referrer');
+	        if (doc_ref && !new RegExp(window.location.hostname, 'i').test(doc_ref)) {
+	            referrer = doc_ref;
+	        }
+	        if (referrer && !current_values.referrer && !params.utm_source && !current_values.utm_source) {
+	            cookie.set('referrer', new Url(referrer).location.hostname);
+	        }
+	    };
+	
+	    var clearData = function clearData() {
+	        initCookie();
+	        cookie.remove();
+	    };
+	
+	    return {
+	        getData: getData,
+	        setData: setData,
+	        clearData: clearData,
+	        getSource: getSource
+	    };
+	}();
+	
+	module.exports = {
+	    TrafficSource: TrafficSource
+	};
+
+/***/ },
+/* 534 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	var ViewBalance = function () {
+	    var init = function init() {
+	        BinarySocket.init(1);
+	    };
+	
+	    return {
+	        init: init
+	    };
+	}();
+	
+	module.exports = {
+	    ViewBalance: ViewBalance
+	};
+
+/***/ },
+/* 535 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+	
+	/*	
+	 * jQuery mmenu v4.2.2
+	 * @requires jQuery 1.7.0 or later
+	 *
+	 * mmenu.frebsite.nl
+	 *	
+	 * Copyright (c) Fred Heusschen
+	 * www.frebsite.nl
+	 *
+	 * Dual licensed under the MIT and GPL licenses.
+	 * http://en.wikipedia.org/wiki/MIT_License
+	 * http://en.wikipedia.org/wiki/GNU_General_Public_License
+	 */
+	!function (e) {
+	  function t(t, n, s) {
+	    if (s) {
+	      if ("object" != (typeof t === "undefined" ? "undefined" : _typeof(t)) && (t = {}), "boolean" != typeof t.isMenu) {
+	        var o = s.children();t.isMenu = 1 == o.length && o.is(n.panelNodetype);
+	      }return t;
+	    }return t = e.extend(!0, {}, e[a].defaults, t), ("top" == t.position || "bottom" == t.position) && ("back" == t.zposition || "next" == t.zposition) && (e[a].deprecated('Using position "' + t.position + '" in combination with zposition "' + t.zposition + '"', 'zposition "front"'), t.zposition = "front"), t;
+	  }function n(t) {
+	    return t = e.extend(!0, {}, e[a].configuration, t), "string" != typeof t.pageSelector && (t.pageSelector = "> " + t.pageNodetype), t;
+	  }function s() {
+	    r.$wndw = e(window), r.$html = e("html"), r.$body = e("body"), r.$allMenus = e(), e.each([d, c, u], function (e, t) {
+	      t.add = function (e) {
+	        e = e.split(" ");for (var n in e) {
+	          t[e[n]] = t.mm(e[n]);
+	        }
+	      };
+	    }), d.mm = function (e) {
+	      return "mm-" + e;
+	    }, d.add("menu ismenu panel list subtitle selected label spacer current highest hidden page blocker modal background opened opening subopened subopen fullsubopen subclose"), d.umm = function (e) {
+	      return "mm-" == e.slice(0, 3) && (e = e.slice(3)), e;
+	    }, c.mm = function (e) {
+	      return "mm-" + e;
+	    }, c.add("parent style"), u.mm = function (e) {
+	      return e + ".mm";
+	    }, u.add("toggle open opening opened close closing closed update setPage setSelected transitionend webkitTransitionEnd mousedown touchstart mouseup touchend scroll touchmove click keydown keyup resize"), r.$wndw.on(u.keydown, function (e) {
+	      return r.$html.hasClass(d.opened) && 9 == e.keyCode ? (e.preventDefault(), !1) : void 0;
+	    });var t = 0;r.$wndw.on(u.resize, function (e, n) {
+	      if (n || r.$html.hasClass(d.opened)) {
+	        var s = r.$wndw.height();(n || s != t) && (t = s, r.$page.css("minHeight", s));
+	      }
+	    }), e[a]._c = d, e[a]._d = c, e[a]._e = u, e[a].glbl = r;
+	  }function o(t, n) {
+	    if (t.hasClass(d.current)) return !1;var s = e("." + d.panel, n),
+	        o = s.filter("." + d.current);return s.removeClass(d.highest).removeClass(d.current).not(t).not(o).addClass(d.hidden), t.hasClass(d.opened) ? o.addClass(d.highest).removeClass(d.opened).removeClass(d.subopened) : (t.addClass(d.highest), o.addClass(d.subopened)), t.removeClass(d.hidden).removeClass(d.subopened).addClass(d.current).addClass(d.opened), "open";
+	  }function i(e, t, n) {
+	    var s = !1,
+	        o = function o() {
+	      s || t.call(e[0]), s = !0;
+	    };e.one(u.transitionend, o), e.one(u.webkitTransitionEnd, o), setTimeout(o, 1.1 * n);
+	  }var a = "mmenu",
+	      l = "4.2.2";if (!e[a]) {
+	    var r = { $wndw: null, $html: null, $body: null, $page: null, $blck: null, $allMenus: null },
+	        d = {},
+	        c = {},
+	        u = {},
+	        p = 0,
+	        h = 0;e[a] = function (e, t, n) {
+	      return r.$allMenus = r.$allMenus.add(e), this.$menu = e, this.opts = t, this.conf = n, this.serialnr = p++, this._init(), this;
+	    }, e[a].prototype = { open: function open() {
+	        var e = this;return this._openSetup(), setTimeout(function () {
+	          e._openFinish();
+	        }, 50), "open";
+	      }, _openSetup: function _openSetup() {
+	        h = r.$wndw.scrollTop(), this.$menu.addClass(d.current), r.$allMenus.not(this.$menu).trigger(u.close), r.$page.data(c.style, r.$page.attr("style") || ""), r.$wndw.trigger(u.resize, [!0]), this.opts.modal && r.$html.addClass(d.modal), this.opts.moveBackground && r.$html.addClass(d.background), "left" != this.opts.position && r.$html.addClass(d.mm(this.opts.position)), "back" != this.opts.zposition && r.$html.addClass(d.mm(this.opts.zposition)), this.opts.classes && r.$html.addClass(this.opts.classes), r.$html.addClass(d.opened), this.$menu.addClass(d.opened);
+	      }, _openFinish: function _openFinish() {
+	        var e = this;i(r.$page, function () {
+	          e.$menu.trigger(u.opened);
+	        }, this.conf.transitionDuration), r.$html.addClass(d.opening), this.$menu.trigger(u.opening);
+	      }, close: function close() {
+	        var e = this;return i(r.$page, function () {
+	          e.$menu.removeClass(d.current).removeClass(d.opened), r.$html.removeClass(d.opened).removeClass(d.modal).removeClass(d.background).removeClass(d.mm(e.opts.position)).removeClass(d.mm(e.opts.zposition)), e.opts.classes && r.$html.removeClass(e.opts.classes), r.$page.attr("style", r.$page.data(c.style)), e.$menu.trigger(u.closed);
+	        }, this.conf.transitionDuration), r.$html.removeClass(d.opening), this.$menu.trigger(u.closing), "close";
+	      }, _init: function _init() {
+	        if (this.opts = t(this.opts, this.conf, this.$menu), this.direction = this.opts.slidingSubmenus ? "horizontal" : "vertical", this._initPage(r.$page), this._initMenu(), this._initBlocker(), this._initPanles(), this._initLinks(), this._initOpenClose(), this._bindCustomEvents(), e[a].addons) for (var n = 0; n < e[a].addons.length; n++) {
+	          "function" == typeof this["_addon_" + e[a].addons[n]] && this["_addon_" + e[a].addons[n]]();
+	        }
+	      }, _bindCustomEvents: function _bindCustomEvents() {
+	        var t = this;this.$menu.off(u.open + " " + u.close + " " + u.setPage + " " + u.update).on(u.open + " " + u.close + " " + u.setPage + " " + u.update, function (e) {
+	          e.stopPropagation();
+	        }), this.$menu.on(u.open, function (n) {
+	          return e(this).hasClass(d.current) ? (n.stopImmediatePropagation(), !1) : t.open();
+	        }).on(u.close, function (n) {
+	          return e(this).hasClass(d.current) ? t.close() : (n.stopImmediatePropagation(), !1);
+	        }).on(u.setPage, function (e, n) {
+	          t._initPage(n), t._initOpenClose();
+	        });var n = this.$menu.find(this.opts.isMenu && "horizontal" != this.direction ? "ul, ol" : "." + d.panel);n.off(u.toggle + " " + u.open + " " + u.close).on(u.toggle + " " + u.open + " " + u.close, function (e) {
+	          e.stopPropagation();
+	        }), "horizontal" == this.direction ? n.on(u.open, function () {
+	          return o(e(this), t.$menu);
+	        }) : n.on(u.toggle, function () {
+	          var t = e(this);return t.triggerHandler(t.parent().hasClass(d.opened) ? u.close : u.open);
+	        }).on(u.open, function () {
+	          return e(this).parent().addClass(d.opened), "open";
+	        }).on(u.close, function () {
+	          return e(this).parent().removeClass(d.opened), "close";
+	        });
+	      }, _initBlocker: function _initBlocker() {
+	        var t = this;r.$blck || (r.$blck = e('<div id="' + d.blocker + '" />').appendTo(r.$body)), r.$blck.off(u.touchstart).on(u.touchstart, function (e) {
+	          e.preventDefault(), e.stopPropagation(), r.$blck.trigger(u.mousedown);
+	        }).on(u.mousedown, function (e) {
+	          e.preventDefault(), r.$html.hasClass(d.modal) || t.$menu.trigger(u.close);
+	        });
+	      }, _initPage: function _initPage(t) {
+	        t || (t = e(this.conf.pageSelector, r.$body), t.length > 1 && (e[a].debug("Multiple nodes found for the page-node, all nodes are wrapped in one <" + this.conf.pageNodetype + ">."), t = t.wrapAll("<" + this.conf.pageNodetype + " />").parent())), t.addClass(d.page), r.$page = t;
+	      }, _initMenu: function _initMenu() {
+	        this.conf.clone && (this.$menu = this.$menu.clone(!0), this.$menu.add(this.$menu.find("*")).filter("[id]").each(function () {
+	          e(this).attr("id", d.mm(e(this).attr("id")));
+	        })), this.$menu.contents().each(function () {
+	          3 == e(this)[0].nodeType && e(this).remove();
+	        }), this.$menu.prependTo("body").addClass(d.menu), this.$menu.addClass(d.mm(this.direction)), this.opts.classes && this.$menu.addClass(this.opts.classes), this.opts.isMenu && this.$menu.addClass(d.ismenu), "left" != this.opts.position && this.$menu.addClass(d.mm(this.opts.position)), "back" != this.opts.zposition && this.$menu.addClass(d.mm(this.opts.zposition));
+	      }, _initPanles: function _initPanles() {
+	        var t = this;this.__refactorClass(e("." + this.conf.listClass, this.$menu), "list"), this.opts.isMenu && e("ul, ol", this.$menu).not(".mm-nolist").addClass(d.list);var n = e("." + d.list + " > li", this.$menu);this.__refactorClass(n.filter("." + this.conf.selectedClass), "selected"), this.__refactorClass(n.filter("." + this.conf.labelClass), "label"), this.__refactorClass(n.filter("." + this.conf.spacerClass), "spacer"), n.off(u.setSelected).on(u.setSelected, function (t, s) {
+	          t.stopPropagation(), n.removeClass(d.selected), "boolean" != typeof s && (s = !0), s && e(this).addClass(d.selected);
+	        }), this.__refactorClass(e("." + this.conf.panelClass, this.$menu), "panel"), this.$menu.children().filter(this.conf.panelNodetype).add(this.$menu.find("." + d.list).children().children().filter(this.conf.panelNodetype)).addClass(d.panel);var s = e("." + d.panel, this.$menu);s.each(function (n) {
+	          var s = e(this),
+	              o = s.attr("id") || d.mm("m" + t.serialnr + "-p" + n);s.attr("id", o);
+	        }), s.find("." + d.panel).each(function () {
+	          var n = e(this),
+	              s = n.is("ul, ol") ? n : n.find("ul ,ol").first(),
+	              o = n.parent(),
+	              i = o.find("> a, > span"),
+	              a = o.closest("." + d.panel);if (n.data(c.parent, o), o.parent().is("." + d.list)) {
+	            var l = e('<a class="' + d.subopen + '" href="#' + n.attr("id") + '" />').insertBefore(i);i.is("a") || l.addClass(d.fullsubopen), "horizontal" == t.direction && s.prepend('<li class="' + d.subtitle + '"><a class="' + d.subclose + '" href="#' + a.attr("id") + '">' + i.text() + "</a></li>");
+	          }
+	        });var o = "horizontal" == this.direction ? u.open : u.toggle;if (s.each(function () {
+	          var n = e(this),
+	              s = n.attr("id");e('a[href="#' + s + '"]', t.$menu).off(u.click).on(u.click, function (e) {
+	            e.preventDefault(), n.trigger(o);
+	          });
+	        }), "horizontal" == this.direction) {
+	          var i = e("." + d.list + " > li." + d.selected, this.$menu);i.add(i.parents("li")).parents("li").removeClass(d.selected).end().each(function () {
+	            var t = e(this),
+	                n = t.find("> ." + d.panel);n.length && (t.parents("." + d.panel).addClass(d.subopened), n.addClass(d.opened));
+	          }).closest("." + d.panel).addClass(d.opened).parents("." + d.panel).addClass(d.subopened);
+	        } else e("li." + d.selected, this.$menu).addClass(d.opened).parents("." + d.selected).removeClass(d.selected);var a = s.filter("." + d.opened);a.length || (a = s.first()), a.addClass(d.opened).last().addClass(d.current), "horizontal" == this.direction && s.find("." + d.panel).appendTo(this.$menu);
+	      }, _initLinks: function _initLinks() {
+	        var t = this;e("." + d.list + " > li > a", this.$menu).not("." + d.subopen).not("." + d.subclose).not('[rel="external"]').not('[target="_blank"]').off(u.click).on(u.click, function (n) {
+	          var s = e(this),
+	              o = s.attr("href");t.__valueOrFn(t.opts.onClick.setSelected, s) && s.parent().trigger(u.setSelected);var i = t.__valueOrFn(t.opts.onClick.preventDefault, s, "#" == o.slice(0, 1));i && n.preventDefault(), t.__valueOrFn(t.opts.onClick.blockUI, s, !i) && r.$html.addClass(d.blocking), t.__valueOrFn(t.opts.onClick.close, s, i) && t.$menu.triggerHandler(u.close);
+	        });
+	      }, _initOpenClose: function _initOpenClose() {
+	        var t = this,
+	            n = this.$menu.attr("id");n && n.length && (this.conf.clone && (n = d.umm(n)), e('a[href="#' + n + '"]').off(u.click).on(u.click, function (e) {
+	          e.preventDefault(), t.$menu.trigger(u.open);
+	        }));var n = r.$page.attr("id");n && n.length && e('a[href="#' + n + '"]').off(u.click).on(u.click, function (e) {
+	          e.preventDefault(), t.$menu.trigger(u.close);
+	        });
+	      }, __valueOrFn: function __valueOrFn(e, t, n) {
+	        return "function" == typeof e ? e.call(t[0]) : "undefined" == typeof e && "undefined" != typeof n ? n : e;
+	      }, __refactorClass: function __refactorClass(e, t) {
+	        e.removeClass(this.conf[t + "Class"]).addClass(d[t]);
+	      } }, e.fn[a] = function (o, i) {
+	      return r.$wndw || s(), o = t(o, i), i = n(i), this.each(function () {
+	        var t = e(this);t.data(a) || t.data(a, new e[a](t, o, i));
+	      });
+	    }, e[a].version = l, e[a].defaults = { position: "left", zposition: "back", moveBackground: !0, slidingSubmenus: !0, modal: !1, classes: "", onClick: { setSelected: !0 } }, e[a].configuration = { preventTabbing: !0, panelClass: "Panel", listClass: "List", selectedClass: "Selected", labelClass: "Label", spacerClass: "Spacer", pageNodetype: "div", panelNodetype: "ul, ol, div", transitionDuration: 400 }, function () {
+	      var t = window.document,
+	          n = window.navigator.userAgent,
+	          s = (document.createElement("div").style, "ontouchstart" in t),
+	          o = "WebkitOverflowScrolling" in t.documentElement.style,
+	          i = function () {
+	        return n.indexOf("Android") >= 0 ? 2.4 > parseFloat(n.slice(n.indexOf("Android") + 8)) : !1;
+	      }();e[a].support = { touch: s, oldAndroidBrowser: i, overflowscrolling: function () {
+	          return s ? o ? !0 : i ? !1 : !0 : !0;
+	        }() };
+	    }(), e[a].debug = function () {}, e[a].deprecated = function (e, t) {
+	      "undefined" != typeof console && "undefined" != typeof console.warn && console.warn("MMENU: " + e + " is deprecated, use " + t + " instead.");
+	    };
+	  }
+	}(jQuery);
+	/*	
+	 * jQuery mmenu counters addon
+	 * @requires mmenu 4.0.0 or later
+	 *
+	 * mmenu.frebsite.nl
+	 *	
+	 * Copyright (c) Fred Heusschen
+	 * www.frebsite.nl
+	 *
+	 * Dual licensed under the MIT and GPL licenses.
+	 * http://en.wikipedia.org/wiki/MIT_License
+	 * http://en.wikipedia.org/wiki/GNU_General_Public_License
+	 */
+	!function (t) {
+	  var e = "mmenu",
+	      n = "counters";t[e].prototype["_addon_" + n] = function () {
+	    var o = this,
+	        u = this.opts[n],
+	        a = t[e]._c,
+	        r = t[e]._d,
+	        d = t[e]._e;a.add("counter noresults"), d.add("updatecounters"), "boolean" == typeof u && (u = { add: u, update: u }), "object" != (typeof u === "undefined" ? "undefined" : _typeof(u)) && (u = {}), u = t.extend(!0, {}, t[e].defaults[n], u), u.count && (t[e].deprecated('the option "count" for counters, the option "update"'), u.update = u.count), this.__refactorClass(t("em." + this.conf.counterClass, this.$menu), "counter");var s = t("." + a.panel, this.$menu);if (u.add && s.each(function () {
+	      var e = t(this),
+	          n = e.data(r.parent);if (n) {
+	        var o = t('<em class="' + a.counter + '" />'),
+	            u = n.find("> a." + a.subopen);u.parent().find("em." + a.counter).length || u.before(o);
+	      }
+	    }), u.update) {
+	      var c = t("em." + a.counter, this.$menu);c.off(d.updatecounters).on(d.updatecounters, function (t) {
+	        t.stopPropagation();
+	      }).each(function () {
+	        var e = t(this),
+	            n = t(e.next().attr("href"), o.$menu);n.is("." + a.list) || (n = n.find("> ." + a.list)), n.length && e.on(d.updatecounters, function () {
+	          var t = n.children().not("." + a.label).not("." + a.subtitle).not("." + a.hidden).not("." + a.noresults);e.html(t.length);
+	        });
+	      }).trigger(d.updatecounters), this.$menu.on(d.update, function () {
+	        c.trigger(d.updatecounters);
+	      });
+	    }
+	  }, t[e].defaults[n] = { add: !1, update: !1 }, t[e].configuration.counterClass = "Counter", t[e].addons = t[e].addons || [], t[e].addons.push(n);
+	}(jQuery);
+	/*	
+	 * jQuery mmenu dragOpen addon
+	 * @requires mmenu 4.0.0 or later
+	 *
+	 * mmenu.frebsite.nl
+	 *	
+	 * Copyright (c) Fred Heusschen
+	 * www.frebsite.nl
+	 *
+	 * Dual licensed under the MIT and GPL licenses.
+	 * http://en.wikipedia.org/wiki/MIT_License
+	 * http://en.wikipedia.org/wiki/GNU_General_Public_License
+	 */
+	!function (e) {
+	  function t(e, t, a) {
+	    return t > e && (e = t), e > a && (e = a), e;
+	  }var a = "mmenu",
+	      o = "dragOpen";e[a].prototype["_addon_" + o] = function () {
+	    var n = this,
+	        r = this.opts[o];if (e.fn.hammer) {
+	      var i = e[a]._c,
+	          s = (e[a]._d, e[a]._e);i.add("dragging"), s.add("dragleft dragright dragup dragdown dragend");var d = e[a].glbl;if ("boolean" == typeof r && (r = { open: r }), "object" != (typeof r === "undefined" ? "undefined" : _typeof(r)) && (r = {}), "number" != typeof r.maxStartPos && (r.maxStartPos = "left" == this.opts.position || "right" == this.opts.position ? 150 : 75), r = e.extend(!0, {}, e[a].defaults[o], r), r.open) {
+	        var p = 0,
+	            g = !1,
+	            c = 0,
+	            h = 0,
+	            l = "width";switch (this.opts.position) {case "left":case "right":
+	            l = "width";break;default:
+	            l = "height";}switch (this.opts.position) {case "left":
+	            var f = { events: s.dragleft + " " + s.dragright, open_dir: "right", close_dir: "left", delta: "deltaX", page: "pageX", negative: !1 };break;case "right":
+	            var f = { events: s.dragleft + " " + s.dragright, open_dir: "left", close_dir: "right", delta: "deltaX", page: "pageX", negative: !0 };break;case "top":
+	            var f = { events: s.dragup + " " + s.dragdown, open_dir: "down", close_dir: "up", delta: "deltaY", page: "pageY", negative: !1 };break;case "bottom":
+	            var f = { events: s.dragup + " " + s.dragdown, open_dir: "up", close_dir: "down", delta: "deltaY", page: "pageY", negative: !0 };}var u = this.__valueOrFn(r.pageNode, this.$menu, d.$page);"string" == typeof u && (u = e(u));var m = d.$page.find("." + i.mm("fixed-top") + ", ." + i.mm("fixed-bottom")),
+	            v = d.$page;switch (n.opts.zposition) {case "back":
+	            v = v.add(m);break;case "front":
+	            v = n.$menu;break;case "next":
+	            v = v.add(n.$menu).add(m);}u.hammer().on(s.touchstart + " " + s.mousedown, function (e) {
+	          if ("touchstart" == e.type) var t = e.originalEvent.touches[0] || e.originalEvent.changedTouches[0],
+	              a = t[f.page];else if ("mousedown" == e.type) var a = e[f.page];switch (n.opts.position) {case "right":case "bottom":
+	              a >= d.$wndw[l]() - r.maxStartPos && (p = 1);break;default:
+	              a <= r.maxStartPos && (p = 1);}
+	        }).on(f.events + " " + s.dragend, function (e) {
+	          p > 0 && (e.gesture.preventDefault(), e.stopPropagation());
+	        }).on(f.events, function (e) {
+	          var a = f.negative ? -e.gesture[f.delta] : e.gesture[f.delta];if (g = a > c ? f.open_dir : f.close_dir, c = a, c > r.threshold && 1 == p) {
+	            if (d.$html.hasClass(i.opened)) return;p = 2, n._openSetup(), d.$html.addClass(i.dragging), h = t(d.$wndw[l]() * n.conf[o][l].perc, n.conf[o][l].min, n.conf[o][l].max);
+	          }2 == p && v.css(n.opts.position, t(c, 10, h) - ("front" == n.opts.zposition ? h : 0));
+	        }).on(s.dragend, function () {
+	          2 == p && (d.$html.removeClass(i.dragging), v.css(n.opts.position, ""), g == f.open_dir ? n._openFinish() : n.close()), p = 0;
+	        });
+	      }
+	    }
+	  }, e[a].defaults[o] = { open: !1, threshold: 50 }, e[a].configuration[o] = { width: { perc: .8, min: 140, max: 440 }, height: { perc: .8, min: 140, max: 880 } }, e[a].addons = e[a].addons || [], e[a].addons.push(o);
+	}(jQuery);
+	/*	
+	 * jQuery mmenu header addon
+	 * @requires mmenu 4.0.0 or later
+	 *
+	 * mmenu.frebsite.nl
+	 *	
+	 * Copyright (c) Fred Heusschen
+	 * www.frebsite.nl
+	 *
+	 * Dual licensed under the MIT and GPL licenses.
+	 * http://en.wikipedia.org/wiki/MIT_License
+	 * http://en.wikipedia.org/wiki/GNU_General_Public_License
+	 */
+	!function (e) {
+	  var t = "mmenu",
+	      a = "header";e[t].prototype["_addon_" + a] = function () {
+	    var n = this,
+	        r = this.opts[a],
+	        d = this.conf[a],
+	        s = e[t]._c,
+	        i = (e[t]._d, e[t]._e);s.add("header hasheader prev next title titletext"), i.add("updateheader");var o = e[t].glbl;if ("boolean" == typeof r && (r = { add: r, update: r }), "object" != (typeof r === "undefined" ? "undefined" : _typeof(r)) && (r = {}), r = e.extend(!0, {}, e[t].defaults[a], r), r.add) {
+	      var h = r.content ? r.content : '<a class="' + s.prev + '" href="javascript:;"></a><span class="' + s.title + '"></span><a class="' + s.next + '" href="javascript:;"></a>';e('<div class="' + s.header + '" />').prependTo(this.$menu).append(h);
+	    }var p = e("div." + s.header, this.$menu);if (p.length && this.$menu.addClass(s.hasheader), r.update && p.length) {
+	      var l = p.find("." + s.title),
+	          u = p.find("." + s.prev),
+	          f = p.find("." + s.next),
+	          c = "#" + o.$page.attr("id");u.add(f).on(i.click, function (t) {
+	        t.preventDefault(), t.stopPropagation();var a = e(this).attr("href");"#" !== a && (a == c ? n.$menu.trigger(i.close) : e(a, n.$menu).trigger(i.open));
+	      }), e("." + s.panel, this.$menu).each(function () {
+	        var t = e(this),
+	            a = e("." + d.panelHeaderClass, t).text(),
+	            n = e("." + d.panelPrevClass, t).attr("href"),
+	            o = e("." + d.panelNextClass, t).attr("href");a || (a = e("." + s.subclose, t).text()), a || (a = r.title), n || (n = e("." + s.subclose, t).attr("href")), t.off(i.updateheader).on(i.updateheader, function (e) {
+	          e.stopPropagation(), l[a ? "show" : "hide"]().text(a), u[n ? "show" : "hide"]().attr("href", n), f[o ? "show" : "hide"]().attr("href", o);
+	        }), t.on(i.open, function () {
+	          e(this).trigger(i.updateheader);
+	        });
+	      }).filter("." + s.current).trigger(i.updateheader);
+	    }
+	  }, e[t].defaults[a] = { add: !1, content: !1, update: !1, title: "Menu" }, e[t].configuration[a] = { panelHeaderClass: "Header", panelNextClass: "Next", panelPrevClass: "Prev" }, e[t].addons = e[t].addons || [], e[t].addons.push(a);
+	}(jQuery);
+	/*	
+	 * jQuery mmenu labels addon
+	 * @requires mmenu 4.1.0 or later
+	 *
+	 * mmenu.frebsite.nl
+	 *	
+	 * Copyright (c) Fred Heusschen
+	 * www.frebsite.nl
+	 *
+	 * Dual licensed under the MIT and GPL licenses.
+	 * http://en.wikipedia.org/wiki/MIT_License
+	 * http://en.wikipedia.org/wiki/GNU_General_Public_License
+	 */
+	!function (e) {
+	  var l = "mmenu",
+	      s = "labels";e[l].prototype["_addon_" + s] = function () {
+	    function a() {
+	      var e = t.hassearch && o.$menu.hasClass(t.hassearch),
+	          l = t.hasheader && o.$menu.hasClass(t.hasheader);return e ? l ? 100 : 50 : l ? 60 : 0;
+	    }var o = this,
+	        n = this.opts[s],
+	        t = e[l]._c,
+	        i = (e[l]._d, e[l]._e);if (t.add("collapsed"), t.add("fixedlabels original clone"), i.add("updatelabels position scroll"), e[l].support.touch && (i.scroll += " " + i.mm("touchmove")), "boolean" == typeof n && (n = { collapse: n }), "object" != (typeof n === "undefined" ? "undefined" : _typeof(n)) && (n = {}), n = e.extend(!0, {}, e[l].defaults[s], n), n.collapse) {
+	      this.__refactorClass(e("li." + this.conf.collapsedClass, this.$menu), "collapsed");var d = e("." + t.label, this.$menu);d.each(function () {
+	        var l = e(this),
+	            s = l.nextUntil("." + t.label, "all" == n.collapse ? null : "." + t.collapsed);"all" == n.collapse && (l.addClass(t.opened), s.removeClass(t.collapsed)), s.length && (l.wrapInner("<span />"), e('<a href="javascript:;" class="' + t.subopen + " " + t.fullsubopen + '" />').prependTo(l).on(i.click, function (e) {
+	          e.preventDefault(), l.toggleClass(t.opened), s[l.hasClass(t.opened) ? "removeClass" : "addClass"](t.collapsed);
+	        }));
+	      });
+	    } else if (n.fixed) {
+	      if ("horizontal" != this.direction) return;this.$menu.addClass(t.fixedlabels);var r = e("." + t.panel, this.$menu),
+	          d = e("." + t.label, this.$menu);r.add(d).off(i.updatelabels + " " + i.position + " " + i.scroll).on(i.updatelabels + " " + i.position + " " + i.scroll, function (e) {
+	        e.stopPropagation();
+	      });var p = a();r.each(function () {
+	        var l = e(this),
+	            s = l.find("." + t.label);if (s.length) {
+	          var o = l.scrollTop();s.each(function () {
+	            var s = e(this);s.wrapInner("<div />").wrapInner("<div />");var a,
+	                n,
+	                d,
+	                r = s.find("> div"),
+	                c = e();s.on(i.updatelabels, function () {
+	              o = l.scrollTop(), s.hasClass(t.hidden) || (c = s.nextAll("." + t.label).not("." + t.hidden).first(), a = s.offset().top + o, n = c.length ? c.offset().top + o : !1, d = r.height(), s.trigger(i.position));
+	            }), s.on(i.position, function () {
+	              var e = 0;n && o + p > n - d ? e = n - a - d : o + p > a && (e = o - a + p), r.css("top", e);
+	            });
+	          }), l.on(i.updatelabels, function () {
+	            o = l.scrollTop(), p = a(), s.trigger(i.position);
+	          }).on(i.scroll, function () {
+	            s.trigger(i.updatelabels);
+	          });
+	        }
+	      }), this.$menu.on(i.update, function () {
+	        r.trigger(i.updatelabels);
+	      }).on(i.opening, function () {
+	        r.trigger(i.updatelabels).trigger(i.scroll);
+	      });
+	    }
+	  }, e[l].defaults[s] = { fixed: !1, collapse: !1 }, e[l].configuration.collapsedClass = "Collapsed", e[l].addons = e[l].addons || [], e[l].addons.push(s);
+	}(jQuery);
+	/*	
+	 * jQuery mmenu searchfield addon
+	 * @requires mmenu 4.0.0 or later
+	 *
+	 * mmenu.frebsite.nl
+	 *	
+	 * Copyright (c) Fred Heusschen
+	 * www.frebsite.nl
+	 *
+	 * Dual licensed under the MIT and GPL licenses.
+	 * http://en.wikipedia.org/wiki/MIT_License
+	 * http://en.wikipedia.org/wiki/GNU_General_Public_License
+	 */
+	!function (e) {
+	  function s(e) {
+	    switch (e) {case 9:case 16:case 17:case 18:case 37:case 38:case 39:case 40:
+	        return !0;}return !1;
+	  }var n = "mmenu",
+	      t = "searchfield";e[n].prototype["_addon_" + t] = function () {
+	    var a = this,
+	        r = this.opts[t],
+	        o = e[n]._c,
+	        l = e[n]._d,
+	        d = e[n]._e;if (o.add("search hassearch noresults nosubresults counter"), d.add("search reset change"), "boolean" == typeof r && (r = { add: r, search: r }), "object" != (typeof r === "undefined" ? "undefined" : _typeof(r)) && (r = {}), r = e.extend(!0, {}, e[n].defaults[t], r), r.add && (e('<div class="' + o.search + '" />').prependTo(this.$menu).append('<input placeholder="' + r.placeholder + '" type="text" autocomplete="off" />'), r.noResults && e("ul, ol", this.$menu).first().append('<li class="' + o.noresults + '">' + r.noResults + "</li>")), e("div." + o.search, this.$menu).length && this.$menu.addClass(o.hassearch), r.search) {
+	      var i = e("div." + o.search, this.$menu).find("input");if (i.length) {
+	        var u = e("." + o.panel, this.$menu),
+	            h = e("." + o.list + "> li." + o.label, this.$menu),
+	            c = e("." + o.list + "> li", this.$menu).not("." + o.subtitle).not("." + o.label).not("." + o.noresults),
+	            f = "> a";r.showLinksOnly || (f += ", > span"), i.off(d.keyup + " " + d.change).on(d.keyup, function (e) {
+	          s(e.keyCode) || a.$menu.trigger(d.search);
+	        }).on(d.change, function () {
+	          a.$menu.trigger(d.search);
+	        }), this.$menu.off(d.reset + " " + d.search).on(d.reset + " " + d.search, function (e) {
+	          e.stopPropagation();
+	        }).on(d.reset, function () {
+	          a.$menu.trigger(d.search, [""]);
+	        }).on(d.search, function (s, n) {
+	          "string" == typeof n ? i.val(n) : n = i.val(), n = n.toLowerCase(), u.scrollTop(0), c.add(h).addClass(o.hidden), c.each(function () {
+	            var s = e(this);e(f, s).text().toLowerCase().indexOf(n) > -1 && s.add(s.prevAll("." + o.label).first()).removeClass(o.hidden);
+	          }), e(u.get().reverse()).each(function () {
+	            var s = e(this),
+	                n = s.data(l.parent);if (n) {
+	              var t = s.add(s.find("> ." + o.list)).find("> li").not("." + o.subtitle).not("." + o.label).not("." + o.hidden);t.length ? n.removeClass(o.hidden).removeClass(o.nosubresults).prevAll("." + o.label).first().removeClass(o.hidden) : (s.hasClass(o.current) && n.trigger(d.open), n.addClass(o.nosubresults));
+	            }
+	          }), a.$menu[c.not("." + o.hidden).length ? "removeClass" : "addClass"](o.noresults), a.$menu.trigger(d.update);
+	        });
+	      }
+	    }
+	  }, e[n].defaults[t] = { add: !1, search: !1, showLinksOnly: !0, placeholder: "Search", noResults: "No results found." }, e[n].addons = e[n].addons || [], e[n].addons.push(t);
+	}(jQuery);
+
+/***/ },
+/* 536 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -71912,7 +70939,7 @@
 	};
 
 /***/ },
-/* 540 */
+/* 537 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -71945,7 +70972,7 @@
 	};
 
 /***/ },
-/* 541 */
+/* 538 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -73401,7 +72428,7 @@
 	})(jQuery);
 
 /***/ },
-/* 542 */
+/* 539 */
 /***/ function(module, exports) {
 
 	/** @license
@@ -73948,7 +72975,7 @@
 
 
 /***/ },
-/* 543 */
+/* 540 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;"use strict";
@@ -79245,7 +78272,7 @@
 	});
 
 /***/ },
-/* 544 */
+/* 541 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;'use strict';
@@ -82347,7 +81374,7 @@
 	})(document, Math);
 
 /***/ },
-/* 545 */
+/* 542 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -82563,7 +81590,7 @@
 
 
 /***/ },
-/* 546 */
+/* 543 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -82609,28 +81636,28 @@
 	if (typeof trackJs !== 'undefined') trackJs.configure(window._trackJs);
 
 /***/ },
-/* 547 */
+/* 544 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var Endpoint = __webpack_require__(548).Endpoint;
-	var GetStartedJP = __webpack_require__(549).GetStartedJP;
-	var JobDetails = __webpack_require__(550).JobDetails;
-	var Platforms = __webpack_require__(551).Platforms;
-	var Regulation = __webpack_require__(552).Regulation;
-	var Scroll = __webpack_require__(553).Scroll;
-	var GetStarted = __webpack_require__(554).GetStarted;
-	var Contact = __webpack_require__(555).Contact;
-	var Careers = __webpack_require__(558).Careers;
-	var Home = __webpack_require__(559).Home;
-	var WhyUs = __webpack_require__(566).WhyUs;
-	var CharityPage = __webpack_require__(567).CharityPage;
-	var TermsAndConditions = __webpack_require__(568).TermsAndConditions;
+	var Endpoint = __webpack_require__(545).Endpoint;
+	var GetStartedJP = __webpack_require__(546).GetStartedJP;
+	var JobDetails = __webpack_require__(547).JobDetails;
+	var Platforms = __webpack_require__(548).Platforms;
+	var Regulation = __webpack_require__(549).Regulation;
+	var Scroll = __webpack_require__(550).Scroll;
+	var GetStarted = __webpack_require__(551).GetStarted;
+	var Contact = __webpack_require__(552).Contact;
+	var Careers = __webpack_require__(555).Careers;
+	var Home = __webpack_require__(556).Home;
+	var WhyUs = __webpack_require__(563).WhyUs;
+	var CharityPage = __webpack_require__(564).CharityPage;
+	var TermsAndConditions = __webpack_require__(565).TermsAndConditions;
 	var CashierJP = __webpack_require__(435).CashierJP;
-	var LoggedInHandler = __webpack_require__(569).LoggedInHandler;
-	var pjax_config_page_require_auth = __webpack_require__(484).pjax_config_page_require_auth;
-	var pjax_config_page = __webpack_require__(484).pjax_config_page;
+	var LoggedInHandler = __webpack_require__(566).LoggedInHandler;
+	var pjax_config_page_require_auth = __webpack_require__(567).pjax_config_page_require_auth;
+	var pjax_config_page = __webpack_require__(567).pjax_config_page;
 	
 	pjax_config_page('/home', function () {
 	    return {
@@ -82809,7 +81836,7 @@
 	});
 
 /***/ },
-/* 548 */
+/* 545 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -82850,7 +81877,7 @@
 	};
 
 /***/ },
-/* 549 */
+/* 546 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -82909,7 +81936,7 @@
 	};
 
 /***/ },
-/* 550 */
+/* 547 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -83018,7 +82045,7 @@
 	};
 
 /***/ },
-/* 551 */
+/* 548 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -83094,7 +82121,7 @@
 	};
 
 /***/ },
-/* 552 */
+/* 549 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -83141,7 +82168,7 @@
 	};
 
 /***/ },
-/* 553 */
+/* 550 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -83240,7 +82267,7 @@
 	};
 
 /***/ },
-/* 554 */
+/* 551 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -83316,14 +82343,14 @@
 	};
 
 /***/ },
-/* 555 */
+/* 552 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var email_rot13 = __webpack_require__(308).email_rot13;
-	var loadCSS = __webpack_require__(556).loadCSS;
-	var loadJS = __webpack_require__(557).loadJS;
+	var loadCSS = __webpack_require__(553).loadCSS;
+	var loadJS = __webpack_require__(554).loadJS;
 	var getLanguage = __webpack_require__(303).getLanguage;
 	var url_for_static = __webpack_require__(306).url_for_static;
 	
@@ -83439,7 +82466,7 @@
 	};
 
 /***/ },
-/* 556 */
+/* 553 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -83479,7 +82506,7 @@
 	};
 
 /***/ },
-/* 557 */
+/* 554 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -83500,7 +82527,7 @@
 	};
 
 /***/ },
-/* 558 */
+/* 555 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -83521,12 +82548,12 @@
 	};
 
 /***/ },
-/* 559 */
+/* 556 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var VerifyEmail = __webpack_require__(560).VerifyEmail;
+	var VerifyEmail = __webpack_require__(557).VerifyEmail;
 	var Client = __webpack_require__(305).Client;
 	
 	var Home = function () {
@@ -83552,15 +82579,15 @@
 	};
 
 /***/ },
-/* 560 */
+/* 557 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var Content = __webpack_require__(427).Content;
-	var ValidateV2 = __webpack_require__(561).ValidateV2;
+	var ValidateV2 = __webpack_require__(558).ValidateV2;
 	var url_for = __webpack_require__(306).url_for;
-	var bind_validation = __webpack_require__(563).bind_validation;
+	var bind_validation = __webpack_require__(560).bind_validation;
 	var localize = __webpack_require__(424).localize;
 	
 	var VerifyEmail = function VerifyEmail() {
@@ -83618,7 +82645,7 @@
 	};
 
 /***/ },
-/* 561 */
+/* 558 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -83627,7 +82654,7 @@
 	
 	var template = __webpack_require__(421).template;
 	var moment = __webpack_require__(309);
-	var dv = __webpack_require__(562);
+	var dv = __webpack_require__(559);
 	var Content = __webpack_require__(427).Content;
 	var localize = __webpack_require__(424).localize;
 	
@@ -83750,7 +82777,7 @@
 	};
 
 /***/ },
-/* 562 */
+/* 559 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -83831,14 +82858,14 @@
 	module.exports = dv;
 
 /***/ },
-/* 563 */
+/* 560 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var done_typing = __webpack_require__(564).done_typing;
-	var formToObj = __webpack_require__(565).formToObj;
-	var dv = __webpack_require__(562);
+	var done_typing = __webpack_require__(561).done_typing;
+	var formToObj = __webpack_require__(562).formToObj;
+	var dv = __webpack_require__(559);
 	var localize = __webpack_require__(424).localize;
 	
 	var ValidationUI = {
@@ -84004,7 +83031,7 @@
 	};
 
 /***/ },
-/* 564 */
+/* 561 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -84042,7 +83069,7 @@
 	};
 
 /***/ },
-/* 565 */
+/* 562 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -84126,12 +83153,12 @@
 	};
 
 /***/ },
-/* 566 */
+/* 563 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var Scroll = __webpack_require__(553).Scroll;
+	var Scroll = __webpack_require__(550).Scroll;
 	var Client = __webpack_require__(305).Client;
 	
 	var WhyUs = function () {
@@ -84156,7 +83183,7 @@
 	};
 
 /***/ },
-/* 567 */
+/* 564 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -84193,7 +83220,7 @@
 	};
 
 /***/ },
-/* 568 */
+/* 565 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -84222,7 +83249,7 @@
 	};
 
 /***/ },
-/* 569 */
+/* 566 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -84326,6 +83353,978 @@
 	};
 
 /***/ },
+/* 567 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var MenuContent = __webpack_require__(568).MenuContent;
+	var Url = __webpack_require__(306).Url;
+	var url = __webpack_require__(306).url;
+	var GTM = __webpack_require__(431).GTM;
+	var SessionStore = __webpack_require__(304).SessionStore;
+	var State = __webpack_require__(304).State;
+	var Contents = __webpack_require__(532).Contents;
+	var url_for = __webpack_require__(306).url_for;
+	var Client = __webpack_require__(305).Client;
+	var Login = __webpack_require__(302).Login;
+	var page = __webpack_require__(530).page;
+	var japanese_client = __webpack_require__(307).japanese_client;
+	var pjax = __webpack_require__(569);
+	
+	var make_mobile_menu = function make_mobile_menu() {
+	    if ($('#mobile-menu-container').is(':visible')) {
+	        $('#mobile-menu').mmenu({
+	            position: 'right',
+	            zposition: 'front',
+	            slidingSubmenus: false,
+	            searchfield: true,
+	            onClick: {
+	                close: true
+	            }
+	        }, {
+	            selectedClass: 'active'
+	        });
+	    }
+	};
+	
+	// For object shape coherence we create named objects to be inserted into the queue.
+	var URLPjaxQueueElement = function URLPjaxQueueElement(exec_function, new_url) {
+	    this.method = exec_function;
+	    if (new_url) {
+	        this.url = new RegExp(new_url);
+	    } else {
+	        this.url = /.*/;
+	    }
+	};
+	
+	URLPjaxQueueElement.prototype = {
+	    fire: function fire(in_url) {
+	        if (this.url.test(in_url)) {
+	            this.method();
+	        }
+	    }
+	};
+	
+	var IDPjaxQueueElement = function IDPjaxQueueElement(exec_function, id) {
+	    this.method = exec_function;
+	    this.sel = '#' + id;
+	};
+	
+	IDPjaxQueueElement.prototype = {
+	    fire: function fire() {
+	        if ($(this.sel).length > 0) {
+	            this.method();
+	        }
+	    }
+	};
+	
+	var PjaxExecQueue = function PjaxExecQueue() {
+	    this.url_exec_queue = [];
+	    this.id_exec_queue = [];
+	    this.fired = false;
+	    this.content = $('#content');
+	};
+	
+	PjaxExecQueue.prototype = {
+	    queue: function queue(exec_function) {
+	        this.url_exec_queue.unshift(new URLPjaxQueueElement(exec_function));
+	    },
+	    queue_for_url: function queue_for_url(exec_function, url_pattern) {
+	        this.url_exec_queue.unshift(new URLPjaxQueueElement(exec_function, url_pattern));
+	    },
+	    fire: function fire() {
+	        if (!this.fired) {
+	            var match_loc = window.location.href;
+	            var i = this.url_exec_queue.length;
+	            while (i--) {
+	                this.url_exec_queue[i].fire(match_loc);
+	            }
+	
+	            i = this.id_exec_queue.length;
+	            while (i--) {
+	                this.id_exec_queue[i].fire(match_loc);
+	            }
+	        }
+	        this.fired = true;
+	    },
+	    reset: function reset() {
+	        this.fired = false;
+	    },
+	    loading: function loading() {
+	        this.reset();
+	    }
+	};
+	
+	var pjax_config_page = function pjax_config_page(new_url, exec_functions) {
+	    var functions = exec_functions();
+	    if (functions.onLoad) onLoad.queue_for_url(functions.onLoad, new_url);
+	    if (functions.onUnload) onUnload.queue_for_url(functions.onUnload, new_url);
+	};
+	
+	var pjax_config = function pjax_config() {
+	    return {
+	        container: 'content',
+	        beforeSend: function beforeSend() {
+	            onLoad.loading();
+	            onUnload.fire();
+	        },
+	        complete: function complete() {
+	            State.set('is_loaded_by_pjax', true);
+	            onLoad.fire();
+	            onUnload.reset();
+	        },
+	        error: function error() {
+	            var error_text = SessionStore.get('errors.500');
+	            if (error_text) {
+	                $('#content').html(error_text);
+	            } else {
+	                $.get('/errors/500.html').always(function (content) {
+	                    var tmp = document.createElement('div');
+	                    tmp.innerHTML = content;
+	                    var tmpNodes = tmp.getElementsByTagName('div');
+	                    for (var i = 0, l = tmpNodes.length; i < l; i++) {
+	                        if (tmpNodes[i].id === 'content') {
+	                            SessionStore.set('errors.500', tmpNodes[i].innerHTML);
+	                            $('#content').html(tmpNodes[i].innerHTML);
+	                            break;
+	                        }
+	                    }
+	                });
+	            }
+	        },
+	        useClass: 'pjaxload'
+	    };
+	};
+	
+	var init_pjax = function init_pjax() {
+	    if (!$('body').hasClass('BlueTopBack')) {
+	        // No Pjax for BO.
+	        pjax.connect(pjax_config());
+	    }
+	};
+	
+	// TODO: remove or fix this function
+	// find all instances with window.location.href
+	// and replace them with the fixed function
+	var load_with_pjax = function load_with_pjax(new_url) {
+	    if (url.is_in(new Url(new_url))) {
+	        return;
+	    }
+	
+	    var config = pjax_config();
+	    config.url = new_url;
+	    config.update_url = new_url;
+	    config.history = true;
+	    pjax.invoke(config);
+	};
+	
+	// Reduce duplication as required Auth is a common pattern
+	var pjax_config_page_require_auth = function pjax_config_page_require_auth(new_url, exec) {
+	    var oldOnLoad = exec().onLoad;
+	    var newOnLoad = function newOnLoad() {
+	        if (!Contents.show_login_if_logout(true)) {
+	            oldOnLoad();
+	        }
+	    };
+	
+	    var newExecFn = function newExecFn() {
+	        return {
+	            onLoad: newOnLoad,
+	            onUnload: exec().onUnload
+	        };
+	    };
+	    pjax_config_page(new_url, newExecFn);
+	};
+	
+	var onLoad = new PjaxExecQueue();
+	var onUnload = new PjaxExecQueue();
+	
+	init_pjax(); // Pjax-standalone will wait for on load event before attaching.
+	$(function () {
+	    onLoad.fire();
+	});
+	
+	onLoad.queue(GTM.push_data_layer);
+	
+	onLoad.queue(function () {
+	    page.on_load();
+	    $('#logo').on('click', function () {
+	        window.location.href = url_for(Client.is_logged_in() ? japanese_client() ? 'multi_barriers_trading' : 'trading' : '');
+	    });
+	    $('#btn_login').on('click', function (e) {
+	        e.preventDefault();
+	        Login.redirect_to_login();
+	    });
+	});
+	
+	onUnload.queue(function () {
+	    page.on_unload();
+	});
+	
+	onLoad.queue(function () {
+	    $('.tm-ul > li').hover(function () {
+	        $(this).addClass('hover');
+	    }, function () {
+	        $(this).removeClass('hover');
+	    });
+	
+	    MenuContent.init($('.content-tab-container').find('.tm-ul'));
+	
+	    make_mobile_menu();
+	
+	    var i = window.location.href.split('#');
+	    if (i.length !== 2) return;
+	    var o = document.getElementsByTagName('a');
+	    for (var t = 0; t < o.length; t++) {
+	        if (o[t].href.substr(o[t].href.length - i[1].length - 1) === '#' + i[1]) {
+	            o[t].click();
+	            break;
+	        }
+	    }
+	});
+	
+	module.exports = {
+	    load_with_pjax: load_with_pjax,
+	    pjax_config_page: pjax_config_page,
+	    pjax_config_page_require_auth: pjax_config_page_require_auth
+	};
+
+/***/ },
+/* 568 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	var MenuContent = function () {
+	    var listeners_events = [];
+	
+	    var that = {
+	        init: function init(_menu_containers) {
+	            if (/trading/.test(window.location.pathname)) return;
+	            _menu_containers.filter(':not(.follow-default)').delegate('.tm-a,.tm-a-2', 'click', function (event) {
+	                event.preventDefault();
+	
+	                var target = $(event.target);
+	                var tab_id = target.parents('li:first').attr('id');
+	
+	                if (tab_id) {
+	                    var tab_container = target.parents('.tm-ul');
+	                    /* eslint-disable newline-per-chained-call */
+	                    var selected_tab =
+	                    // find previously active tab
+	                    tab_container.find('.tm-a, .tm-a-2')
+	                    // remove previously active tab
+	                    .removeClass('a-active').end()
+	                    // unwrap previously active tab
+	                    .find('.menu-wrap-a .tm-a').unwrap().unwrap()
+	                    // go back to selected target
+	                    .end().end()
+	                    // set active class to it
+	                    .addClass('a-active')
+	                    // set active class to its parent as well
+	                    .parents('.tm-li').addClass('active').removeClass('hover').find('.tm-li-2').addClass('active').end()
+	                    // wrap it
+	                    .find('.tm-a').wrap('<span class="menu-wrap-a"><span class="menu-wrap-b"></span></span>').end()
+	                    // remove previously active parent
+	                    .siblings().removeClass('active').find('.tm-li-2').removeClass('active').end().end().end();
+	                    /* eslint-enable newline-per-chained-call */
+	
+	                    // replace span to a, to make it clickable for real
+	                    var span_tm_a = tab_container.find('span.tm-a');
+	                    span_tm_a.replaceWith('<a href="javascript:;" class="' + span_tm_a.attr('class') + '">' + span_tm_a.html() + '</a>');
+	
+	                    var menu_li = selected_tab.parents('li');
+	                    var sub_menu_selected = menu_li.find('.tm-ul-2 .a-active'),
+	                        selected_tab_id = menu_li.attr('id');
+	                    var $selected_tab_content = $('#' + selected_tab_id + '-content');
+	                    var selected_content = $selected_tab_content
+	                    // show selected tab content
+	                    .removeClass('invisible')
+	                    // and hide the rest
+	                    .siblings(':not(.sticky)').addClass('invisible').end();
+	
+	                    if (!sub_menu_selected.length) {
+	                        sub_menu_selected = menu_li.find('.tm-a-2:first').addClass('a-active');
+	
+	                        if (sub_menu_selected.length) {
+	                            selected_tab = sub_menu_selected;
+	                            selected_tab_id = sub_menu_selected.parents('li').attr('id');
+	                            selected_content = $selected_tab_content.removeClass('invisible');
+	                        } else {
+	                            selected_tab_id = menu_li.attr('id');
+	                        }
+	                    }
+	
+	                    that.push_to_listeners({
+	                        id: selected_tab_id,
+	                        target: selected_tab,
+	                        content: selected_content,
+	                        menu: menu_li.parents('ul.tm-ul'),
+	                        event: event
+	                    });
+	                }
+	
+	                return false;
+	            });
+	        },
+	        push_to_listeners: function push_to_listeners(info) {
+	            // push to listeners events
+	            for (var i = 0; i < listeners_events.length; i++) {
+	                listeners_events[i](info);
+	            }
+	        },
+	        trigger: function trigger(id) {
+	            var tab_id = id.tab_id;
+	            var content_id = id.content_id;
+	
+	            if (!tab_id && typeof content_id !== 'undefined') {
+	                var matched = content_id.match(/^(.+)-content$/);
+	                if (matched && matched[1]) {
+	                    tab_id = matched[1];
+	                }
+	            }
+	
+	            if (!tab_id) {
+	                return false;
+	            }
+	
+	            var tab_to_trigger = $('#' + tab_id);
+	
+	            if (!tab_to_trigger.length || tab_to_trigger.hasClass('invisible')) {
+	                return false;
+	            }
+	            // else
+	            var tab = tab_to_trigger.find('.tm-a');
+	            if (tab.length) {
+	                return tab.trigger('click');
+	            }
+	            // else
+	            return tab_to_trigger.find('.tm-a-2').trigger('click');
+	        }
+	    };
+	
+	    return that;
+	}();
+	
+	module.exports = {
+	    MenuContent: MenuContent
+	};
+
+/***/ },
+/* 569 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_RESULT__;var __WEBPACK_AMD_DEFINE_RESULT__;"use strict";
+	
+	var getLanguage = __webpack_require__(303).getLanguage;
+	
+	/**!
+	 * PJAX- Standalone (+ several custom changes for binary.com)
+	 *
+	 * A standalone implementation of Pushstate AJAX, for non-jQuery web pages.
+	 * jQuery are recommended to use the original implementation at: http://github.com/defunkt/jquery-pjax
+	 *
+	 * @version 0.6.1
+	 * @author Carl
+	 * @source https://github.com/thybag/PJAX-Standalone
+	 * @license MIT
+	 */
+	(function () {
+	
+		// Object to store private values/methods.
+		var internal = {
+			// Is this the first usage of PJAX? (Ensure history entry has required values if so.)
+			"firstrun": true,
+			// Borrowed wholesale from https://github.com/defunkt/jquery-pjax
+			// Attempt to check that a device supports pushstate before attempting to use it.
+			"is_supported": window.history && window.history.pushState && window.history.replaceState && !navigator.userAgent.match(/((iPod|iPhone|iPad).+\bOS\s+[1-4]|WebApps\/.+CFNetwork)/),
+			// Track which scripts have been included in to the page. (used if e)
+			"loaded_scripts": []
+		};
+	
+		// If PJAX isn't supported we can skip setting up the library all together
+		// So as not to break any code expecting PJAX to be there, return a shell object containing
+		// IE7 + compatible versions of connect (which needs to do nothing) and invoke ( which just changes the page)
+		if (!internal.is_supported) {
+			// PJAX shell, so any code expecting PJAX will work
+			var pjax_shell = {
+				"connect": function connect() {
+					return;
+				},
+				"invoke": function invoke() {
+					var url = arguments.length === 2 ? arguments[0] : arguments.url || arguments[0].url;
+					document.location = url;
+					return;
+				}
+			};
+			// AMD support
+			if (true) {
+				!(__WEBPACK_AMD_DEFINE_RESULT__ = function () {
+					return pjax_shell;
+				}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+			} else {
+				window.pjax = pjax_shell;
+			}
+			return;
+		}
+	
+		/**
+	  * AddEvent
+	  *
+	  * @scope private
+	  * @param obj Object to listen on
+	  * @param event Event to listen for.
+	  * @param callback Method to run when event is detected.
+	  */
+		internal.addEvent = function (obj, event, callback) {
+			obj.addEventListener(event, callback, false);
+		};
+	
+		/**
+	  * Clone
+	  * Util method to create copies of the options object (so they do not share references)
+	  * This allows custom settings on different links.
+	  *
+	  * @scope private
+	  * @param obj
+	  * @return obj
+	  */
+		internal.clone = function (obj) {
+			var object = {};
+			// For every option in object, create it in the duplicate.
+			for (var i in obj) {
+				object[i] = obj[i];
+			}
+			return object;
+		};
+	
+		/**
+	  * triggerEvent
+	  * Fire an event on a given object (used for callbacks)
+	  *
+	  * @scope private
+	  * @param node. Objects to fire event on
+	  * @return event_name. type of event
+	  */
+		internal.triggerEvent = function (node, event_name, data) {
+			// Good browsers
+			var evt = document.createEvent("HTMLEvents");
+			evt.initEvent(event_name, true, true);
+			// If additional data was provided, add it to event
+			if (typeof data !== 'undefined') evt.data = data;
+			node.dispatchEvent(evt);
+		};
+	
+		/**
+	  * popstate listener
+	  * Listens for back/forward button events and updates page accordingly.
+	  */
+		internal.addEvent(window, 'popstate', function (st) {
+			if (st.state !== null) {
+	
+				var opt = {
+					'url': st.state.url,
+					'container': st.state.container,
+					'useClass': st.state.useClass,
+					'loggedin': st.state.loggedin,
+					'title': st.state.title,
+					'history': false
+				};
+	
+				// Merge original in original connect options
+				if (typeof internal.options !== 'undefined') {
+					for (var a in internal.options) {
+						if (typeof opt[a] === 'undefined') opt[a] = internal.options[a];
+					}
+				}
+	
+				// Convert state data to PJAX options
+				var options = internal.parseOptions(opt);
+				// If something went wrong, return.
+				if (options === false) return;
+				// If there is a state object, handle it as a page load.
+				internal.handle(options);
+			}
+		});
+	
+		/**
+	  * attach
+	  * Attach PJAX listeners to a link.
+	  * @scope private
+	  * @param link_node. link that will be clicked.
+	  * @param content_node.
+	  */
+		internal.attach = function (node, options) {
+	
+			// Ignore external links.
+			if (node.protocol !== document.location.protocol || node.host !== document.location.host) {
+				return;
+			}
+	
+			// Ignore anchors on the same page
+			if (node.pathname === location.pathname && node.hash.length > 0) {
+				return;
+			}
+	
+			// Ignore common non-PJAX loadable media types (pdf/doc/zips & images) unless user provides alternate array
+			var ignoreFileTypes = ['pdf', 'doc', 'docx', 'zip', 'rar', '7z', 'gif', 'jpeg', 'jpg', 'png'];
+			if (typeof options.ignoreFileTypes === 'undefined') options.ignoreFileTypes = ignoreFileTypes;
+			// Skip link if file type is within ignored types array
+			if (options.ignoreFileTypes.indexOf(node.pathname.split('.').pop().toLowerCase()) !== -1) {
+				return;
+			}
+	
+			// Add link HREF to object
+			options.url = node.href;
+			options.update_url = node.pathname + node.search + node.hash;
+			options.loggedin = node.classList.contains('with_login_cookies');
+	
+			// If PJAX data is specified, use as container
+			if (node.getAttribute('data-pjax')) {
+				options.container = node.getAttribute('data-pjax');
+			}
+	
+			// If data-title is specified, use as title.
+			if (node.getAttribute('data-title')) {
+				options.title = node.getAttribute('data-title');
+			}
+	
+			// Check options are valid.
+			options = internal.parseOptions(options);
+			if (options === false) return;
+	
+			// Attach event.
+			internal.addEvent(node, 'click', function (event) {
+				// Allow middle click (pages in new windows)
+				if (event.which > 1 || event.metaKey || event.ctrlKey) return;
+				// Don't fire normal event
+				if (event.preventDefault) {
+					event.preventDefault();
+				} else {
+					event.returnValue = false;
+				}
+				// Take no action if we are already on said page?
+				if (document.location.href === options.url) return false;
+				// handle the load.
+				internal.handle(options);
+			});
+		};
+	
+		/**
+	  * parseLinks
+	  * Parse all links within a DOM node, using settings provided in options.
+	  * @scope private
+	  * @param dom_obj. Dom node to parse for links.
+	  * @param options. Valid Options object.
+	  */
+		internal.parseLinks = function (dom_obj, options) {
+	
+			var nodes;
+	
+			if (typeof options.useClass !== 'undefined') {
+				// Get all nodes with the provided class name.
+				nodes = dom_obj.getElementsByClassName(options.useClass);
+			} else {
+				// If no class was provided, just get all the links
+				nodes = dom_obj.getElementsByTagName('a');
+			}
+	
+			// For all returned nodes
+			for (var i = 0, tmp_opt; i < nodes.length; i++) {
+				var node = nodes[i];
+				if (typeof options.excludeClass !== 'undefined') {
+					if (node.className.indexOf(options.excludeClass) !== -1) continue;
+				}
+				// Override options history to true, else link parsing could be triggered by back button (which runs in no-history mode)
+				tmp_opt = internal.clone(options);
+				tmp_opt.history = true;
+				internal.attach(node, tmp_opt);
+			}
+	
+			if (internal.firstrun) {
+				// Store array or all currently included script src's to avoid PJAX accidentally reloading existing libraries
+				var scripts = document.getElementsByTagName('script');
+				for (var c = 0; c < scripts.length; c++) {
+					if (scripts[c].src && internal.loaded_scripts.indexOf(scripts[c].src) === -1) {
+						internal.loaded_scripts.push(scripts[c].src);
+					}
+				}
+	
+				// Fire ready event once all links are connected
+				internal.triggerEvent(internal.get_container_node(options.container), 'ready');
+			}
+		};
+	
+		/**
+	  * SmartLoad
+	  * Smartload checks the returned HTML to ensure PJAX ready content has been provided rather than
+	  * a full HTML page. If a full HTML has been returned, it will attempt to scan the page and extract
+	  * the correct HTML to update our container with in order to ensure PJAX still functions as expected.
+	  *
+	  * @scope private
+	  * @param HTML (HTML returned from AJAX)
+	  * @param options (Options object used to request page)
+	  * @return HTML to append to our page.
+	  */
+		internal.smartLoad = function (html, options) {
+			// Grab the title if there is one
+			var title = html.getElementsByTagName('title')[0];
+			if (title) document.title = title.innerHTML;
+	
+			// Going by caniuse all browsers that support the pushstate API also support querySelector's
+			// see: http://caniuse.com/#search=push
+			// see: http://caniuse.com/#search=querySelector
+			var container = html.querySelector("#" + options.container.id);
+			if (container !== null) return container;
+	
+			// If our container was not found, HTML will be returned as is.
+			return html;
+		};
+	
+		/**
+	  * Update Content
+	  * Updates DOM with content loaded via PJAX
+	  *
+	  * @param html DOM fragment of loaded container
+	  * @param options PJAX configuration options
+	  * return options
+	  */
+		internal.updateContent = function (html, options) {
+			// Create in memory DOM node, to make parsing returned data easier
+			var tmp = document.createElement('div');
+			tmp.innerHTML = html;
+	
+			// Ensure we have the correct HTML to apply to our container.
+			if (options.smartLoad) tmp = internal.smartLoad(tmp, options);
+	
+			// If no title was provided, extract it
+			if (typeof options.title === 'undefined') {
+				// Use current doc title (this will be updated via smart load if its enabled)
+				options.title = document.title;
+	
+				// Attempt to grab title from non-smart loaded page contents
+				if (!options.smartLoad) {
+					var tmpTitle = tmp.getElementsByTagName('title');
+					if (tmpTitle.length !== 0) options.title = tmpTitle[0].innerHTML;
+				}
+			}
+	
+			// Update the DOM with the new content
+			options.container.innerHTML = tmp.innerHTML;
+	
+			// Run included JS?
+			if (options.parseJS) internal.runScripts(tmp);
+	
+			// Send data back to handle
+			return options;
+		};
+	
+		/**
+	  * runScripts
+	  * Execute JavaScript on pages loaded via PJAX
+	  *
+	  * Note: In-line JavaScript is run each time a page is hit, while external JavaScript
+	  *		is only loaded once (Although remains loaded while the user continues browsing)
+	  *
+	  * @param html DOM fragment of loaded container
+	  * return void
+	  */
+		internal.runScripts = function (html) {
+			// Extract JavaScript & eval it (if enabled)
+			var scripts = html.getElementsByTagName('script');
+			for (var sc = 0; sc < scripts.length; sc++) {
+				// If has an src & src isn't in "loaded_scripts", load the script.
+				if (scripts[sc].src && internal.loaded_scripts.indexOf(scripts[sc].src) === -1) {
+					// Append to head to include
+					var s = document.createElement("script");
+					s.src = scripts[sc].src;
+					document.head.appendChild(s);
+					// Add to loaded list
+					internal.loaded_scripts.push(scripts[sc].src);
+				} else {
+					// If raw JS, eval it.
+					eval(scripts[sc].innerHTML);
+				}
+			}
+		};
+	
+		/**
+	  * handle
+	  * Handle requests to load content via PJAX.
+	  * @scope private
+	  * @param url. Page to load.
+	  * @param node. Dom node to add returned content in to.
+	  * @param addtohistory. Does this load require a history event.
+	  */
+		internal.handle = function (options) {
+	
+			// Fire beforeSend Event.
+			internal.triggerEvent(options.container, 'beforeSend', options);
+	
+			// Do the request
+			internal.request(options.url, function (html) {
+	
+				// Fail if unable to load HTML via AJAX
+				if (html === false) {
+					internal.triggerEvent(options.container, 'complete', options);
+					internal.triggerEvent(options.container, 'error', options);
+					return;
+				}
+	
+				// Parse page & update DOM
+				options = internal.updateContent(html, options);
+	
+				// Do we need to add this to the history?
+				if (options.history) {
+					// If this is the first time pjax has run, create a state object for the current page.
+					if (internal.firstrun) {
+						window.history.replaceState({ 'url': document.location.href, 'container': options.container.id, 'useClass': options.useClass, 'loggedin': options.loggedin, 'title': document.title }, document.title);
+						internal.firstrun = false;
+					}
+					// Update browser history
+					window.history.pushState({ 'url': options.url, 'container': options.container.id, 'useClass': options.useClass, 'loggedin': options.loggedin, 'title': options.title }, options.title, options.url);
+				}
+	
+				// Initialize any new links found within document (if enabled).
+				if (options.parseLinksOnload) {
+					internal.parseLinks(options.container, options);
+				}
+	
+				// Fire Events
+				internal.triggerEvent(options.container, 'complete', options);
+				internal.triggerEvent(options.container, 'success', options);
+	
+				// Don't track if page isn't part of history, or if autoAnalytics is disabled
+				if (options.autoAnalytics && options.history) {
+					// If autoAnalytics is enabled and a Google analytics tracker is detected push
+					// a trackPageView, so PJAX loaded pages can be tracked successfully.
+					if (window._gaq) _gaq.push(['_trackPageview']);
+					if (window.ga) ga('send', 'pageview', { 'page': options.url, 'title': options.title });
+				}
+	
+				// Set new title
+				document.title = options.title;
+	
+				// Scroll page to top on new page load
+				if (options.returnToTop) {
+					window.scrollTo(0, 0);
+				}
+			});
+		};
+	
+		/**
+	  * Request
+	  * Performs AJAX request to page and returns the result..
+	  *
+	  * @scope private
+	  * @param location. Page to request.
+	  * @param callback. Method to call when a page is loaded.
+	  */
+		internal.request = function (location, callback) {
+			// Create xmlHttpRequest object.
+			var xmlhttp;
+			try {
+				xmlhttp = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP");
+			} catch (e) {
+				console.log("Unable to create XMLHTTP Request");
+				return;
+			}
+			// Add state listener.
+			xmlhttp.onreadystatechange = function () {
+				if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
+					// Success, Return HTML
+					callback(xmlhttp.responseText);
+				} else if (xmlhttp.readyState === 4 && (xmlhttp.status === 404 || xmlhttp.status === 500)) {
+					// error (return false)
+					callback(false);
+				}
+			};
+			// Secret pjax ?get param so browser doesn't return pjax content from cache when we don't want it to
+			// Switch between ? and & so as not to break any URL params (Based on change by zmasek https://github.com/zmasek/)
+			var lang = getLanguage();
+			xmlhttp.open("GET", location.replace(new RegExp('\/' + lang + '\/', 'i'), '/' + lang.toLowerCase() + '/pjax/'), true);
+			// Add headers so things can tell the request is being performed via AJAX.
+			xmlhttp.setRequestHeader('X-PJAX', 'true'); // PJAX header
+			xmlhttp.setRequestHeader('X-Requested-With', 'XMLHttpRequest'); // Standard AJAX header.
+	
+			xmlhttp.send(null);
+		};
+	
+		/**
+	  * parseOptions
+	  * Validate and correct options object while connecting up any listeners.
+	  *
+	  * @scope private
+	  * @param options
+	  * @return false | valid options object
+	  */
+		internal.parseOptions = function (options) {
+	
+			/**  Defaults parse options. (if something isn't provided)
+	   *
+	   * - history: track event to history (on by default, set to off when performing back operation)
+	   * - parseLinksOnload: Enabled by default. Process pages loaded via PJAX and setup PJAX on any links found.
+	   * - smartLoad: Tries to ensure the correct HTML is loaded. If you are certain your back end
+	   *		will only return PJAX ready content this can be disabled for a slight performance boost.
+	   * - autoAnalytics: Automatically attempt to log events to Google analytics (if tracker is available)
+	   * - returnToTop: Scroll user back to top of page, when new page is opened by PJAX
+	   * - parseJS: Disabled by default, when enabled PJAX will automatically run returned JavaScript
+	   */
+			var defaults = {
+				"history": true,
+				"parseLinksOnload": true,
+				"smartLoad": true,
+				"autoAnalytics": true,
+				"returnToTop": true,
+				"parseJS": false
+			};
+	
+			// Ensure a URL and container have been provided.
+			if (typeof options.url === 'undefined' || typeof options.container === 'undefined' || options.container === null) {
+				console.log("URL and Container must be provided.");
+				return false;
+			}
+	
+			// Check required options are defined, if not, use default
+			for (var o in defaults) {
+				if (typeof options[o] === 'undefined') options[o] = defaults[o];
+			}
+	
+			// Ensure history setting is a boolean.
+			options.history = options.history === false ? false : true;
+	
+			// Get container (if its an id, convert it to a DOM node.)
+			options.container = internal.get_container_node(options.container);
+	
+			// Events
+			var events = ['ready', 'beforeSend', 'complete', 'error', 'success'];
+	
+			// If everything went okay thus far, connect up listeners
+			for (var e in events) {
+				var evt = events[e];
+				if (typeof options[evt] === 'function') {
+					internal.addEvent(options.container, evt, options[evt]);
+				}
+			}
+	
+			// Return valid options
+			return options;
+		};
+	
+		/**
+	  * get_container_node
+	  * Returns container node
+	  *
+	  * @param container - (string) container ID | container DOM node.
+	  * @return container DOM node | false
+	  */
+		internal.get_container_node = function (container) {
+			if (typeof container === 'string') {
+				container = document.getElementById(container);
+				if (container === null) {
+					console.log("Could not find container with id:" + container);
+					return false;
+				}
+			}
+			return container;
+		};
+	
+		/**
+	  * connect
+	  * Attach links to PJAX handlers.
+	  * @scope public
+	  *
+	  * Can be called in 3 ways.
+	  * Calling as connect();
+	  *		Will look for links with the data-pjax attribute.
+	  *
+	  * Calling as connect(container_id)
+	  *		Will try to attach to all links, using the container_id as the target.
+	  *
+	  * Calling as connect(container_id, class_name)
+	  *		Will try to attach any links with the given class name, using container_id as the target.
+	  *
+	  * Calling as connect({
+	  *						'url':'somepage.php',
+	  *						'container':'somecontainer',
+	  *						'beforeSend': function(){console.log("sending");}
+	  *					})
+	  *		Will use the provided JSON to configure the script in full (including callbacks)
+	  */
+		this.connect = function () /* options */{
+			// connect();
+			var options = {};
+			// connect(container, class_to_apply_to)
+			if (arguments.length === 2) {
+				options.container = arguments[0];
+				options.useClass = arguments[1];
+			}
+			// Either JSON or container id
+			if (arguments.length === 1) {
+				if (typeof arguments[0] === 'string') {
+					//connect(container_id)
+					options.container = arguments[0];
+				} else {
+					//Else connect({url:'', container: ''});
+					options = arguments[0];
+				}
+			}
+			// Delete history and title if provided. These options should only be provided via invoke();
+			delete options.title;
+			delete options.history;
+	
+			internal.options = options;
+			if (document.readyState === 'complete') {
+				internal.parseLinks(document, options);
+			} else {
+				//Don't run until the window is ready.
+				internal.addEvent(window, 'load', function () {
+					//Parse links using specified options
+					internal.parseLinks(document, options);
+				});
+			}
+		};
+	
+		/**
+	  * invoke
+	  * Directly invoke a pjax page load.
+	  * invoke({url: 'file.php', 'container':'content'});
+	  *
+	  * @scope public
+	  * @param options
+	  */
+		this.invoke = function () /* options */{
+	
+			var options = {};
+			// url, container
+			if (arguments.length === 2) {
+				options.url = arguments[0];
+				options.container = arguments[1];
+			} else {
+				options = arguments[0];
+			}
+	
+			// Process options
+			options = internal.parseOptions(options);
+			// If everything went okay, activate pjax.
+			if (options !== false) internal.handle(options);
+		};
+	
+		// Make object usable
+		var pjax_obj = this;
+		if (true) {
+			// Register pjax as AMD module
+			!(__WEBPACK_AMD_DEFINE_RESULT__ = function () {
+				return pjax_obj;
+			}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+		} else {
+			// Make PJAX object accessible in global name space
+			window.pjax = pjax_obj;
+		}
+	}).call({});
+
+/***/ },
 /* 570 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -84336,13 +84335,13 @@
 	var ForwardWS = __webpack_require__(572).ForwardWS;
 	var PaymentAgentListWS = __webpack_require__(573).PaymentAgentListWS;
 	var PaymentAgentWithdrawWS = __webpack_require__(436).PaymentAgentWithdrawWS;
-	var AssetIndexUI = __webpack_require__(515).AssetIndexUI;
-	var MarketTimesUI = __webpack_require__(518).MarketTimesUI;
+	var AssetIndexUI = __webpack_require__(501).AssetIndexUI;
+	var MarketTimesUI = __webpack_require__(504).MarketTimesUI;
 	var AuthenticateWS = __webpack_require__(574).AuthenticateWS;
 	var PasswordWS = __webpack_require__(575).PasswordWS;
 	var PaymentAgentTransferSocket = __webpack_require__(576).PaymentAgentTransferSocket;
 	var PortfolioWS = __webpack_require__(463).PortfolioWS;
-	var ProfitTableWS = __webpack_require__(499).ProfitTableWS;
+	var ProfitTableWS = __webpack_require__(485).ProfitTableWS;
 	var APITokenWS = __webpack_require__(580).APITokenWS;
 	var AuthorisedApps = __webpack_require__(582).AuthorisedApps;
 	var FinancialAssessmentws = __webpack_require__(434).FinancialAssessmentws;
@@ -84352,7 +84351,7 @@
 	var SettingsDetailsWS = __webpack_require__(594).SettingsDetailsWS;
 	var SecurityWS = __webpack_require__(595).SecurityWS;
 	var SettingsWS = __webpack_require__(596).SettingsWS;
-	var StatementWS = __webpack_require__(505).StatementWS;
+	var StatementWS = __webpack_require__(491).StatementWS;
 	var TopUpVirtualWS = __webpack_require__(597).TopUpVirtualWS;
 	var LostPasswordWS = __webpack_require__(598).LostPasswordWS;
 	var FinancialAccOpening = __webpack_require__(600).FinancialAccOpening;
@@ -84362,12 +84361,12 @@
 	var ResetPasswordWS = __webpack_require__(612).ResetPasswordWS;
 	var TNCApproval = __webpack_require__(438).TNCApproval;
 	var TradePage = __webpack_require__(466).TradePage;
-	var TradePage_Beta = __webpack_require__(513).TradePage_Beta;
-	var MBTradePage = __webpack_require__(532).MBTradePage;
+	var TradePage_Beta = __webpack_require__(499).TradePage_Beta;
+	var MBTradePage = __webpack_require__(518).MBTradePage;
 	var ViewPopupWS = __webpack_require__(439).ViewPopupWS;
 	var KnowledgeTest = __webpack_require__(614).KnowledgeTest;
-	var pjax_config_page_require_auth = __webpack_require__(484).pjax_config_page_require_auth;
-	var pjax_config_page = __webpack_require__(484).pjax_config_page;
+	var pjax_config_page_require_auth = __webpack_require__(567).pjax_config_page_require_auth;
+	var pjax_config_page = __webpack_require__(567).pjax_config_page;
 	
 	pjax_config_page('/trading', function () {
 	    return {
@@ -85444,11 +85443,11 @@
 	'use strict';
 	
 	var Content = __webpack_require__(427).Content;
-	var ValidateV2 = __webpack_require__(561).ValidateV2;
-	var ValidationUI = __webpack_require__(563).ValidationUI;
-	var customError = __webpack_require__(563).customError;
-	var bind_validation = __webpack_require__(563).bind_validation;
-	var dv = __webpack_require__(562);
+	var ValidateV2 = __webpack_require__(558).ValidateV2;
+	var ValidationUI = __webpack_require__(560).ValidationUI;
+	var customError = __webpack_require__(560).customError;
+	var bind_validation = __webpack_require__(560).bind_validation;
+	var dv = __webpack_require__(559);
 	var localize = __webpack_require__(424).localize;
 	var Client = __webpack_require__(305).Client;
 	
@@ -85912,12 +85911,12 @@
 	var showLocalTimeOnHover = __webpack_require__(440).Clock.showLocalTimeOnHover;
 	var Content = __webpack_require__(427).Content;
 	var FlexTableUI = __webpack_require__(581).FlexTableUI;
-	var ValidateV2 = __webpack_require__(561).ValidateV2;
+	var ValidateV2 = __webpack_require__(558).ValidateV2;
 	var japanese_client = __webpack_require__(307).japanese_client;
-	var ValidationUI = __webpack_require__(563).ValidationUI;
-	var customError = __webpack_require__(563).customError;
-	var bind_validation = __webpack_require__(563).bind_validation;
-	var dv = __webpack_require__(562);
+	var ValidationUI = __webpack_require__(560).ValidationUI;
+	var customError = __webpack_require__(560).customError;
+	var bind_validation = __webpack_require__(560).bind_validation;
+	var dv = __webpack_require__(559);
 	var localize = __webpack_require__(424).localize;
 	var url_for = __webpack_require__(306).url_for;
 	
@@ -86143,7 +86142,7 @@
 
 	'use strict';
 	
-	var Table = __webpack_require__(502).Table;
+	var Table = __webpack_require__(488).Table;
 	
 	var FlexTableUI = function FlexTableUI(config) {
 	    this.config = config;
@@ -86284,7 +86283,7 @@
 	var showLoadingImage = __webpack_require__(421).showLoadingImage;
 	var showLocalTimeOnHover = __webpack_require__(440).Clock.showLocalTimeOnHover;
 	var localize = __webpack_require__(424).localize;
-	var Button = __webpack_require__(501).Button;
+	var Button = __webpack_require__(487).Button;
 	var FlexTableUI = __webpack_require__(581).FlexTableUI;
 	var ApplicationsData = __webpack_require__(585).ApplicationsData;
 	
@@ -86803,7 +86802,7 @@
 
 	'use strict';
 	
-	var Table = __webpack_require__(502).Table;
+	var Table = __webpack_require__(488).Table;
 	var addComma = __webpack_require__(442).addComma;
 	var localize = __webpack_require__(424).localize;
 	var Client = __webpack_require__(305).Client;
@@ -86880,12 +86879,12 @@
 	
 	var showLoadingImage = __webpack_require__(421).showLoadingImage;
 	var Content = __webpack_require__(427).Content;
-	var ValidateV2 = __webpack_require__(561).ValidateV2;
-	var ValidationUI = __webpack_require__(563).ValidationUI;
-	var validate_object = __webpack_require__(563).validate_object;
-	var bind_validation = __webpack_require__(563).bind_validation;
+	var ValidateV2 = __webpack_require__(558).ValidateV2;
+	var ValidationUI = __webpack_require__(560).ValidationUI;
+	var validate_object = __webpack_require__(560).validate_object;
+	var bind_validation = __webpack_require__(560).bind_validation;
 	var moment = __webpack_require__(309);
-	var dv = __webpack_require__(562);
+	var dv = __webpack_require__(559);
 	var TimePicker = __webpack_require__(483).TimePicker;
 	var DatePicker = __webpack_require__(476).DatePicker;
 	var dateValueChanged = __webpack_require__(308).dateValueChanged;
@@ -87230,12 +87229,12 @@
 	'use strict';
 	
 	var detect_hedging = __webpack_require__(308).detect_hedging;
-	var ValidateV2 = __webpack_require__(561).ValidateV2;
-	var bind_validation = __webpack_require__(563).bind_validation;
+	var ValidateV2 = __webpack_require__(558).ValidateV2;
+	var bind_validation = __webpack_require__(560).bind_validation;
 	var Content = __webpack_require__(427).Content;
 	var Cookies = __webpack_require__(301);
 	var moment = __webpack_require__(309);
-	var dv = __webpack_require__(562);
+	var dv = __webpack_require__(559);
 	var localize = __webpack_require__(424).localize;
 	var Client = __webpack_require__(305).Client;
 	
@@ -87562,11 +87561,10 @@
 	
 	var getLoginToken = __webpack_require__(308).getLoginToken;
 	var Content = __webpack_require__(427).Content;
-	var ValidateV2 = __webpack_require__(561).ValidateV2;
-	var bind_validation = __webpack_require__(563).bind_validation;
-	var dv = __webpack_require__(562);
+	var ValidateV2 = __webpack_require__(558).ValidateV2;
+	var bind_validation = __webpack_require__(560).bind_validation;
+	var dv = __webpack_require__(559);
 	var localize = __webpack_require__(424).localize;
-	var load_with_pjax = __webpack_require__(484).load_with_pjax;
 	var Client = __webpack_require__(305).Client;
 	
 	var SecurityWS = function () {
@@ -87706,7 +87704,7 @@
 	    var redirect = function redirect() {
 	        if (redirect_url) {
 	            sessionStorage.removeItem('cashier_lock_redirect');
-	            load_with_pjax(redirect_url);
+	            window.location.href = redirect_url;
 	        }
 	    };
 	
@@ -87925,7 +87923,6 @@
 	var Content = __webpack_require__(427).Content;
 	var validateEmail = __webpack_require__(426).validateEmail;
 	var localize = __webpack_require__(424).localize;
-	var load_with_pjax = __webpack_require__(484).load_with_pjax;
 	var url_for = __webpack_require__(306).url_for;
 	
 	var LostPassword = function () {
@@ -87958,7 +87955,7 @@
 	
 	        if (type === 'verify_email') {
 	            if (response.verify_email === 1) {
-	                load_with_pjax(url_for('user/reset_passwordws'));
+	                window.location.href = url_for('user/reset_passwordws');
 	            } else if (response.error) {
 	                $('#email_error').removeClass(hiddenClass).text(Content.errorMessage('valid', localize('email address')));
 	                $('#submit').prop('disabled', false);
@@ -88076,7 +88073,7 @@
 	var Cookies = __webpack_require__(301);
 	var localize = __webpack_require__(424).localize;
 	var Client = __webpack_require__(305).Client;
-	var Contents = __webpack_require__(486).Contents;
+	var Contents = __webpack_require__(532).Contents;
 	var url_for = __webpack_require__(306).url_for;
 	var elementInnerHtml = __webpack_require__(308).elementInnerHtml;
 	
@@ -88694,7 +88691,7 @@
 	var handleResidence = __webpack_require__(422).handleResidence;
 	var Content = __webpack_require__(427).Content;
 	var japanese_client = __webpack_require__(307).japanese_client;
-	var bind_validation = __webpack_require__(563).bind_validation;
+	var bind_validation = __webpack_require__(560).bind_validation;
 	var VirtualAccOpeningData = __webpack_require__(611).VirtualAccOpeningData;
 	var localize = __webpack_require__(424).localize;
 	var Client = __webpack_require__(305).Client;
@@ -88790,10 +88787,10 @@
 	'use strict';
 	
 	var Content = __webpack_require__(427).Content;
-	var TrafficSource = __webpack_require__(489).TrafficSource;
-	var ValidateV2 = __webpack_require__(561).ValidateV2;
+	var TrafficSource = __webpack_require__(533).TrafficSource;
+	var ValidateV2 = __webpack_require__(558).ValidateV2;
 	var Cookies = __webpack_require__(301);
-	var dv = __webpack_require__(562);
+	var dv = __webpack_require__(559);
 	
 	var VirtualAccOpeningData = function () {
 	    'use strict';
