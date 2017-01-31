@@ -36415,6 +36415,10 @@
 	            var val = response.get_financial_assessment[key];
 	            $('#' + key).val(val);
 	        });
+	        if (financial_assessment.occupation === undefined) {
+	            // handle existing assessments
+	            financial_assessment.occupation = '';
+	        }
 	    };
 	
 	    var clearErrors = function clearErrors() {
@@ -42644,7 +42648,7 @@
 	
 	    var init = function init() {
 	        hidden_class = 'invisible';
-	        if (Client.get('balance')) {
+	        if (Client.get('values_set')) {
 	            updateBalance();
 	        }
 	
