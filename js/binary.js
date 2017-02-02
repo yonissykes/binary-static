@@ -86686,7 +86686,7 @@
 	
 	    var del = function del(provider) {
 	        if (!provider) return;
-	        BinarySocket.send({ connect_del: 1, provider: provider });
+	        BinarySocket.send({ connect_del: 1, provider: provider.toLowerCase() });
 	    };
 	
 	    return {
@@ -87565,7 +87565,7 @@
 	    var isChanged = function isChanged(data) {
 	        var changed = false;
 	        Object.keys(editable_fields).every(function (key) {
-	            if (key in data && editable_fields[key] !== data[key] || key in data.jp_settings && editable_fields[key] !== data.jp_settings[key]) {
+	            if (key in data && editable_fields[key] !== data[key] || data.jp_settings && key in data.jp_settings && editable_fields[key] !== data.jp_settings[key]) {
 	                changed = true;
 	                return false;
 	            }
