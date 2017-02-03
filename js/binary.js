@@ -18305,7 +18305,7 @@
 	                        if (!localStorage.getItem('risk_classification')) Client.check_tnc();
 	                        if (response.website_status.hasOwnProperty('clients_country')) {
 	                            localStorage.setItem('clients_country', response.website_status.clients_country);
-	                            if (!$('body').hasClass('BlueTopBack') && !Login.is_login_pages()) {
+	                            if (!Login.is_login_pages()) {
 	                                checkClientsCountry();
 	                            }
 	                        }
@@ -19084,11 +19084,9 @@
 	    };
 	
 	    var set_check_tnc = function set_check_tnc() {
-	        if (!$('body').hasClass('BlueTopBack')) {
-	            sessionStorage.setItem('check_tnc', 'check');
-	            localStorage.removeItem('client.tnc_status');
-	            localStorage.removeItem('website.tnc_version');
-	        }
+	        sessionStorage.setItem('check_tnc', 'check');
+	        localStorage.removeItem('client.tnc_status');
+	        localStorage.removeItem('website.tnc_version');
 	    };
 	
 	    var clear_storage_values = function clear_storage_values() {
@@ -34765,7 +34763,7 @@
 	var generateState = function generateState() {
 	    var state = document.getElementById('address_state');
 	    if (state.length !== 0) return;
-	    appendTextValueChild(state, Content.localize().textSelect, '');
+	    appendTextValueChild(state, localize('Please select'), '');
 	    if (Client.get('residence') !== '') {
 	        BinarySocket.send({ states_list: Client.get('residence') });
 	    }
@@ -35314,7 +35312,6 @@
 	
 	var template = __webpack_require__(421).template;
 	var localize = __webpack_require__(424).localize;
-	var selectorExists = __webpack_require__(308).selectorExists;
 	
 	var Content = function () {
 	    'use strict';
@@ -35323,17 +35320,9 @@
 	
 	    var populate = function populate() {
 	        localized = {
-	            textStartTime: 'Start time',
-	            textSpot: 'Spot',
 	            textBarrier: 'Barrier',
-	            textBarrierOffset: 'Barrier offset',
-	            textHighBarrier: 'High barrier',
-	            textHighBarrierOffset: 'High barrier offset',
-	            textLowBarrier: 'Low barrier',
-	            textLowBarrierOffset: 'Low barrier offset',
 	            textPayout: 'Payout',
 	            textStake: 'Stake',
-	            textPurchase: 'Purchase',
 	            textDuration: 'Duration',
 	            textEndTime: 'End Time',
 	            textDurationSeconds: 'seconds',
@@ -35341,17 +35330,8 @@
 	            textDurationHours: 'hours',
 	            textDurationDays: 'days',
 	            textDurationTicks: 'ticks',
-	            textMinDuration: 'min',
-	            textMinDurationTooltip: 'minimum available duration',
-	            textBarrierOffsetTooltip: 'Enter the barrier in terms of the difference from the spot price. If you enter +0.005, then you will be purchasing a contract with a barrier 0.005 higher than the entry spot. The entry spot will be the next tick after your order has been received',
-	            textIndicativeBarrierTooltip: 'This is an indicative barrier. Actual barrier will be the entry spot plus the barrier offset.',
 	            textContractConfirmationHeading: 'Contract Confirmation',
-	            textContractConfirmationReference: 'Your transaction reference is',
 	            textContractConfirmationBalance: 'Account balance:',
-	            textContractConfirmationButton: 'View',
-	            textContractConfirmationPayout: 'Potential Payout',
-	            textContractConfirmationCost: 'Total Cost',
-	            textContractConfirmationProfit: 'Potential Profit',
 	            textFormRiseFall: 'Rise/Fall',
 	            textFormHigherLower: 'Higher/Lower',
 	            textFormUpDown: 'Up/Down',
@@ -35359,62 +35339,27 @@
 	            textFormMatchesDiffers: 'Matches/Differs',
 	            textFormEvenOdd: 'Even/Odd',
 	            textFormOverUnder: 'Over/Under',
-	            textContractPeriod: 'Period',
-	            textPredictionLabel: 'Last Digit Prediction',
 	            textTickResultLabel: 'Tick',
 	            textAmountPerPoint: 'Amount per point',
 	            textStopLoss: 'Stop-loss',
 	            textStopProfit: 'Stop-profit',
-	            textStopType: 'Stop-type',
-	            textStopTypePoints: 'Points',
 	            textSpreadTypeLong: 'Long',
 	            textSpreadTypeShort: 'Short',
-	            textSpreadDepositComment: 'Deposit of',
-	            textSpreadRequiredComment: 'is required. Current spread',
-	            textSpreadPointsComment: 'points',
 	            textContractStatusWon: 'This contract won',
 	            textContractStatusLost: 'This contract lost',
 	            textNow: 'Now',
 	            textDate: 'Date',
-	            textPurchaseDate: 'Date (GMT)',
-	            textPurchasePrice: 'Purchase Price',
-	            textStatement: 'Statement',
-	            textProfitTable: 'Profit Table',
 	            textRef: 'Ref.',
-	            textAction: 'Action',
-	            textDescription: 'Description',
-	            textCreditDebit: 'Credit/Debit',
-	            textBalance: 'Balance',
 	            textDetails: 'Details',
-	            textContract: 'Contract',
-	            textSaleDate: 'Sale Date',
-	            textSalePrice: 'Sale Price',
-	            textBuyPrice: 'Buy price',
-	            textFinalPrice: 'Final price',
 	            textLoss: 'Loss',
-	            textReturn: 'Return',
-	            textNetProfit: 'Net profit',
 	            textProfit: 'Profit',
-	            textProfitLoss: 'Profit/Loss',
-	            textTotalProfitLoss: 'Total Profit/Loss',
-	            textUpcomingEvents: 'Upcoming Events',
-	            textAsset: 'Asset',
-	            textOpens: 'Opens',
 	            textCloses: 'Closes',
-	            textSettles: 'Settles',
-	            textAuthenticatedWithdrawal: 'Your account is fully authenticated and your withdrawal limits have been lifted.',
-	            textWithdrawalLimits: 'Your withdrawal limit is [_1] [_2].',
-	            textWithdrawalLimitsEquivalant: 'Your withdrawal limit is [_1] [_2] (or equivalent in other currency).',
-	            textWithrawalAmount: 'You have already withdrawn [_1] [_2].',
-	            textWithrawalAmountEquivalant: 'You have already withdrawn the equivalent of [_1] [_2].',
-	            textCurrentMaxWithdrawal: 'Therefore your current immediate maximum withdrawal (subject to your account having sufficient funds) is [_1] [_2].',
-	            textCurrentMaxWithdrawalEquivalant: 'Therefore your current immediate maximum withdrawal (subject to your account having sufficient funds) is [_1] [_2] (or equivalent in other currency).',
-	            textWithdrawalLimitsEquivalantDay: 'Your [_1] day withdrawal limit is currently [_2] [_3] (or equivalent in other currency).',
-	            textWithrawalAmountEquivalantDay: 'You have already withdrawn the equivalent of [_1] [_2] in aggregate over the last [_3] days.',
 	            textMessageRequired: 'This field is required.',
 	            textMessageCountLimit: 'You should enter between [_1] characters.', // [_1] should be replaced by a range. sample: (6-20)
 	            textMessageJustAllowed: 'Only [_1] are allowed.', // [_1] should be replaced by values including: letters, numbers, space, period, ...
 	            textMessageValid: 'Please submit a valid [_1].', // [_1] should be replaced by values such as email address
+	            textMessageMinRequired: 'Minimum of [_1] characters required.',
+	            textNumberLimit: 'Please enter a number between [_1].', // [_1] should be a range
 	            textLetters: 'letters',
 	            textNumbers: 'numbers',
 	            textSpace: 'space',
@@ -35423,144 +35368,14 @@
 	            textHyphen: 'hyphen',
 	            textApost: 'apostrophe',
 	            textPassword: 'password',
-	            textMr: 'Mr',
-	            textMrs: 'Mrs',
-	            textMs: 'Ms',
-	            textMiss: 'Miss',
 	            textPasswordsNotMatching: 'The two passwords that you entered do not match.',
 	            textClickHereToRestart: 'Your token has expired. Please click <a class="pjaxload" href="[_1]">here</a> to restart the verification process.',
-	            textDuplicatedEmail: 'Your provided email address is already in use by another Login ID. According to our terms and conditions, you may only register once through our site. If you have forgotten the password of your existing account, please <a href="[_1]">try our password recovery tool</a> or contact customer service.',
-	            textErrorBirthdate: 'Please input a valid date',
-	            textSelect: 'Please select',
-	            textUnavailableReal: 'Sorry, account opening is unavailable.',
-	            textMessageMinRequired: 'Minimum of [_1] characters required.',
-	            textFeatureUnavailable: 'Sorry, this feature is not available.',
-	            textMessagePasswordScore: 'Password score is: [_1]. Passing score is: 20.',
-	            textShouldNotLessThan: 'Please enter a number greater or equal to [_1].',
-	            textNumberLimit: 'Please enter a number between [_1].', // [_1] should be a range
 	            featureNotRelevantToVirtual: 'This feature is not relevant to virtual-money accounts.'
 	        };
 	
 	        Object.keys(localized).forEach(function (key) {
 	            localized[key] = localize(localized[key]);
 	        });
-	
-	        var starTime = document.getElementById('start_time_label');
-	        if (selectorExists(starTime)) {
-	            starTime.textContent = localized.textStartTime;
-	        }
-	
-	        var minDurationTooltip = document.getElementById('duration_tooltip');
-	        if (selectorExists(minDurationTooltip)) {
-	            minDurationTooltip.textContent = localized.textMinDuration;
-	            minDurationTooltip.setAttribute('data-balloon', localized.textMinDurationTooltip);
-	        }
-	
-	        var spotLabel = document.getElementById('spot_label');
-	        if (selectorExists(spotLabel)) {
-	            spotLabel.textContent = localized.textSpot;
-	        }
-	
-	        var barrierTooltip = document.getElementById('barrier_tooltip');
-	        if (selectorExists(barrierTooltip)) {
-	            barrierTooltip.textContent = localized.textBarrierOffset;
-	            barrierTooltip.setAttribute('data-balloon', localized.textBarrierOffsetTooltip);
-	        }
-	
-	        var barrierSpan = document.getElementById('barrier_span');
-	        if (selectorExists(barrierSpan)) {
-	            barrierSpan.textContent = localized.textBarrier;
-	        }
-	
-	        var barrierHighTooltip = document.getElementById('barrier_high_tooltip');
-	        if (selectorExists(barrierHighTooltip)) {
-	            barrierHighTooltip.textContent = localized.textHighBarrierOffset;
-	            barrierHighTooltip.setAttribute('data-balloon', localized.textBarrierOffsetTooltip);
-	        }
-	        var barrierHighSpan = document.getElementById('barrier_high_span');
-	        if (selectorExists(barrierHighSpan)) {
-	            barrierHighSpan.textContent = localized.textHighBarrier;
-	        }
-	
-	        var barrierLowTooltip = document.getElementById('barrier_low_tooltip');
-	        if (selectorExists(barrierLowTooltip)) {
-	            barrierLowTooltip.textContent = localized.textLowBarrierOffset;
-	            barrierLowTooltip.setAttribute('data-balloon', localized.textBarrierOffsetTooltip);
-	        }
-	        var barrierLowSpan = document.getElementById('barrier_low_span');
-	        if (selectorExists(barrierLowSpan)) {
-	            barrierLowSpan.textContent = localized.textLowBarrier;
-	        }
-	
-	        var predictionLabel = document.getElementById('prediction_label');
-	        if (selectorExists(predictionLabel)) {
-	            predictionLabel.textContent = localized.textPredictionLabel;
-	        }
-	
-	        var payoutOption = document.getElementById('payout_option');
-	        if (selectorExists(payoutOption)) {
-	            payoutOption.textContent = localized.textPayout;
-	        }
-	
-	        var stakeOption = document.getElementById('stake_option');
-	        if (selectorExists(stakeOption)) {
-	            stakeOption.textContent = localized.textStake;
-	        }
-	
-	        var purchaseButtonTop = document.getElementById('purchase_button_top');
-	        if (selectorExists(purchaseButtonTop)) {
-	            purchaseButtonTop.textContent = localized.textPurchase;
-	        }
-	
-	        var purchaseButtonBottom = document.getElementById('purchase_button_bottom');
-	        if (selectorExists(purchaseButtonBottom)) {
-	            purchaseButtonBottom.textContent = localized.textPurchase;
-	        }
-	
-	        var period_label = document.getElementById('period_label');
-	        if (selectorExists(period_label)) {
-	            period_label.textContent = localized.textContractPeriod;
-	        }
-	
-	        var amount_per_point_label = document.getElementById('amount_per_point_label');
-	        if (selectorExists(amount_per_point_label)) {
-	            amount_per_point_label.textContent = localized.textAmountPerPoint;
-	        }
-	
-	        var stop_loss_label = document.getElementById('stop_loss_label');
-	        if (selectorExists(stop_loss_label)) {
-	            stop_loss_label.textContent = localized.textStopLoss;
-	        }
-	
-	        var stop_profit_label = document.getElementById('stop_profit_label');
-	        if (selectorExists(stop_profit_label)) {
-	            stop_profit_label.textContent = localized.textStopProfit;
-	        }
-	
-	        var stop_type_label = document.getElementById('stop_type_label');
-	        if (selectorExists(stop_type_label)) {
-	            stop_type_label.textContent = localized.textStopType;
-	        }
-	
-	        var stop_type_points = document.getElementById('stop_type_points_label');
-	        if (selectorExists(stop_type_points)) {
-	            stop_type_points.textContent = localized.textStopTypePoints;
-	        }
-	
-	        var indicative_barrier_tooltip = document.getElementById('indicative_barrier_tooltip');
-	        if (selectorExists(indicative_barrier_tooltip)) {
-	            indicative_barrier_tooltip.setAttribute('data-balloon', localized.textIndicativeBarrierTooltip);
-	        }
-	
-	        var indicative_high_barrier_tooltip = document.getElementById('indicative_high_barrier_tooltip');
-	        if (selectorExists(indicative_high_barrier_tooltip)) {
-	            indicative_high_barrier_tooltip.setAttribute('data-balloon', localized.textIndicativeBarrierTooltip);
-	        }
-	
-	        var indicative_low_barrier_tooltip = document.getElementById('indicative_low_barrier_tooltip');
-	        if (selectorExists(indicative_low_barrier_tooltip)) {
-	            indicative_low_barrier_tooltip.setAttribute('data-balloon', localized.textIndicativeBarrierTooltip);
-	        }
 	    };
 	
 	    var errorMessage = function errorMessage(messageType, param) {
@@ -35571,35 +35386,19 @@
 	                msg = localized.textMessageRequired;
 	                break;
 	            case 'reg':
-	                if (param) {
-	                    msg = template(localized.textMessageJustAllowed, [param.join(separator)]);
-	                }
+	                if (param) msg = template(localized.textMessageJustAllowed, [param.join(separator)]);
 	                break;
 	            case 'range':
-	                if (param) {
-	                    msg = template(localized.textMessageCountLimit, [param]);
-	                }
+	                if (param) msg = template(localized.textMessageCountLimit, [param]);
 	                break;
 	            case 'valid':
-	                if (param) {
-	                    msg = template(localized.textMessageValid, [param]);
-	                }
+	                if (param) msg = template(localized.textMessageValid, [param]);
 	                break;
 	            case 'min':
-	                if (param) {
-	                    msg = template(localized.textMessageMinRequired, [param]);
-	                }
-	                break;
-	            case 'pass':
-	                if (param) {
-	                    msg = template(localized.textMessagePasswordScore, [param]);
-	                }
-	                break;
-	            case 'number_not_less_than':
-	                msg = template(localized.textShouldNotLessThan, [param]);
+	                if (param) msg = template(localized.textMessageMinRequired, [param]);
 	                break;
 	            case 'number_should_between':
-	                msg = template(localized.textNumberLimit, [param]);
+	                if (param) msg = template(localized.textNumberLimit, [param]);
 	                break;
 	            default:
 	                break;
@@ -35844,7 +35643,7 @@
 	        show_or_hide_language();
 	        logout_handler();
 	        check_risk_classification();
-	        if (!$('body').hasClass('BlueTopBack') && !Login.is_login_pages()) {
+	        if (!Login.is_login_pages()) {
 	            checkClientsCountry();
 	        }
 	        if (Client.is_logged_in()) {
@@ -36267,7 +36066,7 @@
 	}
 	
 	function qualify_for_risk_classification() {
-	    return Client.is_logged_in() && !Client.get('is_virtual') && Client.get('residence') !== 'jp' && !$('body').hasClass('BlueTopBack') && $('#assessment_form').length === 0 && (localStorage.getItem('reality_check.ack') === '1' || !localStorage.getItem('reality_check.interval'));
+	    return Client.is_logged_in() && !Client.get('is_virtual') && Client.get('residence') !== 'jp' && $('#assessment_form').length === 0 && (localStorage.getItem('reality_check.ack') === '1' || !localStorage.getItem('reality_check.interval'));
 	}
 	
 	module.exports = {
@@ -41482,7 +41281,7 @@
 	    if (node && type && payout) {
 	        var profit = payout - type,
 	            return_percent = profit / type * 100,
-	            comment = Content.localize().textNetProfit + ': ' + format_money(currency, profit) + ' | ' + Content.localize().textReturn + ' ' + return_percent.toFixed(1) + '%';
+	            comment = localize('Net profit') + ': ' + format_money(currency, profit) + ' | ' + localize('Return') + ' ' + return_percent.toFixed(1) + '%';
 	
 	        if (isNaN(profit) || isNaN(return_percent)) {
 	            node.hide();
@@ -41513,7 +41312,7 @@
 	            } else {
 	                displayAmount = parseFloat(stopLoss);
 	            }
-	            elementTextContent(node, Content.localize().textSpreadDepositComment + ' ' + format_money(currency, displayAmount) + ' ' + Content.localize().textSpreadRequiredComment + ': ' + point + ' ' + Content.localize().textSpreadPointsComment);
+	            elementTextContent(node, localize('Deposit of') + ' ' + format_money(currency, displayAmount) + ' ' + localize('is required. Current spread') + ': ' + point + ' ' + localize('points'));
 	        }
 	    }
 	}
@@ -41719,8 +41518,8 @@
 	        $cost = $('#contract_purchase_cost'),
 	        $profit = $('#contract_purchase_profit');
 	
-	    $payout.html(Content.localize().textBuyPrice + '<p>' + addComma(Math.abs(pnl)) + '</p>');
-	    $cost.html(Content.localize().textFinalPrice + '<p>' + addComma(final_price) + '</p>');
+	    $payout.html(localize('Buy price') + '<p>' + addComma(Math.abs(pnl)) + '</p>');
+	    $cost.html(localize('Final price') + '<p>' + addComma(final_price) + '</p>');
 	    if (!final_price) {
 	        $profit.html(Content.localize().textLoss + '<p>' + addComma(pnl) + '</p>');
 	    } else {
@@ -46051,6 +45850,7 @@
 	var updateContractBalance = __webpack_require__(457).updateContractBalance;
 	var elementTextContent = __webpack_require__(308).elementTextContent;
 	var elementInnerHtml = __webpack_require__(308).elementInnerHtml;
+	var localize = __webpack_require__(424).localize;
 	
 	/*
 	 * Purchase object that handles all the functions related to
@@ -46104,7 +45904,7 @@
 	            elementTextContent(heading, Content.localize().textContractConfirmationHeading);
 	            elementTextContent(descr, receipt.longcode);
 	            if (barrier_element) barrier_element.textContent = '';
-	            elementTextContent(reference, Content.localize().textContractConfirmationReference + ' ' + receipt.transaction_id);
+	            elementTextContent(reference, localize('Your transaction reference is') + ' ' + receipt.transaction_id);
 	
 	            var payout_value = void 0,
 	                cost_value = void 0;
@@ -46123,9 +45923,9 @@
 	                elementInnerHtml(cost, Content.localize().textAmountPerPoint + ' <p>' + receipt.amount_per_point + '</p>');
 	                elementInnerHtml(profit, Content.localize().textStopProfit + ' <p>' + receipt.stop_profit_level + '</p>');
 	            } else {
-	                elementInnerHtml(payout, Content.localize().textContractConfirmationPayout + ' <p>' + payout_value + '</p>');
-	                elementInnerHtml(cost, Content.localize().textContractConfirmationCost + ' <p>' + cost_value + '</p>');
-	                elementInnerHtml(profit, Content.localize().textContractConfirmationProfit + ' <p>' + profit_value + '</p>');
+	                elementInnerHtml(payout, localize('Potential Payout') + ' <p>' + payout_value + '</p>');
+	                elementInnerHtml(cost, localize('Total Cost') + ' <p>' + cost_value + '</p>');
+	                elementInnerHtml(profit, localize('Potential Profit') + ' <p>' + profit_value + '</p>');
 	            }
 	
 	            updateContractBalance(receipt.balance_after);
@@ -46145,7 +45945,7 @@
 	            }
 	
 	            if (Contract.form() !== 'digits' && !show_chart) {
-	                elementTextContent(button, Content.localize().textContractConfirmationButton);
+	                elementTextContent(button, localize('View'));
 	                button.setAttribute('contract_id', receipt.contract_id);
 	                button.show();
 	                $('.open_contract_detailsws').attr('contract_id', receipt.contract_id).removeClass('invisible');
@@ -47136,14 +46936,14 @@
 	        currency = void 0;
 	
 	    var createEmptyTable = function createEmptyTable() {
-	        var header = [Content.localize().textDate, Content.localize().textRef, localize('Potential Payout'), Content.localize().textContract, Content.localize().textPurchasePrice, Content.localize().textSaleDate, Content.localize().textSalePrice, Content.localize().textProfitLoss, Content.localize().textDetails];
+	        var header = [Content.localize().textDate, Content.localize().textRef, localize('Potential Payout'), localize('Contract'), localize('Purchase Price'), localize('Sale Date'), localize('Sale Price'), localize('Profit/Loss'), Content.localize().textDetails];
 	
 	        var jpClient = japanese_client();
 	        currency = Client.get('currency');
 	
 	        header[7] += jpClient ? '' : currency ? ' (' + currency + ')' : '';
 	
-	        var footer = [Content.localize().textTotalProfitLoss, '', '', '', '', '', '', '', ''];
+	        var footer = [localize('Total Profit/Loss'), '', '', '', '', '', '', '', ''];
 	
 	        var data = [];
 	        var metadata = {
@@ -47698,7 +47498,7 @@
 	        oauth_apps = {};
 	
 	    var createEmptyStatementTable = function createEmptyStatementTable() {
-	        var header = [Content.localize().textDate, Content.localize().textRef, localize('Potential Payout'), Content.localize().textAction, Content.localize().textDescription, Content.localize().textCreditDebit, Content.localize().textBalance, Content.localize().textDetails];
+	        var header = [Content.localize().textDate, Content.localize().textRef, localize('Potential Payout'), localize('Action'), localize('Description'), localize('Credit/Debit'), localize('Balance'), Content.localize().textDetails];
 	
 	        var jpClient = japanese_client(),
 	            currency = Client.get('currency');
@@ -65087,7 +64887,7 @@
 	    };
 	
 	    var createEmptyTable = function createEmptyTable(tableID) {
-	        var header = [Content.localize().textAsset, Content.localize().textOpens, Content.localize().textCloses, Content.localize().textSettles, Content.localize().textUpcomingEvents];
+	        var header = [localize('Asset'), localize('Opens'), localize('Closes'), localize('Settles'), localize('Upcoming Events')];
 	
 	        var metadata = {
 	            id: tableID,
@@ -70143,7 +69943,6 @@
 	// jQuery's ready function works always.
 	
 	$(document).ready(function () {
-	    if ($('body').hasClass('BlueTopBack')) return; // exclude BO
 	    // Cookies is not always available.
 	    // So, fall back to a more basic solution.
 	    var match = document.cookie.match(/\bloginid=(\w+)/);
@@ -83293,7 +83092,7 @@
 	            Client.set_cookie('login', tokens[loginid]);
 	
 	            // set flags
-	            if (!$('body').hasClass('BlueTopBack')) localStorage.setItem('risk_classification', 'check');
+	            localStorage.setItem('risk_classification', 'check');
 	            Client.set_check_tnc();
 	            GTM.set_login_flag();
 	
@@ -83502,10 +83301,7 @@
 	};
 	
 	var init_pjax = function init_pjax() {
-	    if (!$('body').hasClass('BlueTopBack')) {
-	        // No Pjax for BO.
-	        pjax.connect(pjax_config());
-	    }
+	    pjax.connect(pjax_config());
 	};
 	
 	// TODO: remove or fix this function
@@ -86368,10 +86164,6 @@
 	
 	    var init = function init() {
 	        showLoadingImage($('<div/>', { id: 'loading' }).insertAfter('#applications-title'));
-	        var $title = $('#applications-title').children().first();
-	        var $desc = $('#description');
-	        $title.text(localize($title.text()));
-	        $desc.text(localize($desc.text()));
 	    };
 	
 	    var clean = function clean() {
@@ -87004,11 +86796,11 @@
 	        var elWithdrawLimitAgg = document.getElementById('withdrawal-limit-aggregate');
 	
 	        if (limits.lifetime_limit === 99999999 && limits.num_of_days_limit === 99999999) {
-	            elementTextContent(elWithdrawLimit, Content.localize().textAuthenticatedWithdrawal);
+	            elementTextContent(elWithdrawLimit, localize('Your account is fully authenticated and your withdrawal limits have been lifted.'));
 	        } else {
-	            var txtWithdrawLim = Content.localize().textWithdrawalLimitsEquivalant,
-	                txtWithdrawAmt = Content.localize().textWithrawalAmountEquivalant,
-	                text_CurrentMaxWithdrawal = Content.localize().textCurrentMaxWithdrawalEquivalant,
+	            var txtWithdrawLim = localize('Your withdrawal limit is [_1] [_2] (or equivalent in other currency).'),
+	                txtWithdrawAmt = localize('You have already withdrawn the equivalent of [_1] [_2].'),
+	                text_CurrentMaxWithdrawal = localize('Therefore your current immediate maximum withdrawal (subject to your account having sufficient funds) is [_1] [_2] (or equivalent in other currency).'),
 	                currency = 'EUR';
 	            var daysLimit = addComma(limits.num_of_days_limit).split('.')[1] === '00' ? addComma(limits.num_of_days_limit).split('.')[0] : addComma(limits.num_of_days_limit);
 	            // no need for addComma since it is already string like "1,000"
@@ -87017,16 +86809,16 @@
 	
 	            if (/^(iom)$/i.test(Client.get('landing_company_name'))) {
 	                // MX
-	                txtWithdrawLim = Content.localize().textWithdrawalLimitsEquivalantDay;
-	                txtWithdrawAmt = Content.localize().textWithrawalAmountEquivalantDay;
+	                txtWithdrawLim = localize('Your [_1] day withdrawal limit is currently [_2] [_3] (or equivalent in other currency).');
+	                txtWithdrawAmt = localize('You have already withdrawn the equivalent of [_1] [_2] in aggregate over the last [_3] days.');
 	                elementTextContent(elWithdrawLimit, template(txtWithdrawLim, [limits.num_of_days, currency, daysLimit]));
 	                elementTextContent(elWithdrawn, template(txtWithdrawAmt, [currency, withdrawn, limits.num_of_days]));
 	            } else {
 	                if (/^(costarica|japan)$/i.test(Client.get('landing_company_name'))) {
 	                    // CR , JP
-	                    txtWithdrawLim = Content.localize().textWithdrawalLimits;
-	                    txtWithdrawAmt = Content.localize().textWithrawalAmount;
-	                    text_CurrentMaxWithdrawal = Content.localize().textCurrentMaxWithdrawal;
+	                    txtWithdrawLim = localize('Your withdrawal limit is [_1] [_2].');
+	                    txtWithdrawAmt = localize('You have already withdrawn [_1] [_2].');
+	                    text_CurrentMaxWithdrawal = localize('Therefore your current immediate maximum withdrawal (subject to your account having sufficient funds) is [_1] [_2].');
 	                    currency = Client.get('currency') || Client.get('default_currency');
 	                }
 	                elementTextContent(elWithdrawLimit, template(txtWithdrawLim, [currency, daysLimit]));
@@ -87703,9 +87495,9 @@
 	            comma = Content.localize().textComma;
 	
 	        var V2 = ValidateV2;
-	        var isAddress = V2.regex(/^[^~!#$%^&*)(_=+\[}{\]\\\"\;\:\?\><\|]+$/, [letters, numbers, space, period, comma, '- / @ \' ']);
-	        var isCity = V2.regex(/^[^~!@#$%^&*)(_=+\[\}\{\]\\\/\"\;\:\?\><\,\|\d]+$/, [letters, space, '- . \' ']);
-	        var isState = V2.regex(/^[^~!@#$%^&*)(_=+\[\}\{\]\\\/\"\;\:\?\><\|]*$/, [letters, numbers, space, comma, '- . \'']);
+	        var isAddress = V2.regex(/^[^`~!#$%^&*)(_=+\[}{\]\\\"\;\:\?\><\|]+$/, [letters, numbers, space, period, comma, '- / @ \' ']);
+	        var isCity = V2.regex(/^[^`~!@#$%^&*)(_=+\[\}\{\]\\\/\"\;\:\?\><\,\|\d]+$/, [letters, space, '- . \' ']);
+	        var isState = V2.regex(/^[^`~!@#$%^&*)(_=+\[\}\{\]\\\/\"\;\:\?\><\|]*$/, [letters, numbers, space, comma, '- . \'']);
 	        var isPostcode = V2.regex(/^[^+]{0,20}$/, [letters, numbers, space, '-']);
 	        var isPhoneNo = V2.regex(/^(|\+?[0-9\s\-]+)$/, [numbers, space, '-']);
 	
@@ -88400,7 +88192,7 @@
 	    };
 	    var checkDate = function checkDate(dobdd, dobmm, dobyy, errorDob) {
 	        if (!isValidDate(dobdd.value, dobmm.value, dobyy.value) || dobdd.value === '' || dobmm.value === '' || dobyy.value === '') {
-	            elementInnerHtml(errorDob, Content.localize().textErrorBirthdate);
+	            elementInnerHtml(errorDob, localize('Please input a valid date'));
 	            Validate.displayErrorMessage(errorDob);
 	            window.accountErrorCounter++;
 	        }
@@ -88414,7 +88206,7 @@
 	        }
 	    };
 	    var checkAddress1 = function checkAddress1(address1, errorAddress1) {
-	        if (/[~!#$%^&*)(_=+\[}{\]\\\"\;\:\?\><\|]+/.test(address1.value)) {
+	        if (/[`~!#$%^&*)(_=+\[}{\]\\\"\;\:\?\><\|]+/.test(address1.value)) {
 	            initializeValues();
 	            elementInnerHtml(errorAddress1, Content.errorMessage('reg', [letters, numbers, space, period, comma, '- / @ \' ']));
 	            Validate.displayErrorMessage(errorAddress1);
@@ -88422,7 +88214,7 @@
 	        }
 	    };
 	    var checkAddress2 = function checkAddress2(address2, errorAddress2) {
-	        if (address2.value !== '' && /[~!#$%^&*)(_=+\[}{\]\\\"\;\:\?\><\|]+/.test(address2.value)) {
+	        if (address2.value !== '' && /[`~!#$%^&*)(_=+\[}{\]\\\"\;\:\?\><\|]+/.test(address2.value)) {
 	            initializeValues();
 	            elementInnerHtml(errorAddress2, Content.errorMessage('reg', [letters, numbers, space, period, comma, '- / @ \' ']));
 	            Validate.displayErrorMessage(errorAddress2);
@@ -88982,7 +88774,7 @@
 	        $('.notice-message').remove();
 	        var $form = $('#virtual-form');
 	        $form.html($('<p/>', {
-	            html: template(Content.localize().textDuplicatedEmail, [url_for('user/lost_passwordws')])
+	            html: template(localize('Your provided email address is already in use by another Login ID. According to our terms and conditions, you may only register once through our site. If you have forgotten the password of your existing account, please <a href="[_1]">try our password recovery tool</a> or contact customer service.'), [url_for('user/lost_passwordws')])
 	        }));
 	    };
 	
@@ -89185,7 +88977,7 @@
 	    'use strict';
 	
 	    var hiddenClass = 'invisible';
-	    var resetErrorTemplate = '[_1]' + ' Please click the link below to restart the password recovery process. ' + 'If you require further assistance, please contact our Customer Support.';
+	    var resetErrorTemplate = '[_1] Please click the link below to restart the password recovery process. If you require further assistance, please contact our Customer Support.';
 	    var dobdd = void 0,
 	        dobmm = void 0,
 	        dobyy = void 0;
@@ -89271,7 +89063,7 @@
 	
 	                $('#reset-error-msg').text(errMsg);
 	            } else {
-	                $('p.notice-msg').text(localize('Your password has been successfully reset. ' + 'Please log into your account using your new password.'));
+	                $('p.notice-msg').text(localize('Your password has been successfully reset. Please log into your account using your new password.'));
 	                window.setTimeout(function () {
 	                    Login.redirect_to_login();
 	                }, 5000);
