@@ -11,7 +11,7 @@ const Cookies = require('./lib/js-cookie');
 
 function getAppId() {
     return localStorage.getItem('config.app_id') ? localStorage.getItem('config.app_id') :
-               /staging\.binary\.com/i.test(window.location.hostname) ? '1098' : '1';
+               /staging\.binary\.com/i.test(window.location.hostname) ? '2619' : '1';
 }
 
 function getSocketURL() {
